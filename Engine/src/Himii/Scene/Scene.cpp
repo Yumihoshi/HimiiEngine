@@ -11,6 +11,8 @@
 #include "Himii/Scene/TileSet.h"
 #include "Himii/Scene/TileMapData.h"
 #include "Himii/Scene/ParticleEmitterAsset.h"
+#include "Himii/Renderer/Texture.h"
+#include "Himii/Particle/ParticleSystem.h"
 #include "Himii/Scripting/ScriptEngine.h"
 #include "ScriptableEntity.h"
 
@@ -315,6 +317,7 @@ namespace Himii
                         });
             }
             // 粒子系统 2D 渲染（与 Renderer2D 同批次）
+            auto particleAssetManager = Project::GetActive() ? Project::GetAssetManager() : nullptr;
             m_ParticleSystem.ForEachAlive([&](const ParticleSystem::ParticleView& p)
             {
                 float t = 1.0f - p.remainingLife / p.lifetime;
@@ -323,7 +326,23 @@ namespace Himii
                 glm::mat4 transform = glm::translate(glm::mat4(1.0f), p.position)
                     * glm::rotate(glm::mat4(1.0f), p.rotation, glm::vec3(0, 0, 1))
                     * glm::scale(glm::mat4(1.0f), glm::vec3(size));
-                Renderer2D::DrawQuad(transform, color);
+
+                Ref<Texture2D> tex;
+                if (p.textureHandle != 0 && particleAssetManager && particleAssetManager->IsAssetHandleValid(static_cast<AssetHandle>(p.textureHandle)))
+                {
+                    Ref<Asset> a = particleAssetManager->GetAsset(static_cast<AssetHandle>(p.textureHandle));
+                    tex = std::dynamic_pointer_cast<Texture2D>(a);
+                }
+
+                if (p.shape == ParticleShape::Circle)
+                    Renderer2D::DrawCircle(transform, color, 1.0f, 0.0025f);
+                else
+                {
+                    if (tex)
+                        Renderer2D::DrawQuad(transform, tex, 1.0f, color);
+                    else
+                        Renderer2D::DrawQuad(transform, color);
+                }
             });
             Renderer2D::EndScene();
         }

@@ -52,6 +52,9 @@ namespace Himii
         particle.sizeBegin = props.sizeBegin;
         particle.sizeEnd = props.sizeEnd;
 
+        particle.shape = props.shape;
+        particle.textureHandle = props.textureHandle;
+
         // 更新下一个可用槽位索引（向前循环）
         if (_poolIndex == 0)
             _poolIndex = static_cast<std::uint32_t>(_particlePool.size() - 1);

@@ -14,6 +14,10 @@ namespace Himii
     class ParticleEmitterEditorPanel
     {
     public:
+        // 分割条缩放限制：按需修改以放宽或收紧预览/属性区最小宽度
+        static constexpr float MinPropertiesPanelWidth = 260.0f;  // 右侧属性面板最小宽度
+        static constexpr float MinPreviewWidth = 120.0f;         // 左侧预览区最小宽度
+
         ParticleEmitterEditorPanel();
 
         void OnImGuiRender(bool& isOpen);
@@ -36,5 +40,8 @@ namespace Himii
         ParticleSystem m_PreviewParticleSystem{ 5000 };
         bool m_PreviewPlaying = true;
         float m_PreviewAccumulator = 0.0f;
+
+        // 可拖拽分割：右侧属性面板宽度，用于调整预览与属性区比例
+        float m_PropertiesPanelWidth = 260.0f;
     };
 }

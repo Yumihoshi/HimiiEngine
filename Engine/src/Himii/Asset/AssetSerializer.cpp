@@ -1,4 +1,5 @@
 #include "Himii/Asset/AssetSerializer.h"
+#include <algorithm>
 #include <fstream>
 #include <yaml-cpp/yaml.h>
 #include "Himii/Core/Log.h"
@@ -45,6 +46,8 @@ namespace Himii
         WriteVec4(out, "ColorEnd", p.colorEnd);
         out << YAML::Key << "SizeBegin" << YAML::Value << p.sizeBegin;
         out << YAML::Key << "SizeEnd" << YAML::Value << p.sizeEnd;
+        out << YAML::Key << "Shape" << YAML::Value << static_cast<int>(p.shape);
+        out << YAML::Key << "TextureHandle" << YAML::Value << static_cast<uint64_t>(p.textureHandle);
 
         out << YAML::Key << "EmissionRate" << YAML::Value << asset->EmissionRate;
         out << YAML::Key << "Looping" << YAML::Value << asset->Looping;
@@ -86,6 +89,8 @@ namespace Himii
             asset->TemplateProps.colorEnd = ReadVec4(data, "ColorEnd", { 0, 0, 0, 0 });
             if (data["SizeBegin"]) asset->TemplateProps.sizeBegin = data["SizeBegin"].as<float>();
             if (data["SizeEnd"]) asset->TemplateProps.sizeEnd = data["SizeEnd"].as<float>();
+            if (data["Shape"]) asset->TemplateProps.shape = static_cast<ParticleShape>(std::clamp(data["Shape"].as<int>(), 0, 1));
+            if (data["TextureHandle"]) asset->TemplateProps.textureHandle = data["TextureHandle"].as<uint64_t>();
 
             if (data["EmissionRate"]) asset->EmissionRate = data["EmissionRate"].as<float>();
             if (data["Looping"]) asset->Looping = data["Looping"].as<bool>();

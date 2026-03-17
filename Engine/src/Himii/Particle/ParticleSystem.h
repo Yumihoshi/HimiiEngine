@@ -7,6 +7,12 @@
 
 namespace Himii
 {
+    enum class ParticleShape : uint8_t
+    {
+        Quad = 0,
+        Circle = 1
+    };
+
     struct ParticleProps
     {
         glm::vec3 position{ 0.0f };
@@ -20,6 +26,9 @@ namespace Himii
 
         float sizeBegin = 1.0f;
         float sizeEnd = 0.0f;
+
+        ParticleShape shape = ParticleShape::Quad;
+        uint64_t textureHandle = 0;  // 0 = 无贴图，仅用颜色
     };
 
     class ParticleSystem
@@ -42,6 +51,8 @@ namespace Himii
             glm::vec4 colorEnd;
             float sizeBegin;
             float sizeEnd;
+            ParticleShape shape;
+            uint64_t textureHandle;
         };
 
         template<typename Func>
@@ -60,7 +71,9 @@ namespace Himii
                     particle.colorBegin,
                     particle.colorEnd,
                     particle.sizeBegin,
-                    particle.sizeEnd
+                    particle.sizeEnd,
+                    particle.shape,
+                    particle.textureHandle
                 };
 
                 func(view);
@@ -82,6 +95,9 @@ namespace Himii
 
             float sizeBegin = 1.0f;
             float sizeEnd = 0.0f;
+
+            ParticleShape shape = ParticleShape::Quad;
+            uint64_t textureHandle = 0;
 
             bool active = false;
         };

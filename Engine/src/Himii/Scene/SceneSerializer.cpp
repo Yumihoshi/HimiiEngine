@@ -306,6 +306,30 @@ namespace Himii
             out << YAML::Key << "EmitterHandle" << YAML::Value << (uint64_t)pe.EmitterHandle;
             out << YAML::EndMap;
         }
+
+        //------------UI-----------
+        if (entity.HasComponent<UITransformComponent>())
+        {
+            out << YAML::Key << "UITransformComponent";
+            out << YAML::BeginMap;
+            auto &uiTransform = entity.GetComponent<UITransformComponent>();
+            out << YAML::Key << "Position" << YAML::Value << uiTransform.Position;
+            out << YAML::Key << "Rotation" << YAML::Value << uiTransform.Rotation;
+            out << YAML::Key << "Size" << YAML::Value << uiTransform.Size;
+            out << YAML::EndMap;
+        }
+
+        if (entity.HasComponent<UIImageComponent>())
+        {
+            out << YAML::Key << "UIImageComponent";
+            out << YAML::BeginMap;
+            auto &uiImage = entity.GetComponent<UIImageComponent>();
+            out << YAML::Key << "Color" << YAML::Value << uiImage.Color;
+            if (uiImage.Texture)
+                out << YAML::Key << "TexturePath" << YAML::Value
+                    << uiImage.Texture->GetPath(); // 假设你的Texture有GetPath
+            out << YAML::EndMap;
+        }
         out << YAML::EndMap;
     }
 
@@ -372,10 +396,13 @@ namespace Himii
         if (tagComponent)
             name = tagComponent["Tag"].as<std::string>();
 
-        Entity deserializedEntity = scene->CreateEntityWithUUID(uuid, name);
+        bool isUI = entity["UITransformComponent"].IsDefined();
+
+        Entity deserializedEntity =
+                isUI ? scene->CreateUIEntityWithUUID(uuid, name) : scene->CreateEntityWithUUID(uuid, name);
 
         auto transformComponent = entity["TransformComponent"];
-        if (transformComponent)
+        if (transformComponent&&!isUI)
         {
             auto &tc = deserializedEntity.GetComponent<TransformComponent>();
             tc.Position = transformComponent["Position"].as<glm::vec3>();
@@ -539,6 +566,29 @@ namespace Himii
             auto &pe = deserializedEntity.AddComponent<ParticleEmitterComponent>();
             if (particleEmitterComponent["EmitterHandle"])
                 pe.EmitterHandle = particleEmitterComponent["EmitterHandle"].as<uint64_t>();
+        }
+
+
+        //-----------UI----------
+        auto uiTransformComponent = entity["UITransformComponent"];
+        if (uiTransformComponent)
+        {
+            auto &uiTc = deserializedEntity.GetComponent<UITransformComponent>();
+            uiTc.Position = uiTransformComponent["Position"].as<glm::vec3>();
+            uiTc.Rotation = uiTransformComponent["Rotation"].as<glm::vec3>();
+            uiTc.Size = uiTransformComponent["Size"].as<glm::vec2>();
+        }
+
+        auto uiImageComponent = entity["UIImageComponent"];
+        if (uiImageComponent)
+        {
+            auto &uiImage = deserializedEntity.AddComponent<UIImageComponent>();
+            uiImage.Color = uiImageComponent["Color"].as<glm::vec4>();
+            if (uiImageComponent["TexturePath"])
+            {
+                std::string texturePath = uiImageComponent["TexturePath"].as<std::string>();
+                uiImage.Texture = Texture2D::Create(texturePath);
+            }
         }
     }
     

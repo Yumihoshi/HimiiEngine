@@ -7,6 +7,7 @@
 #include "Himii/Project/Project.h"
 #include "Himii/Renderer/Renderer2D.h"
 #include "Himii/Renderer/Renderer3D.h"
+#include "Himii/Renderer/RenderCommand.h"
 #include "Himii/Scene/SpriteAnimation.h"
 #include "Himii/Scene/TileSet.h"
 #include "Himii/Scene/TileMapData.h"
@@ -61,6 +62,25 @@ namespace Himii
     Entity Scene::CreateEntity(const std::string &name)
     {
         return CreateEntityWithUUID(UUID(), name);
+    }
+
+    Entity Scene::CreateUIEntity(const std::string &name)
+    {
+        return CreateUIEntityWithUUID(UUID(),name);
+    }
+
+    Entity Scene::CreateUIEntityWithUUID(UUID uuid, const std::string &name)
+    {
+        Entity entity(m_Registry.create(), this);
+
+        entity.AddComponent<IDComponent>(uuid);
+        entity.AddComponent<UITransformComponent>();
+        auto &tag = entity.AddComponent<TagComponent>();
+        tag.Tag = name.empty() ? "Entity" : name;
+
+        m_EntityMap[uuid] = entity;
+
+        return entity;
     }
 
     void Scene::DestroyEntity(entt::entity e)
@@ -123,6 +143,7 @@ namespace Himii
     void Scene::OnUpdateEditor(Timestep ts, EditorCamera &camera)
     {
         RenderScene(camera);
+        RenderUI((float)m_ViewportWidth, (float)m_ViewportHeight);
     }
 
     void Scene::OnUpdateRuntime(Timestep ts)
@@ -233,7 +254,7 @@ namespace Himii
             auto assetManager = Project::GetAssetManager();
             if (assetManager)
             {
-                auto view = m_Registry.view<TransformComponent, ParticleEmitterComponent>();
+                auto view = m_Registry.group<TransformComponent, ParticleEmitterComponent>();
                 for (auto e : view)
                 {
                     auto [transform, emitter] = view.get<TransformComponent, ParticleEmitterComponent>(e);
@@ -377,6 +398,7 @@ namespace Himii
                  Renderer3D::EndScene();
              }
         }
+        RenderUI((float)m_ViewportWidth, (float)m_ViewportHeight);
     }
 
     static float RayCastCallback(b2ShapeId shapeId, b2Vec2 point, b2Vec2 normal, float fraction, void* context)
@@ -515,6 +537,9 @@ namespace Himii
         CopyComponent<MeshComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<TilemapComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<ParticleEmitterComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+        //UI
+        CopyComponent<UITransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+        CopyComponent<UIImageComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 
         return newScene;
     }
@@ -561,6 +586,12 @@ namespace Himii
             newEntity.AddComponent<TilemapComponent>(entity.GetComponent<TilemapComponent>());
         if (entity.HasComponent<ParticleEmitterComponent>())
             newEntity.AddComponent<ParticleEmitterComponent>(entity.GetComponent<ParticleEmitterComponent>());
+
+        //UI
+        if (entity.HasComponent<UITransformComponent>())
+            newEntity.AddComponent<UITransformComponent>(entity.GetComponent<UITransformComponent>());
+        if (entity.HasComponent<UIImageComponent>())
+            newEntity.AddComponent<UIImageComponent>(entity.GetComponent<UIImageComponent>());
 
         return newEntity;
     }
@@ -785,6 +816,43 @@ namespace Himii
         }
     }
 
+    void Scene::RenderUI(float viewportWidth, float viewportHeight)
+    {
+        if (viewportWidth == 0.0f || viewportHeight == 0.0f)
+            return;
+
+        glm::mat4 projection = glm::ortho(0.0f, viewportWidth, 0.0f, viewportHeight, -1.0f, 1.0f);
+        glm::mat4 view = glm::mat4(1.0f);
+
+        // 关闭深度测试，开启透明混合
+        RenderCommand::SetDepthTest(false);
+
+        Renderer2D::BeginScene(projection, view);
+
+        // 3. 获取所有 UI 实体
+        auto viewGrp = m_Registry.group<UITransformComponent,UIImageComponent>();
+        for (auto entity: viewGrp)
+        {
+            auto [transform, image] = viewGrp.get<UITransformComponent, UIImageComponent>(entity);
+
+            glm::mat4 transformMat = transform.GetTransform();
+
+            if (image.Texture)
+            {
+                Renderer2D::DrawQuad(transformMat, image.Texture, 1.0f, image.Color,(int)entity);
+            }
+            else
+            {
+                Renderer2D::DrawQuad(transformMat, image.Color, (int)entity);
+            }
+        }
+
+        Renderer2D::EndScene();
+
+        // 4. 恢复深度测试
+        RenderCommand::SetDepthTest(true);
+    }
+
     //
     template<typename T>
     void Scene::OnComponentAdded(Entity emtity, T &component)
@@ -865,6 +933,14 @@ namespace Himii
     }
     template<>
     void Scene::OnComponentAdded<ParticleEmitterComponent>(Entity entity, ParticleEmitterComponent &component)
+    {
+    }
+    template<>
+    void Scene::OnComponentAdded<UITransformComponent>(Entity entity, UITransformComponent &component)
+    {
+    }
+    template<>
+    void Scene::OnComponentAdded<UIImageComponent>(Entity entity, UIImageComponent &component)
     {
     }
 

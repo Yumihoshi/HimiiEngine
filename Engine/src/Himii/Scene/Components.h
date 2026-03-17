@@ -19,7 +19,7 @@ namespace Himii
 {
     class ScriptableEntity;
 
-    // 绋冲畾 ID
+    // Entity ID
     struct IDComponent {
         UUID ID;
 
@@ -207,4 +207,33 @@ namespace Himii
         ParticleEmitterComponent() = default;
         ParticleEmitterComponent(const ParticleEmitterComponent&) = default;
     };
+
+#pragma region UIComponent
+    struct UITransformComponent {
+        glm::vec3 Position{0.0f};
+        glm::vec2 Size{100.0f};
+        glm::vec3 Rotation{0.0f};
+
+        UITransformComponent() = default;
+        UITransformComponent(const glm::vec3 &position, const glm::vec2 &size, const glm::vec3 rotation) :
+            Position(position), Size(size), Rotation(rotation)
+        {
+        }
+
+        glm::mat4 GetTransform() const
+        {
+            glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
+            return glm::translate(glm::mat4(1.0f), Position) * rotation * glm::scale(glm::mat4(1.0f), glm::vec3(Size,1.0f));
+        }
+    };
+
+    struct UIImageComponent {
+        Ref<Texture2D> Texture;
+        glm::vec4 Color{1.0f, 1.0f, 1.0f, 1.0f};
+
+        UIImageComponent() = default;
+        UIImageComponent(const UIImageComponent &) = default;
+    };
+#pragma endregion
+
 }

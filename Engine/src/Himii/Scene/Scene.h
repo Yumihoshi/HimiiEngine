@@ -34,6 +34,10 @@ namespace Himii
 
         Entity CreateEntityWithUUID(UUID uuid, const std::string &name);
         Entity CreateEntity(const std::string &name);
+
+        Entity CreateUIEntity(const std::string &name);
+        Entity CreateUIEntityWithUUID(UUID uuid, const std::string &name);
+
         void DestroyEntity(entt::entity e);
 
         entt::registry &Registry()
@@ -95,6 +99,9 @@ namespace Himii
         void OnPhysics2DStop();
 
         void RenderScene(EditorCamera &camera);
+
+        void RenderUI(float viewportWidth, float viewportHeight);
+
     private:
         entt::registry m_Registry;
         uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;

@@ -56,7 +56,6 @@ namespace Himii
         {
             OpenProject(commandLineArgs.Args[1]);
         }
-
     }
     void EditorLayer::OnDetach()
     {
@@ -346,60 +345,97 @@ namespace Himii
             }
             // gizmos
             Entity selectEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-            if (selectEntity && m_GizmoType != -1)
+            if (selectEntity && m_GizmoType != -1 && m_SceneState == SceneState::Edit)
             {
-                bool is2D = Project::GetConfig().Is2D;
-                ImGuizmo::SetOrthographic(is2D);
+                bool isUI = selectEntity.HasComponent<UITransformComponent>();
+                bool isTransform = selectEntity.HasComponent<TransformComponent>();
 
-                ImGuizmo::SetDrawlist();
-
-                float windowWidth = ImGui::GetWindowWidth();
-                float windowHeight = ImGui::GetWindowHeight();
-                ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, windowWidth, windowHeight);
-
-                ImGuizmo::OPERATION currentGizmoOperation = (ImGuizmo::OPERATION)m_GizmoType;
-                if (is2D)
+                if (isUI || isTransform)
                 {
-                    if (m_GizmoType == ImGuizmo::TRANSLATE)
-                        currentGizmoOperation = (ImGuizmo::OPERATION)(ImGuizmo::TRANSLATE_X | ImGuizmo::TRANSLATE_Y);
-                    else if (m_GizmoType == ImGuizmo::ROTATE)
-                        currentGizmoOperation = ImGuizmo::ROTATE_Z;
-                    else if (m_GizmoType == ImGuizmo::SCALE)
-                        currentGizmoOperation = (ImGuizmo::OPERATION)(ImGuizmo::SCALE_X | ImGuizmo::SCALE_Y);
+                    // UI 强制使用正交投影，3D 物体取决于项目配置
+                    ImGuizmo::SetOrthographic(isUI ? true : Project::GetConfig().Is2D);
+                    ImGuizmo::SetDrawlist();
+
+                    // 修复 ImGuizmo 矩形区域 (使用你已有的 Viewport Bounds 会更精准)
+                    ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y,
+                                      m_ViewportBounds[1].x - m_ViewportBounds[0].x,
+                                      m_ViewportBounds[1].y - m_ViewportBounds[0].y);
+
+                    // 准备相机矩阵
+                    glm::mat4 cameraProjection;
+                    glm::mat4 cameraView;
+                    glm::mat4 transform;
+
+                    if (isUI)
+                    {
+                        // --- UI 专属矩阵 ---
+                        cameraProjection = glm::ortho(0.0f, m_ViewportSize.x, 0.0f, m_ViewportSize.y, -1.0f, 1.0f);
+                        cameraView = glm::mat4(1.0f);
+
+                        auto &uiTransformComponent = selectEntity.GetComponent<UITransformComponent>();
+                        // 注意：这里暂时忽略了旋转，如果你的 UI 有旋转请加上 glm::rotate
+                        transform = uiTransformComponent.GetTransform();
+                    }
+                    else
+                    {
+                        // --- 3D/2D 游戏物体矩阵 ---
+                        cameraProjection = m_EditorCamera.GetProjection();
+                        cameraView = m_EditorCamera.GetViewMatrix();
+                        transform = selectEntity.GetComponent<TransformComponent>().GetTransform();
+                    }
+
+                    // 决定 Gizmo 的操作类型 (2D/UI 通常只需 XY 移动和缩放)
+                    ImGuizmo::OPERATION currentGizmoOperation = (ImGuizmo::OPERATION)m_GizmoType;
+                    if (Project::GetConfig().Is2D || isUI)
+                    {
+                        if (m_GizmoType == ImGuizmo::TRANSLATE)
+                            currentGizmoOperation =
+                                    (ImGuizmo::OPERATION)(ImGuizmo::TRANSLATE_X | ImGuizmo::TRANSLATE_Y);
+                        else if (m_GizmoType == ImGuizmo::ROTATE)
+                            currentGizmoOperation = ImGuizmo::ROTATE_Z;
+                        else if (m_GizmoType == ImGuizmo::SCALE)
+                            currentGizmoOperation = (ImGuizmo::OPERATION)(ImGuizmo::SCALE_X | ImGuizmo::SCALE_Y);
+                    }
+
+                    // 吸附功能保持不变
+                    bool snap = Input::IsKeyPressed(Key::LeftControl);
+                    float snapValue = 0.5f;
+                    if (m_GizmoType == ImGuizmo::OPERATION::ROTATE)
+                        snapValue = 45.0f;
+                    float snapValues[3] = {snapValue, snapValue, snapValue};
+
+                    // 绘制 Gizmo
+                    ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+                                         currentGizmoOperation, ImGuizmo::LOCAL, glm::value_ptr(transform), nullptr,
+                                         snap ? snapValues : nullptr);
+
+                    // 写回数据
+                    if (ImGuizmo::IsUsing())
+                    {
+                        glm::vec3 translation, rotation, scale;
+                        Math::DecomposeTransform(transform, translation, rotation, scale);
+
+                        if (isUI)
+                        {
+                            auto &uiTc = selectEntity.GetComponent<UITransformComponent>();
+                            // UI 只需要 XY 坐标和缩放
+                            uiTc.Position = translation;
+                            glm::vec3 deltaRotation = rotation - uiTc.Rotation;
+                            uiTc.Rotation += deltaRotation; 
+                            uiTc.Size = glm::vec2(scale.x, scale.y);
+                        }
+                        else
+                        {
+                            auto &tc = selectEntity.GetComponent<TransformComponent>();
+                            glm::vec3 deltaRotation = rotation - tc.Rotation;
+                            tc.Position = translation;
+                            tc.Rotation += deltaRotation;
+                            tc.Scale = scale;
+                        }
+                    }
                 }
 
-                ImGuizmo::Enable(m_ViewportHovered || ImGuizmo::IsUsing());
-
-                // editor camera
-                const glm::mat4 &cameraProjection = m_EditorCamera.GetProjection();
-                glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
-
-                // Entity transform
-                auto &transformComponent = selectEntity.GetComponent<TransformComponent>();
-                glm::mat4 transform = transformComponent.GetTransform();
-
-                // snapping
-                bool snap = Input::IsKeyPressed(Key::LeftControl);
-                float snapValue = 0.5f; // Snap to 0.5m for translation/scale
-                // Snap to 45 degrees for rotation
-                if (m_GizmoType == ImGuizmo::OPERATION::ROTATE)
-                    snapValue = 45.0f;
-                float snapValues[3] = {snapValue, snapValue, snapValue};
-
-                ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
-                                     currentGizmoOperation, ImGuizmo::LOCAL, glm::value_ptr(transform),
-                                     nullptr, snap ? snapValues : nullptr);
-
-                if (ImGuizmo::IsUsing())
-                {
-                    glm::vec3 translation, rotation, scale;
-                    Math::DecomposeTransform(transform, translation, rotation, scale);
-
-                    glm::vec3 deltaRotation = rotation - transformComponent.Rotation;
-                    transformComponent.Position = translation;
-                    transformComponent.Rotation += deltaRotation;
-                    transformComponent.Scale = scale;
-                }
+                
             }
 
             // ImGui::End();
@@ -514,7 +550,7 @@ namespace Himii
     {
         if (e.GetMouseButton() == Mouse::ButtonLeft)
         {
-            if (m_ViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt))
+            if (m_ViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt)&&m_SceneState == SceneState::Edit)
                 m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
         }
         return false;
@@ -592,13 +628,38 @@ namespace Himii
             }
         }
         // Draw selected entity outline
-        if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
+        if (m_SceneState==SceneState::Edit)
         {
-            const TransformComponent &transform = selectedEntity.GetComponent<TransformComponent>();
-            Renderer2D::DrawRect(transform.GetTransform(), glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
+            if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
+            {
+                if (selectedEntity.HasComponent<TransformComponent>())
+                {
+                    const TransformComponent &transform = selectedEntity.GetComponent<TransformComponent>();
+                    Renderer2D::DrawRect(transform.GetTransform(), glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
+                }
+            }
         }
 
         Renderer2D::EndScene();
+
+        if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
+        {
+            if (selectedEntity.HasComponent<UITransformComponent>())
+            {
+                // 构造与 Scene::RenderUI 完全一样的矩阵 (左下角为 0,0)
+                glm::mat4 uiProjection = glm::ortho(0.0f, m_ViewportSize.x, 0.0f, m_ViewportSize.y, -1.0f, 1.0f);
+                glm::mat4 uiView = glm::mat4(1.0f); // UI 不需要视图偏移
+
+                Renderer2D::BeginScene(uiProjection, uiView);
+
+                const UITransformComponent &uiTransform = selectedEntity.GetComponent<UITransformComponent>();
+
+                // 绘制高亮框
+                Renderer2D::DrawRect(uiTransform.GetTransform(), glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
+
+                Renderer2D::EndScene();
+            }
+        }
     }
 
     void EditorLayer::CreateProject(const std::filesystem::path& projectPath, bool is2D)

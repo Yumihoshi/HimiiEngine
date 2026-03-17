@@ -63,6 +63,10 @@ namespace Himii
             {
                 m_Context->CreateEntity("Empty Entity");
             }
+            if (ImGui::MenuItem("Create UI Entty"))
+            {
+                m_Context->CreateUIEntity("Empty UI Entity");
+            }
             if (ImGui::MenuItem("Create Cube"))
             {
                 auto entity = m_Context->CreateEntity("Cube");
@@ -98,6 +102,10 @@ namespace Himii
                 DisplayAddComponentEntry<BoxCollider2DComponent>("Box Collider2D");
                 DisplayAddComponentEntry<CircleCollider2DComponent>("Circle Collider2D");
                 DisplayAddComponentEntry<MeshComponent>("Mesh Renderer");
+                DisplayAddComponentEntry<TilemapComponent>("Tilemap");
+                DisplayAddComponentEntry<ParticleEmitterComponent>("Particle Emitter");
+                DisplayAddComponentEntry<UITransformComponent>("Rect Transform");
+                DisplayAddComponentEntry<UIImageComponent>("Image");
 
                 ImGui::EndPopup();
             }
@@ -342,17 +350,13 @@ namespace Himii
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + textOffsetY);
             ImGui::TextUnformatted(name.c_str());
             
-            // Restore proper cursor Y for next item (although Selectable already advanced it, we messed with it)
-            // Selectable advanced Y by lineHeight. 
-            // Our overlay drawing logic mostly stayed on the same line or advanced locally.
-            // We should ensure we are at the line *after* the header.
-            // Left empty to remove the misplaced PopID in previous block
-            ImGui::SetCursorPos(ImVec2(elementPos.x, elementPos.y + lineHeight));
             ImGui::SameLine(contentRegionAvailable.x - lineHeight * 0.5f);
+            ImGui::SetCursorPosY(elementPos.y);
             if (ImGui::Button("+", ImVec2{lineHeight, lineHeight}))
             {
                 ImGui::OpenPopup("ComponentSetting");
             }
+            ImGui::SetCursorPos(ImVec2(elementPos.x, elementPos.y + lineHeight));
             
             ImGui::PopStyleVar(); // Pop FramePadding after header and button
 
@@ -409,6 +413,10 @@ namespace Himii
             DisplayAddComponentEntry<MeshComponent>("Mesh Renderer");
             DisplayAddComponentEntry<TilemapComponent>("Tilemap");
             DisplayAddComponentEntry<ParticleEmitterComponent>("Particle Emitter");
+
+            //UI
+            DisplayAddComponentEntry<UITransformComponent>("Rect Transform");
+            DisplayAddComponentEntry<UIImageComponent>("Image");
 
             ImGui::EndPopup();
         }
@@ -1264,6 +1272,70 @@ namespace Himii
                             m_ParticleEmitterEditorRequest = component.EmitterHandle;
                     }
                 });
+
+        //UI
+        DrawComponent<UITransformComponent>("Rect Transform",
+            entity, m_ComponentIcons["Rect Transform"],
+        [](auto &component) 
+        {
+                                                DrawVec3Control("Rect Position",component.Position);
+                                                glm::vec3 rotation = glm::degrees(component.Rotation);
+                                                DrawVec3Control("Rotation", rotation);
+                                                component.Rotation = glm::radians(rotation);
+                                                DrawVec3Control("Size", glm::vec3(component.Size,1.0f), 100.0f);
+        });
+
+        DrawComponent<UIImageComponent>("Image", entity, m_ComponentIcons["Image"],
+        [](auto &component)
+        {
+                    // 1. 颜色控制 (直接复用你的 DrawColorControl)
+                    DrawColorControl("Color", component.Color);
+
+                    // 2. 贴图控制 (带拖拽分配功能)
+                    ImGui::PushID("Texture");
+                    if (ImGui::BeginTable("##Texture", 2,
+                                          ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingFixedFit))
+                    {
+                        ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
+                        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+                        ImGui::TableNextColumn();
+                        ImGui::Text("Texture");
+                        ImGui::TableNextColumn();
+                        ImGui::PushItemWidth(-1);
+
+                        // 如果有贴图，显示贴图的 ID 或者名字；没有则显示 "None"
+                        std::string textureLabel = component.Texture ? "Texture Bound" : "None";
+                        ImGui::Button(textureLabel.c_str(), ImVec2(100.0f, 0.0f));
+                        ImGui::PopItemWidth();
+
+                        // 接受内容浏览器的拖拽
+                        if (ImGui::BeginDragDropTarget())
+                        {
+                            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+                            {
+                                const wchar_t *path = (const wchar_t *)payload->Data;
+                                std::filesystem::path texturePath = Project::GetAssetDirectory() / path;
+
+                                if (std::filesystem::exists(texturePath))
+                                    component.Texture = Texture2D::Create(texturePath.string());
+                                else
+                                    HIMII_CORE_WARNING("UI Texture not found: {0}", texturePath.string());
+                            }
+                            ImGui::EndDragDropTarget();
+                        }
+
+                        // 增加一个清除贴图的小按钮 (可选，但很实用)
+                        if (component.Texture)
+                        {
+                            ImGui::SameLine();
+                            if (ImGui::Button("X"))
+                                component.Texture = nullptr;
+                        }
+
+                        ImGui::EndTable();
+                    }
+                    ImGui::PopID();
+        });
     }
 
     template<typename T>

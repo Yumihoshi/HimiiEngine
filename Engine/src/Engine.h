@@ -27,6 +27,7 @@
 #include "Himii/Renderer/OrthographicCameraController.h"
 #include "Himii/Renderer/Texture.h"
 #include "Himii/Renderer/Framebuffer.h"
+#include "Himii/Renderer/Font.h"
 
 //---------其他-----------
 // ECS

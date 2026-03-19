@@ -16,6 +16,7 @@
     "box2d",
     "nethost",
     "libnoise",
-    "marchingcubecpp"
+    "marchingcubecpp",
+    "freetype"
   ]
 }

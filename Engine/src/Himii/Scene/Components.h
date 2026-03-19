@@ -3,7 +3,7 @@
 #include "Himii/Core/UUID.h"
 #include "Himii/Renderer/Texture.h"
 #include "Himii/Scripting/ScriptEngine.h"
-//#include "Himii/Renderer/Font.h"
+#include "Himii/Renderer/Font.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -233,6 +233,22 @@ namespace Himii
 
         UIImageComponent() = default;
         UIImageComponent(const UIImageComponent &) = default;
+    };
+
+    struct UITextComponent {
+        std::string TextString = "Text";
+        Ref<Font> FontAsset;
+        glm::vec4 Color = {1.0f, 1.0f, 1.0f, 1.0f}; 
+
+        // 排版参数
+        float Kerning = 0.0f;     // 字间距微调
+        float LineSpacing = 0.0f; // 行间距微调
+
+        UITextComponent() = default;
+        UITextComponent(const UITextComponent &) = default;
+        UITextComponent(const std::string &text) : TextString(text)
+        {
+        }
     };
 #pragma endregion
 

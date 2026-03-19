@@ -330,6 +330,26 @@ namespace Himii
                     << uiImage.Texture->GetPath(); // 假设你的Texture有GetPath
             out << YAML::EndMap;
         }
+
+        if (entity.HasComponent<UITextComponent>())
+        {
+            out << YAML::Key << "UITextComponent";
+            out << YAML::BeginMap; // UITextComponent
+            auto &textComponent = entity.GetComponent<UITextComponent>();
+
+            out << YAML::Key << "TextString" << YAML::Value << textComponent.TextString;
+            out << YAML::Key << "Color" << YAML::Value << textComponent.Color;
+            out << YAML::Key << "Kerning" << YAML::Value << textComponent.Kerning;
+            out << YAML::Key << "LineSpacing" << YAML::Value << textComponent.LineSpacing;
+
+            // 序列化字体路径
+            if (textComponent.FontAsset)
+                out << YAML::Key << "FontPath" << YAML::Value << textComponent.FontAsset->GetFilePath().string();
+            else
+                out << YAML::Key << "FontPath" << YAML::Value << ""; // 或者记录为默认字体
+
+            out << YAML::EndMap; // UITextComponent
+        }
         out << YAML::EndMap;
     }
 
@@ -588,6 +608,38 @@ namespace Himii
             {
                 std::string texturePath = uiImageComponent["TexturePath"].as<std::string>();
                 uiImage.Texture = Texture2D::Create(texturePath);
+            }
+        }
+
+        auto uiTextComponent = entity["UITextComponent"];
+        if (uiTextComponent)
+        {
+            // 如果实体还没有这个组件（通常新创建的 UIEntity 只有 UITransform），则添加
+            auto &textComp = deserializedEntity.AddComponent<UITextComponent>();
+
+            textComp.TextString = uiTextComponent["TextString"].as<std::string>();
+            textComp.Color = uiTextComponent["Color"].as<glm::vec4>();
+
+            // 使用 IsDefined 检查可选字段，防止老版本场景文件崩溃
+            if (uiTextComponent["Kerning"])
+                textComp.Kerning = uiTextComponent["Kerning"].as<float>();
+            if (uiTextComponent["LineSpacing"])
+                textComp.LineSpacing = uiTextComponent["LineSpacing"].as<float>();
+
+            // 反序列化并加载字体
+            if (uiTextComponent["FontPath"])
+            {
+                std::string fontPath = uiTextComponent["FontPath"].as<std::string>();
+                if (!fontPath.empty())
+                {
+                    // 这里建议先检查文件是否存在，或者交给 Font 构造函数处理
+                    textComp.FontAsset = CreateRef<Font>(fontPath);
+                }
+                else
+                {
+                    // 如果路径为空，加载引擎默认字体
+                    textComp.FontAsset = Font::GetDefault();
+                }
             }
         }
     }

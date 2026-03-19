@@ -6,6 +6,7 @@
 #include "Himii/Scene/TileSet.h"
 #include "Himii/Scene/TileMapData.h"
 #include "Himii/Renderer/EditorCamera.h"
+#include "Himii/Renderer/Font.h"
 
 namespace Himii
 {
@@ -45,6 +46,8 @@ namespace Himii
         static void DrawSprite(const glm::mat4 &transform, SpriteRendererComponent& sprite,int entityID=-1);
         
         static void DrawTilemap(const glm::mat4 &transform, const Ref<TileMapData>& mapData, const Ref<TileSet>& tileSet, int entityID = -1);
+
+        static void DrawString(const std::string &string, Ref<Font> font, const glm::mat4 &transform,const glm::vec4 &color, int entityID = -1);
 
         static float GetLineWidth();
         static void SetLineWidth(float width);

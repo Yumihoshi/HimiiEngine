@@ -107,6 +107,8 @@ namespace Himii
         SceneState m_SceneState = SceneState::Edit;
         std::string m_Clipboard;
 
+        Ref<Font> m_DefaultFont;
+
     private:
         struct RecentProject
         {

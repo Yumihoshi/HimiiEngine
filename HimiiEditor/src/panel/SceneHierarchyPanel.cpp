@@ -417,6 +417,7 @@ namespace Himii
             //UI
             DisplayAddComponentEntry<UITransformComponent>("Rect Transform");
             DisplayAddComponentEntry<UIImageComponent>("Image");
+            DisplayAddComponentEntry<UITextComponent>("Text");
 
             ImGui::EndPopup();
         }
@@ -1336,6 +1337,38 @@ namespace Himii
                     }
                     ImGui::PopID();
         });
+        DrawComponent<UITextComponent>("Text", entity, m_ComponentIcons["Text"],
+                                       [](auto &component)
+                                       {
+                                           // 1. 文本内容编辑 (支持多行)
+                                           ImGui::Text("Content");
+                                           ImGui::PushID("Content");
+                                           char buffer[1024];
+                                           memset(buffer, 0, sizeof(buffer));
+                                           strncpy_s(buffer, sizeof(buffer), component.TextString.c_str(),
+                                                     sizeof(buffer) - 1);
+                                           if (ImGui::InputTextMultiline("##TextContent", buffer, sizeof(buffer),
+                                                                         ImVec2(-1, ImGui::GetFontSize() * 3)))
+                                           {
+                                               component.TextString = std::string(buffer);
+                                           }
+                                           ImGui::PopID();
+
+                                           // 2. 颜色
+                                           DrawColorControl("Text Color", component.Color);
+
+                                           // 3. 排版参数
+                                           DrawFloatControl("Kerning", component.Kerning, 0.01f);
+                                           DrawFloatControl("Line Spacing", component.LineSpacing, 0.01f);
+
+                                           // 4. 字体资产显示 (暂时只读，或者你可以像图片一样实现拖拽)
+                                           ImGui::Text("Font: %s", component.FontAsset ? "Default Font" : "None");
+                                           if (!component.FontAsset)
+                                           {
+                                               if (ImGui::Button("Attach Default Font"))
+                                                   component.FontAsset = Font::GetDefault();
+                                           }
+                                       });
     }
 
     template<typename T>

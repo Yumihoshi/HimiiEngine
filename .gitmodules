@@ -15,3 +15,6 @@
 [submodule "Engine/vender/nativefiledialog-extended"]
 	path = Engine/vender/nativefiledialog-extended
 	url = https://github.com/btzy/nativefiledialog-extended
+[submodule "Engine/vender/msdf-atlas-gen"]
+	path = Engine/vender/msdf-atlas-gen
+	url = https://github.com/Chlumsky/msdf-atlas-gen.git

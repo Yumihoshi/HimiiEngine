@@ -22,6 +22,7 @@ find_package(SPIRV-Tools CONFIG REQUIRED)
 
 find_package(box2d REQUIRED)
 find_package(unofficial-nethost CONFIG REQUIRED)
+find_package(Freetype REQUIRED)
 
 # 设置OpenGL的首选项
 cmake_policy(SET CMP0072 NEW)
@@ -52,6 +53,7 @@ endif()
 
 set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vender/imgui")
 set(IMGUIZMO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vender/ImGuizmo")
+set(MSDF_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vender/msdf-atlas-gen")
 
 # 检查 ImGui 目录是否存在
 if (NOT EXISTS "${IMGUI_DIR}")
@@ -59,6 +61,9 @@ if (NOT EXISTS "${IMGUI_DIR}")
 endif()
 if (NOT EXISTS "${IMGUIZMO_DIR}")
     message(FATAL_ERROR "ImGuizmo directory not found at ${IMGUIZMO_DIR}")
+endif()
+if (NOT EXISTS "${MSDF_DIR}")
+    message(FATAL_ERROR "msdf-atlas-gen directory not found at ${MSDF_DIR}")
 endif()
 
 
@@ -82,6 +87,7 @@ set(IMGUI_BACKENDS
     ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
     ${IMGUI_DIR}/misc/cpp/imgui_stdlib.cpp
 )
+
 set(ENGINE_ALL_SOURCES
     ${SOURCES}
     ${HEADERS}
@@ -89,6 +95,12 @@ set(ENGINE_ALL_SOURCES
     ${IMGUI_BACKENDS}
     ${IMGUIZMO_SOURCES}
 )
+
+set(MSDF_ATLAS_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
+set(MSDFGEN_BUILD_STANDALONE OFF CACHE BOOL "" FORCE)
+set(MSDFGEN_USE_SKIA OFF CACHE BOOL "" FORCE)
+set(MSDF_ATLAS_USE_SKIA OFF CACHE BOOL "" FORCE)
+add_subdirectory("${MSDF_DIR}" msdf_build)
 
 # 添加源文件和头文件到Engine库
 add_library(Engine STATIC ${ENGINE_ALL_SOURCES})
@@ -98,9 +110,9 @@ if(WIN32 AND BUILD_SHARED_LIBS)
     set_property(TARGET Engine PROPERTY WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
-target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${IMGUI_DIR} ${IMGUI_DIR}/backends ${IMGUIZMO_DIR})
+target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${IMGUI_DIR} ${IMGUI_DIR}/backends ${IMGUIZMO_DIR} ${MSDF_DIR} ${MSDF_DIR}/msdfgen ${MSDF_DIR}/msdf-atlas-gen ${CMAKE_CURRENT_BINARY_DIR}/msdf_build/msdfgen/include)
 
-target_link_libraries(Engine PUBLIC OpenGL::GL glad::glad spdlog::spdlog glfw yaml-cpp::yaml-cpp Vulkan::Vulkan unofficial::shaderc::shaderc spirv-cross-core spirv-cross-glsl SPIRV-Tools-static box2d::box2d unofficial::nethost::nethost nfd)
+target_link_libraries(Engine PUBLIC OpenGL::GL glad::glad spdlog::spdlog glfw yaml-cpp::yaml-cpp Vulkan::Vulkan unofficial::shaderc::shaderc spirv-cross-core spirv-cross-glsl SPIRV-Tools-static box2d::box2d unofficial::nethost::nethost nfd Freetype::Freetype msdf-atlas-gen msdfgen-ext msdfgen-core)
 
 target_compile_definitions(Engine PUBLIC GLM_ENABLE_EXPERIMENTAL)
 
@@ -112,7 +124,7 @@ target_compile_definitions(Engine PUBLIC
 
 if (WIN32)
     target_compile_definitions(Engine PUBLIC
-        HIMII_PLATFORM_WINDOWS     # 你自己的平台宏
+        HIMII_PLATFORM_WINDOWS     # 平台宏
     )
 elseif(UNIX AND NOT APPLE)
     target_compile_definitions(Engine PUBLIC

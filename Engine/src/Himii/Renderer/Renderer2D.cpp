@@ -40,6 +40,13 @@ namespace Himii
         int EntityID;
     };
 
+    struct TextVertex {
+        glm::vec3 Position;
+        glm::vec4 Color;
+        glm::vec2 TexCoord;
+        int EntityID;
+    };
+
     struct Renderer2DData {
         static const uint32_t MaxQuads = 20000;
         static const uint32_t MaxVertices = MaxQuads * 4;
@@ -59,6 +66,10 @@ namespace Himii
         Ref<VertexBuffer> LineVertexBuffer;
         Ref<Shader> LineShader;
 
+        Ref<VertexArray> TextVertexArray;
+        Ref<VertexBuffer> TextVertexBuffer;
+        Ref<Shader> TextShader;
+
         uint32_t QuadIndexCount = 0;
         QuadVertex *QuadVertexBufferBase = nullptr;
         QuadVertex *QuadVertexBufferPtr = nullptr;
@@ -71,6 +82,10 @@ namespace Himii
         LineVertex *LineVertexBufferBase = nullptr;
         LineVertex *LineVertexBufferPtr = nullptr;
 
+        uint32_t TextIndexCount = 0;
+        TextVertex *TextVertexBufferBase = nullptr;
+        TextVertex *TextVertexBufferPtr = nullptr;
+
         float LineWidth = 2.0f;
 
         std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots;
@@ -78,6 +93,7 @@ namespace Himii
 
         glm::vec4 QuadVertexPositions[4];
 
+        Ref<Texture2D> FontAtlasTexture;
 
         Renderer2D::Statistics Stats;
 
@@ -160,6 +176,16 @@ namespace Himii
         s_Data.LineVertexArray->AddVertexBuffer(s_Data.LineVertexBuffer);
         s_Data.LineVertexBufferBase = new LineVertex[s_Data.MaxVertices];
 
+        s_Data.TextVertexArray = VertexArray::Create();
+        s_Data.TextVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(TextVertex));
+
+        s_Data.TextVertexBuffer->SetLayout({{ShaderDataType::Float3, "a_Position"},
+                                            {ShaderDataType::Float4, "a_Color"},
+                                            {ShaderDataType::Float2, "a_TexCoord"},
+                                            {ShaderDataType::Int, "a_EntityID"}});
+        s_Data.TextVertexArray->AddVertexBuffer(s_Data.TextVertexBuffer);
+        s_Data.TextVertexArray->SetIndexBuffer(quadIB); // 完美复用 Quad 的 IndexBuffer！
+        s_Data.TextVertexBufferBase = new TextVertex[s_Data.MaxVertices];
 
         s_Data.WhiteTexture = Texture2D::Create(1, 1);
         uint32_t whiteTextureData = 0xffffffff;
@@ -173,6 +199,7 @@ namespace Himii
         s_Data.QuadShader = Shader::Create("assets/shaders/Renderer2D_Quad.glsl");
         s_Data.CircleShader = Shader::Create("assets/shaders/Renderer2D_Circle.glsl");
         s_Data.LineShader = Shader::Create("assets/shaders/Renderer2D_Line.glsl");
+        s_Data.TextShader = Shader::Create("assets/shaders/Renderer2D_Text.glsl");
 
         s_Data.TextureSlots[0] = s_Data.WhiteTexture;
 
@@ -187,8 +214,8 @@ namespace Himii
     {
         HIMII_PROFILE_FUNCTION();
 
-
         delete[] s_Data.QuadVertexBufferBase;
+        delete[] s_Data.TextVertexBufferBase;
     }
     void Renderer2D::BeginScene(const OrthographicCamera &camera)
     {
@@ -244,6 +271,9 @@ namespace Himii
         s_Data.LineVertexCount = 0;
         s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
 
+        s_Data.TextIndexCount = 0;
+        s_Data.TextVertexBufferPtr = s_Data.TextVertexBufferBase;
+
         s_Data.TextureSlotIndex = 1; // 0 reserved for white texture
     }
 
@@ -287,6 +317,20 @@ namespace Himii
             s_Data.Stats.DrawCalls++;
         }
 
+        if (s_Data.TextIndexCount)
+        {
+            uint32_t dataSize =
+                    (uint32_t)((uint8_t *)s_Data.TextVertexBufferPtr - (uint8_t *)s_Data.TextVertexBufferBase);
+            s_Data.TextVertexBuffer->SetData(s_Data.TextVertexBufferBase, dataSize);
+
+            // 将字体图集绑定到 0 号槽位
+            if (s_Data.FontAtlasTexture)
+                s_Data.FontAtlasTexture->Bind(0);
+
+            s_Data.TextShader->Bind();
+            RenderCommand::DrawIndexed(s_Data.TextVertexArray, s_Data.TextIndexCount);
+            s_Data.Stats.DrawCalls++;
+        }
     }
 
     // Some paths request a new batch when buffers/textures reach capacity
@@ -815,6 +859,121 @@ namespace Himii
                 s_Data.QuadIndexCount += 6;
                 s_Data.Stats.QuadCount++;
             }
+        }
+    }
+
+    void Renderer2D::DrawString(const std::string &string, Ref<Font> font, const glm::mat4 &transform,
+                                const glm::vec4 &color, int entityID)
+    {
+        if (!font || string.empty())
+            return;
+
+        const auto &fontGeometry = font->GetMSDFData()->FontGeometry;
+        const auto &metrics = fontGeometry.getMetrics();
+        Ref<Texture2D> fontAtlas = font->GetAtlasTexture();
+
+        // 字体缩放系数：将字体内部的坐标系缩放，使得 "1个单位 = 1个标准行高"
+        double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
+        double x = 0.0;
+        double y = 0.0;
+
+        const float spaceGlyphAdvance = fontGeometry.getGlyph(' ')->getAdvance();
+
+        for (size_t i = 0; i < string.length(); i++)
+        {
+            char32_t character = string[i];
+
+            // 处理换行符
+            if (character == '\n')
+            {
+                x = 0;
+                y -= fsScale * metrics.lineHeight; // 暂未加入额外的行间距 LineSpacing
+                continue;
+            }
+
+            // 处理空格
+            if (character == ' ')
+            {
+                float advance = spaceGlyphAdvance;
+                if (i < string.length() - 1)
+                {
+                    char32_t nextCharacter = string[i + 1];
+                    double advanceHack;
+                    fontGeometry.getAdvance(advanceHack, character, nextCharacter);
+                    advance = (float)advanceHack;
+                }
+                x += fsScale * advance;
+                continue;
+            }
+
+            // 查找字符数据 (找不到就用问号代替)
+            auto glyph = fontGeometry.getGlyph(character);
+            if (!glyph)
+                glyph = fontGeometry.getGlyph('?');
+            if (!glyph)
+                continue;
+
+            // 1. 获取字符在图集(Atlas)中的 UV 坐标
+            double al, ab, ar, at;
+            glyph->getQuadAtlasBounds(al, ab, ar, at);
+
+            // 转换为 0.0 到 1.0 的 UV 空间
+            glm::vec2 texCoordMin((float)al / fontAtlas->GetWidth(), (float)ab / fontAtlas->GetHeight());
+            glm::vec2 texCoordMax((float)ar / fontAtlas->GetWidth(), (float)at / fontAtlas->GetHeight());
+
+            // 2. 获取字符在平面(Plane)上的几何尺寸
+            double pl, pb, pr, pt;
+            glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+
+            glm::vec2 quadMin((float)pl, (float)pb);
+            glm::vec2 quadMax((float)pr, (float)pt);
+
+            quadMin *= fsScale;
+            quadMax *= fsScale;
+            quadMin += glm::vec2(x, y);
+            quadMax += glm::vec2(x, y);
+
+            // 计算这个字体的四边形大小和中心偏移
+            glm::vec2 size = quadMax - quadMin;
+            glm::vec2 center = (quadMax + quadMin) / 2.0f;
+
+            // 计算这个单字符的绝对 Transform
+            glm::mat4 charTransform = transform * glm::translate(glm::mat4(1.0f), glm::vec3(center, 0.0f)) *
+                                      glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
+
+            // 3. 将这个字符画出来！
+            // ⚠️ 关键点：这里我们需要传自定义的 UV 坐标！
+            glm::vec2 texCoords[4] = {
+                    {texCoordMin.x, texCoordMin.y}, // 左下
+                    {texCoordMax.x, texCoordMin.y}, // 右下
+                    {texCoordMax.x, texCoordMax.y}, // 右上
+                    {texCoordMin.x, texCoordMax.y}  // 左上
+            };
+
+            /*if (s_Data.FontAtlasTexture && *s_Data.FontAtlasTexture != *fontAtlas)
+                NextBatch();*/
+            if (s_Data.TextIndexCount >= Renderer2DData::MaxIndices)
+                NextBatch();
+
+            s_Data.FontAtlasTexture = fontAtlas;
+
+            // 将计算好的 4 个顶点写入 Text 批次缓冲
+            for (size_t v = 0; v < 4; v++)
+            {
+                s_Data.TextVertexBufferPtr->Position = charTransform * s_Data.QuadVertexPositions[v];
+                s_Data.TextVertexBufferPtr->Color = color;
+                s_Data.TextVertexBufferPtr->TexCoord = texCoords[v];
+                s_Data.TextVertexBufferPtr->EntityID = entityID;
+                s_Data.TextVertexBufferPtr++;
+            }
+
+            s_Data.TextIndexCount += 6;
+            s_Data.Stats.QuadCount++;
+
+            // 推进光标 (计算下一个字符的 X 坐标)
+            double advance = glyph->getAdvance();
+            fontGeometry.getAdvance(advance, character, string[i + 1]);
+            x += fsScale * advance; // 暂未加入额外的字间距 Kerning
         }
     }
 

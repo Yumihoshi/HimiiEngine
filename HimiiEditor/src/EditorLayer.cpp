@@ -35,6 +35,10 @@ namespace Himii
                                                 "resources/skybox/front.bmp", "resources/skybox/back.bmp"};
         m_SkyboxTexture = TextureCube::Create(skyboxFaces);
 
+        //m_DefaultFont = CreateRef<Font>("assets/fonts/msyh.ttc");
+        Font::InitDefault("assets/fonts/msyh.ttc");
+        HIMII_CORE_INFO("Default font loaded successfully!");
+
         m_EditorScene = CreateRef<Scene>();
         m_EditorScene->SetSkybox(m_SkyboxTexture);
         m_ActiveScene = m_EditorScene;

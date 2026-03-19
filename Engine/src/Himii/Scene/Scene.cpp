@@ -540,6 +540,7 @@ namespace Himii
         //UI
         CopyComponent<UITransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<UIImageComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+        CopyComponent<UITextComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 
         return newScene;
     }
@@ -592,6 +593,8 @@ namespace Himii
             newEntity.AddComponent<UITransformComponent>(entity.GetComponent<UITransformComponent>());
         if (entity.HasComponent<UIImageComponent>())
             newEntity.AddComponent<UIImageComponent>(entity.GetComponent<UIImageComponent>());
+        if (entity.HasComponent<UITextComponent>())
+            newEntity.AddComponent<UITextComponent>(entity.GetComponent<UITextComponent>());
 
         return newEntity;
     }
@@ -830,22 +833,31 @@ namespace Himii
         Renderer2D::BeginScene(projection, view);
 
         // 3. 获取所有 UI 实体
-        auto viewGrp = m_Registry.group<UITransformComponent,UIImageComponent>();
-        for (auto entity: viewGrp)
-        {
-            auto [transform, image] = viewGrp.get<UITransformComponent, UIImageComponent>(entity);
+        auto viewGrp = m_Registry.view<UITransformComponent,UIImageComponent>();
+        viewGrp.each(
+                [&](auto entity, auto &transform, auto &image)
+                {
+                    glm::mat4 transformMat = transform.GetTransform();
 
-            glm::mat4 transformMat = transform.GetTransform();
-
-            if (image.Texture)
-            {
-                Renderer2D::DrawQuad(transformMat, image.Texture, 1.0f, image.Color,(int)entity);
-            }
-            else
-            {
-                Renderer2D::DrawQuad(transformMat, image.Color, (int)entity);
-            }
-        }
+                    if (image.Texture)
+                    {
+                        Renderer2D::DrawQuad(transformMat, image.Texture, 1.0f, image.Color, (int)entity);
+                    }
+                    else
+                    {
+                        Renderer2D::DrawQuad(transformMat, image.Color, (int)entity);
+                    }
+                });
+        auto textView = m_Registry.view<UITransformComponent, UITextComponent>();
+        textView.each(
+                [&](auto entity, auto &transform, auto &text)
+                {
+                    if (text.FontAsset)
+                    {
+                        Renderer2D::DrawString(text.TextString, text.FontAsset, transform.GetTransform(), text.Color,
+                                               (int)entity);
+                    }
+                });
 
         Renderer2D::EndScene();
 
@@ -941,6 +953,10 @@ namespace Himii
     }
     template<>
     void Scene::OnComponentAdded<UIImageComponent>(Entity entity, UIImageComponent &component)
+    {
+    }
+    template<>
+    void Scene::OnComponentAdded<UITextComponent>(Entity entity, UITextComponent &component)
     {
     }
 

@@ -22,6 +22,7 @@ namespace Himii
         static void Init(bool toFile = false, const std::string &filePath = "log.txt");
 
         static void Print(LogLevel level, const std::string &message, const char *file, const char *function, int line);
+        static void PrintMessage(LogLevel level, const std::string &message, const std::string &source = "Engine");
 
         template<typename... Args>
         static void PrintFormatted(LogLevel level, const char *file, const char *function, int line,

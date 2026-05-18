@@ -6,7 +6,7 @@ namespace Himii
     public static class InternalCalls
     {
         // delegate definitions
-        internal delegate void LogFuncDelegate(IntPtr msg);
+        internal delegate void LogFuncDelegate(int level, IntPtr msg);
 
         // Interop 注意：不要直接用 bool 作为返回值（跨语言 ABI 容易踩坑）
         // 这里用 byte (0/1) 更稳

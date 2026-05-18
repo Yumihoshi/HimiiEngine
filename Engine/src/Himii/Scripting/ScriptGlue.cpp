@@ -10,6 +10,7 @@
 #include "Himii/Project/Project.h"
 #include "Himii/Core/Input.h"
 #include "Himii/Core/KeyCodes.h"
+#include "Himii/Core/Log.h"
 #include <iostream>
 
 namespace Himii {
@@ -27,10 +28,12 @@ namespace Himii {
         return true;
     }
 
-	static void NativeLog(char* message)
+	static void NativeLog(int level, char* message)
 	{
-		if (message)
-            HIMII_INFO("{0}", message); 
+		if (!message)
+			return;
+
+		Log::PrintMessage(static_cast<LogLevel>(level), message, "Script");
 	}
 
     static uint64_t Scene_CreatEntity(char* name)

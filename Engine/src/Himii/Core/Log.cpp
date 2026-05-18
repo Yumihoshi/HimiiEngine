@@ -1,4 +1,5 @@
 #include "Log.h"
+#include "ConsoleLog.h"
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <vector>
@@ -62,15 +63,33 @@ namespace Himii
         }
     }
 
+    void Log::PrintMessage(LogLevel level, const std::string &message, const std::string &source)
+    {
+        const bool isCore = (level == LogLevel::Core_Trace || level == LogLevel::Core_Info ||
+                             level == LogLevel::Core_Warning || level == LogLevel::Core_Error);
+
+        std::string formatted = fmt::format("[{}] {}", source, message);
+
+        if (isCore && s_CoreLogger)
+            s_CoreLogger->log(ConvertLogLevel(level), formatted);
+        else if (s_ClientLogger)
+            s_ClientLogger->log(ConvertLogLevel(level), formatted);
+
+        ConsoleLog::Push(level, message, source);
+    }
+
     void Log::Print(LogLevel level, const std::string &message, const char *file, const char *function, int line)
     {
         std::string fileName = GetFileName(file);
         std::string fullMessage = fmt::format("[{}:{} {}] {}", fileName, line, function, message);
 
-        auto &logger = (level == LogLevel::Core_Info || level == LogLevel::Core_Warning || level == LogLevel::Core_Error)
-            ? s_CoreLogger
-            : s_ClientLogger;
+        auto &logger = (level == LogLevel::Core_Trace || level == LogLevel::Core_Info ||
+                        level == LogLevel::Core_Warning || level == LogLevel::Core_Error)
+                           ? s_CoreLogger
+                           : s_ClientLogger;
         logger->log(ConvertLogLevel(level), fullMessage);
+
+        ConsoleLog::Push(level, fullMessage, "Engine");
     }
 
     void Log::Assert(bool condition, const std::string &message, const char *file, const char *function, int line)

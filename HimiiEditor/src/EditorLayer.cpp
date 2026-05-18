@@ -1,5 +1,6 @@
 #include "EditorLayer.h"
 #include "imgui.h"
+#include "Himii/Core/ConsoleLog.h"
 #include "Himii/Scripting/ScriptEngine.h"
 #include "Himii/Scripting/ScriptCompiler.h"
 #include "Himii/Scripting/ScriptIDELauncher.h"
@@ -304,6 +305,7 @@ namespace Himii
                     ImGui::MenuItem("TileMap Editor", nullptr, &m_ShowTileMapEditor);
                     ImGui::MenuItem("Particle Emitter Editor", nullptr, &m_ShowParticleEmitterEditor);
                     ImGui::MenuItem("Script Console", nullptr, &m_ShowScriptConsole);
+                    ImGui::MenuItem("Console", nullptr, &m_ShowConsole);
                     ImGui::MenuItem("Show Grid", nullptr, &m_ShowGrid);
                     ImGui::EndMenu();
                 }
@@ -328,6 +330,8 @@ namespace Himii
             m_ContentBrowserPanel.OnImGuiRender();
             if (m_ShowScriptConsole)
                 m_ScriptConsolePanel.OnImGuiRender(&m_ShowScriptConsole);
+            if (m_ShowConsole)
+                m_ConsolePanel.OnImGuiRender(&m_ShowConsole);
             if (m_ShowEditorPreferences)
                 m_EditorPreferencesPanel.OnImGuiRender(&m_ShowEditorPreferences);
             if (m_ShowProjectSettings)
@@ -1254,6 +1258,8 @@ namespace Himii
     {
         if (m_SceneState == SceneState::Simulate)
             OnSceneStop();
+
+        ConsoleLog::Clear();
 
         m_SceneState = SceneState::Play;
 

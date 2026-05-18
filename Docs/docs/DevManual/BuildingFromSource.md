@@ -21,6 +21,13 @@ cmake --preset x64-debug
 cmake --build build/x64-debug --target HimiiEditor -j 8
 ```
 
+Release 构建示例：
+
+```powershell
+cmake --preset x64-release
+cmake --build --preset build-x64-release-win --config Release
+```
+
 ### 方式二：Python 脚本
 
 ```powershell
@@ -45,12 +52,29 @@ python build.py debug
 - 可执行文件：`${CMAKE_BINARY_DIR}/bin/<TargetName>/<Config>/`
 - 静态库 Engine：`${CMAKE_BINARY_DIR}/lib/Engine/<Config>/`
 
-示例（Windows Debug）：
+示例（Windows）：
 
-- `build/x64-debug/bin/HimiiEditor/Debug/HimiiEditor.exe`
-- `build/x64-debug/bin/HimiiRuntime/Debug/HimiiRuntime.exe`
+| 配置 | 编辑器 | 运行时 |
+|------|--------|--------|
+| Debug | `build/x64-debug/bin/HimiiEditor/Debug/HimiiEditor.exe` | `build/x64-debug/bin/HimiiRuntime/Debug/HimiiRuntime.exe` |
+| Release | `build/x64-release/bin/HimiiEditor/Release/HimiiEngine.exe` | `build/x64-release/bin/HimiiRuntime/Release/HimiiRuntime.exe` |
+
+Release 下编辑器目标在 CMake 中仍名为 `HimiiEditor`，输出文件名称为 `HimiiEngine.exe`。
 
 Post-build 会将 `assets`、`resources`、`ScriptCore.dll` 等拷贝到 HimiiEditor 输出目录。
+
+## 运行 HimiiRuntime（本地构建）
+
+在完整构建 HimiiRuntime 目标后，可从输出目录启动：
+
+```text
+build/x64-debug/bin/HimiiRuntime/Debug/HimiiRuntime.exe --project "D:\path\to\YourProject\YourProject.hproj"
+```
+
+- 使用 `--project` 指定 `.hproj` 文件路径。
+- 未指定 `--project` 时，在 **HimiiRuntime 可执行文件所在目录** 查找 `.hproj` 文件。
+
+运行前请确认该目录下已有 `ScriptCore.dll`、`ScriptCore.runtimeconfig.json` 以及项目所需的 `assets`（与编辑器 Post-build 拷贝规则相同）。
 
 ## 故障排除
 

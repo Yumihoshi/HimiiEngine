@@ -36,6 +36,13 @@ endif()
 
 himii_set_output_dirs(HimiiEditor)
 
+# Release 分发包对外文件名为 HimiiEngine.exe（与 Godot 根目录单入口一致）
+set_target_properties(HimiiEditor PROPERTIES
+    OUTPUT_NAME_RELEASE "HimiiEngine"
+    OUTPUT_NAME_RELWITHDEBINFO "HimiiEngine"
+    OUTPUT_NAME_MINSIZEREL "HimiiEngine"
+)
+
 set(SCRIPT_CORE_BUILD_DIR "${CMAKE_SOURCE_DIR}/ScriptCore/bin/$<IF:$<CONFIG:Debug>,Debug,Release>/net8.0")
 
 # Copy font assets to the executable output directory so the runtime can

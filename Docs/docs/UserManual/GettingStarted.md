@@ -1,21 +1,49 @@
 # 快速开始 (Getting Started)
 
-欢迎使用 HimiiEngine！本指南将帮助您快速搭建开发环境并创建第一个项目。
+欢迎使用 HimiiEngine。本指南帮助你在本地构建引擎并创建第一个项目。
 
-## 1. 安装
+## 1. 获取引擎（源码构建）
 
-目前 HimiiEngine 需要从源码构建。请参考开发者手册中的 [源码构建](../DevManual/BuildingFromSource.md) 章节。
-（未来版本将提供预构建的安装包）
+当前请从源码构建 HimiiEngine。完整步骤见开发者手册中的 [源码构建](../DevManual/BuildingFromSource.md)。
 
-## 2. 创建新项目
+简要前置要求：
 
-1.  启动 **HimiiEditor**。
-2.  在页面上侧选择 "File / New Project "。
-3.  输入项目名称和保存路径。
-4.  点击 "保存"。
+- Windows 10/11（Linux 见仓库 README）
+- Visual Studio 2022（「使用 C++ 的桌面开发」工作负载）
+- CMake 3.12+
+- .NET 8 SDK
+- Git（建议 `git clone --recursive` 以包含 vcpkg 子模块）
 
-## 3. 运行示例场景
+构建编辑器（Debug 示例）：
 
-1.  在 **Content Browser** 面板中，导航到 `Assets/Scenes`。
-2.  双击 `Example.himii` 场景文件。
-3.  点击工具栏上的 **Play** 图标（绿色三角形）开始运行。
+```powershell
+cmake --preset x64-debug
+cmake --build build/x64-debug --target HimiiEditor -j 8
+```
+
+也可使用 `python build.py debug` 或 `build_py.bat`。
+
+## 2. 启动编辑器
+
+构建完成后，运行 HimiiEditor 可执行文件，例如：
+
+`build/x64-debug/bin/HimiiEditor/Debug/HimiiEditor.exe`
+
+也可在 Visual Studio 中将 **HimiiEditor** 设为启动项目并调试运行。
+
+说明：编辑器界面与菜单中的名称为 **HimiiEditor**；Release 配置下生成的可执行文件名为 `HimiiEngine.exe`，路径为 `build/x64-release/bin/HimiiEditor/Release/HimiiEngine.exe`。
+
+首次运行前需成功构建 **ScriptCore**（构建 HimiiEditor 时通常会通过 `ScriptCore_Build` 目标自动完成）。
+
+## 3. 创建新项目
+
+1. 启动 HimiiEditor。
+2. 在窗口上方菜单选择 **File → New Project**。
+3. 输入项目名称与保存路径。
+4. 确认保存。
+
+## 4. 在编辑器中运行场景
+
+1. 在 **Content Browser** 中进入项目的 `assets/scenes` 目录。
+2. 双击要编辑的 `.himii` 场景文件。
+3. 点击工具栏上的 **Play**（绿色三角形）在编辑器内运行当前场景。

@@ -7,6 +7,40 @@ namespace Himii
 {
     public static class ReflectionBridge
     {
+        private static FieldInfo GetInstanceField(Type type, string fieldName)
+        {
+            return type.GetField(fieldName,
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        }
+
+        private static bool HasSerializeFieldAttribute(FieldInfo field)
+        {
+            foreach (object attribute in field.GetCustomAttributes(inherit: true))
+            {
+                Type attributeType = attribute.GetType();
+                if (attributeType.Namespace != "Himii")
+                    continue;
+
+                string attributeName = attributeType.Name;
+                if (attributeName == "SerializeField" || attributeName == "SerializeFieldAttribute")
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static IEnumerable<FieldInfo> GetSerializedFields(Type type)
+        {
+            foreach (FieldInfo field in type.GetFields(BindingFlags.Public | BindingFlags.Instance))
+                yield return field;
+
+            foreach (FieldInfo field in type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance))
+            {
+                if (HasSerializeFieldAttribute(field))
+                    yield return field;
+            }
+        }
+
         [UnmanagedCallersOnly]
         public static IntPtr GetFields(IntPtr instanceHandle)
         {
@@ -20,15 +54,9 @@ namespace Himii
                 object instance = handle.Target;
                 Type type = instance.GetType();
 
-                FieldInfo[] fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
-
                 List<string> fieldList = new List<string>();
-                foreach (var field in fields)
-                {
-                    // 过滤掉不支持的类型，防止后续 GetValue 崩溃
-                    // 或者全部返回，让 C++ 决定是否显示
+                foreach (FieldInfo field in GetSerializedFields(type))
                     fieldList.Add($"{field.Name}:{field.FieldType.Name}");
-                }
 
                 string result = string.Join(";", fieldList);
                 return Marshal.StringToCoTaskMemUTF8(result);
@@ -129,7 +157,7 @@ namespace Himii
             if (instance == null) return false;
 
             string fieldName = Marshal.PtrToStringUTF8(fieldNamePtr);
-            FieldInfo field = instance.GetType().GetField(fieldName);
+            FieldInfo field = GetInstanceField(instance.GetType(), fieldName);
 
             if (field == null)
                 return false;
@@ -160,7 +188,7 @@ namespace Himii
             if (instance == null) return;
 
             string fieldName = Marshal.PtrToStringUTF8(fieldNamePtr);
-            FieldInfo field = instance.GetType().GetField(fieldName);
+            FieldInfo field = GetInstanceField(instance.GetType(), fieldName);
 
             if (field == null)
                 return;
@@ -261,7 +289,7 @@ namespace Himii
                 if (instance == null) return 0;
 
                 string fieldName = Marshal.PtrToStringUTF8(fieldNamePtr);
-                FieldInfo field = instance.GetType().GetField(fieldName);
+                FieldInfo field = GetInstanceField(instance.GetType(), fieldName);
                 if (field == null || field.FieldType != typeof(Entity))
                     return 0;
 
@@ -289,7 +317,7 @@ namespace Himii
                 if (instance == null) return;
 
                 string fieldName = Marshal.PtrToStringUTF8(fieldNamePtr);
-                FieldInfo field = instance.GetType().GetField(fieldName);
+                FieldInfo field = GetInstanceField(instance.GetType(), fieldName);
                 if (field == null || field.FieldType != typeof(Entity))
                     return;
 
@@ -316,7 +344,7 @@ namespace Himii
                 string fieldName = Marshal.PtrToStringUTF8(fieldNamePtr);
                 string value = Marshal.PtrToStringUTF8(valuePtr) ?? string.Empty;
 
-                FieldInfo field = instance.GetType().GetField(fieldName);
+                FieldInfo field = GetInstanceField(instance.GetType(), fieldName);
                 if (field != null && field.FieldType == typeof(string))
                 {
                     field.SetValue(instance, value);

@@ -108,16 +108,23 @@ public override void OnCollisionExit2D(Collision2DInfo collision)
 
 ## Inspector 脚本字段
 
-在脚本类中声明 **public 实例字段**，可在属性面板中编辑并随场景 YAML 保存：
+在脚本类中声明 **public 实例字段**，或使用 `[SerializeField]` 标记 **private 实例字段**，可在属性面板中编辑并随场景 YAML 保存：
 
 ```csharp
 public float Speed = 5.0f;
 public Entity Target;  // 引用场景中另一实体（UUID）
+
+[SerializeField]
+private float hiddenSpeed = 3.0f;  // private 字段，Inspector 可见
 ```
+
+新建项目的 `GameAssembly.csproj` 已包含 `<Using Include="Himii" />`，一般可直接写 `[SerializeField]` 而无需手写 `using Himii;`。
+
+`[SerializeField]` 定义在 `assets/scripts/Himii/SerializeField.cs`（由引擎同步到游戏项目），以便 IDE 对特性名补全；其余 API 仍来自 `ScriptCore.dll`。
 
 - 支持类型：数值、布尔、`Vector2/3/4`、`string`、`KeyCode`、`Entity` 等（与引擎 `ReflectionBridge` 一致）。
 - 修改后保存场景即可持久化。
-- `[SerializeField]` 与 private 字段尚未支持。
+- 已支持 `[SerializeField]` 标记 private 字段；不支持 static 或属性（Property）。
 
 ## 相关文档
 

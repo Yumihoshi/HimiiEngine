@@ -39,6 +39,7 @@ namespace Himii
         Entity CreateUIEntityWithUUID(UUID uuid, const std::string &name);
 
         void DestroyEntity(entt::entity e);
+        void ClearEntities();
 
         entt::registry &Registry()
         {

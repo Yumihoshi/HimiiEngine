@@ -6,6 +6,8 @@
 #include "Himii/Scene/Scene.h"
 #include "Himii/Scene/Components.h"
 #include "Himii/Scene/TileMapData.h"
+#include "Himii/Scene/SceneSerializer.h"
+#include "Himii/Project/Project.h"
 #include "Himii/Asset/AssetManager.h"
 #include "Himii/Project/Project.h"
 #include "Himii/Core/Input.h"
@@ -371,6 +373,72 @@ namespace Himii {
          *outHit = scene->Raycast2D(*start, *end);
     }
 
+    static float Time_GetDeltaTime()
+    {
+        return ScriptEngine::GetScriptDeltaTime();
+    }
+
+    static void SpriteRenderer_GetColor(uint64_t entityID, glm::vec4* outColor)
+    {
+        if (!outColor)
+            return;
+
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (entity && entity.HasComponent<SpriteRendererComponent>())
+            *outColor = entity.GetComponent<SpriteRendererComponent>().Color;
+    }
+
+    static void SpriteRenderer_SetColor(uint64_t entityID, const glm::vec4* color)
+    {
+        if (!color)
+            return;
+
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (entity && entity.HasComponent<SpriteRendererComponent>())
+            entity.GetComponent<SpriteRendererComponent>().Color = *color;
+    }
+
+    static void SceneManager_LoadScene(const char* scenePath)
+    {
+        if (!scenePath || scenePath[0] == '\0')
+            return;
+
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        std::filesystem::path fullPath = Project::GetActive()
+            ? Project::GetAssetFileSystemPath(scenePath)
+            : std::filesystem::path(scenePath);
+
+        if (!std::filesystem::exists(fullPath))
+        {
+            HIMII_CORE_ERROR("SceneManager.LoadScene: file not found: {0}", fullPath.string());
+            return;
+        }
+
+        ScriptEngine::OnRuntimeStop();
+        scene->ClearEntities();
+
+        Ref<Scene> sceneReference(scene, [](Scene*) {});
+        SceneSerializer serializer(sceneReference);
+        if (!serializer.Deserialize(fullPath.string()))
+        {
+            HIMII_CORE_ERROR("SceneManager.LoadScene: failed to deserialize: {0}", fullPath.string());
+            return;
+        }
+
+        scene->OnRuntimeStart();
+    }
+
     ScriptEngineData ScriptGlue::GetNativeFunctions()
     {
         ScriptEngineData data;
@@ -410,6 +478,11 @@ namespace Himii {
         data.Tilemap_SetTile = (void *)&Tilemap_SetTile;
 
         data.Physics2D_Raycast = (void *)&Physics2D_Raycast;
+
+        data.Time_GetDeltaTime = (void *)&Time_GetDeltaTime;
+        data.SceneManager_LoadScene = (void *)&SceneManager_LoadScene;
+        data.SpriteRenderer_GetColor = (void *)&SpriteRenderer_GetColor;
+        data.SpriteRenderer_SetColor = (void *)&SpriteRenderer_SetColor;
 
         return data;
     }

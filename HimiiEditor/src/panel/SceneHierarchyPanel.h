@@ -6,12 +6,15 @@
 
 namespace Himii
 {
+    class EditorCommandHistory;
+
     class SceneHierarchyPanel {
     public:
         SceneHierarchyPanel();
         SceneHierarchyPanel(const Ref<Scene> &context);
 
         void SetContext(const Ref<Scene> &context);
+        void SetCommandHistory(EditorCommandHistory* commandHistory);
 
         void OnImGuiRender();
 
@@ -51,5 +54,9 @@ namespace Himii
         std::unordered_map<std::string, Ref<Texture2D>> m_ComponentIcons;
         AssetHandle m_TileMapEditorRequest = 0;
         AssetHandle m_ParticleEmitterEditorRequest = 0;
+
+        EditorCommandHistory* m_CommandHistory = nullptr;
+
+        std::string m_TagEditStartValue;
     };
 }

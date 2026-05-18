@@ -37,6 +37,7 @@ namespace Himii
     static hostfxr_handle cxt = nullptr;
 
     Scene *ScriptEngine::s_SceneContext = nullptr;
+    static float s_ScriptDeltaTime = 0.0f;
     std::unordered_map<UUID, void *> ScriptEngine::s_EntityInstanceMap;
 
     typedef void(CORECLR_DELEGATE_CALLTYPE *LoadAssemblyFn)(const char *filepath);
@@ -463,12 +464,19 @@ namespace Himii
 
     void ScriptEngine::OnUpdateScript(Entity entity, Timestep ts)
     {
+        s_ScriptDeltaTime = ts.GetSeconds();
+
         if (!entity.HasComponent<ScriptComponent>())
             return;
 
         void *handle = GetEntityScriptInstance(entity.GetUUID());
         if (handle && s_OnUpdateInstance)
             s_OnUpdateInstance(handle, ts.GetSeconds());
+    }
+
+    float ScriptEngine::GetScriptDeltaTime()
+    {
+        return s_ScriptDeltaTime;
     }
 
     bool ScriptEngine::EntityClassExists(const std::string &fullClassName)

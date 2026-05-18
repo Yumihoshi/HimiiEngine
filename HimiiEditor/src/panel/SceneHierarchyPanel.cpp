@@ -1,4 +1,6 @@
 #include "SceneHierarchyPanel.h"
+#include "commands/EditorCommandHistory.h"
+#include "commands/EditorCommands.h"
 #include "Himii/Project/Project.h"
 
 #include "Himii/Scripting/ScriptEngine.h"
@@ -7,11 +9,16 @@
 #include "Himii/Scene/TileMapData.h"
 #include "Himii/Scene/ParticleEmitterAsset.h"
 #include "Himii/Asset/AssetSerializer.h"
+#include "Himii/Asset/AssetManager.h"
+#include "Himii/Core/Log.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <misc/cpp/imgui_stdlib.h>
 #include <filesystem>
+#include <algorithm>
+#include <cctype>
+#include <functional>
 #include <sstream>
 
 #include <glm/gtc/type_ptr.hpp>
@@ -44,6 +51,11 @@ namespace Himii
     {
         m_Context = context;
     }
+
+    void SceneHierarchyPanel::SetCommandHistory(EditorCommandHistory* commandHistory)
+    {
+        m_CommandHistory = commandHistory;
+    }
     void SceneHierarchyPanel::OnImGuiRender()
     {
         ImGui::Begin("Scene Hierarchy", nullptr, ImGuiWindowFlags_NoCollapse);
@@ -62,26 +74,82 @@ namespace Himii
         {
             if (ImGui::MenuItem("Create Empty Entity"))
             {
-                m_Context->CreateEntity("Empty Entity");
+                if (m_CommandHistory)
+                {
+                    m_CommandHistory->Execute(std::make_unique<CreateEntityCommand>(
+                        m_Context,
+                        [](const Ref<Scene>& scene) { return scene->CreateEntity("Empty Entity"); }));
+                }
+                else
+                    m_Context->CreateEntity("Empty Entity");
             }
             if (ImGui::MenuItem("Create UI Entty"))
             {
-                m_Context->CreateUIEntity("Empty UI Entity");
+                if (m_CommandHistory)
+                {
+                    m_CommandHistory->Execute(std::make_unique<CreateEntityCommand>(
+                        m_Context,
+                        [](const Ref<Scene>& scene) { return scene->CreateUIEntity("Empty UI Entity"); }));
+                }
+                else
+                    m_Context->CreateUIEntity("Empty UI Entity");
             }
             if (ImGui::MenuItem("Create Cube"))
             {
-                auto entity = m_Context->CreateEntity("Cube");
-                entity.AddComponent<MeshComponent>().Type = MeshComponent::MeshType::Cube;
+                if (m_CommandHistory)
+                {
+                    m_CommandHistory->Execute(std::make_unique<CreateEntityCommand>(
+                        m_Context,
+                        [](const Ref<Scene>& scene)
+                        {
+                            Entity entity = scene->CreateEntity("Cube");
+                            entity.AddComponent<MeshComponent>().Type = MeshComponent::MeshType::Cube;
+                            return entity;
+                        }));
+                }
+                else
+                {
+                    auto entity = m_Context->CreateEntity("Cube");
+                    entity.AddComponent<MeshComponent>().Type = MeshComponent::MeshType::Cube;
+                }
             }
             if (ImGui::MenuItem("Create Sphere"))
             {
-                auto entity = m_Context->CreateEntity("Sphere");
-                entity.AddComponent<MeshComponent>().Type = MeshComponent::MeshType::Sphere;
+                if (m_CommandHistory)
+                {
+                    m_CommandHistory->Execute(std::make_unique<CreateEntityCommand>(
+                        m_Context,
+                        [](const Ref<Scene>& scene)
+                        {
+                            Entity entity = scene->CreateEntity("Sphere");
+                            entity.AddComponent<MeshComponent>().Type = MeshComponent::MeshType::Sphere;
+                            return entity;
+                        }));
+                }
+                else
+                {
+                    auto entity = m_Context->CreateEntity("Sphere");
+                    entity.AddComponent<MeshComponent>().Type = MeshComponent::MeshType::Sphere;
+                }
             }
             if (ImGui::MenuItem("Create Capsule"))
             {
-                auto entity = m_Context->CreateEntity("Capsule");
-                entity.AddComponent<MeshComponent>().Type = MeshComponent::MeshType::Capsule;
+                if (m_CommandHistory)
+                {
+                    m_CommandHistory->Execute(std::make_unique<CreateEntityCommand>(
+                        m_Context,
+                        [](const Ref<Scene>& scene)
+                        {
+                            Entity entity = scene->CreateEntity("Capsule");
+                            entity.AddComponent<MeshComponent>().Type = MeshComponent::MeshType::Capsule;
+                            return entity;
+                        }));
+                }
+                else
+                {
+                    auto entity = m_Context->CreateEntity("Capsule");
+                    entity.AddComponent<MeshComponent>().Type = MeshComponent::MeshType::Capsule;
+                }
             }
             ImGui::EndPopup();
         }
@@ -145,14 +213,27 @@ namespace Himii
 
         if (entityDeleted)
         {
-            m_Context->DestroyEntity(entity);
+            if (m_CommandHistory)
+            {
+                auto onEntityRestored = [this](Entity restoredEntity)
+                {
+                    m_SelectionContext = restoredEntity;
+                };
+                m_CommandHistory->Execute(
+                    std::make_unique<DeleteEntityCommand>(m_Context, entity, onEntityRestored));
+            }
+            else
+                m_Context->DestroyEntity(entity);
+
             if (m_SelectionContext == entity)
                 m_SelectionContext = {};
         }
     }
 
     static void DrawVec3Control(const std::string &label, glm::vec3 &values, float resetValue = 0.0f,
-                                float columnWidth = 100.0f)
+                                float columnWidth = 100.0f,
+                                const std::function<void()>& onEditBegin = nullptr,
+                                const std::function<void()>& onEditEnd = nullptr)
     {
         ImGuiIO &io = ImGui::GetIO();
         auto boldFont = io.Fonts->Fonts[0];
@@ -190,6 +271,10 @@ namespace Himii
              ImGui::SameLine();
              ImGui::SetNextItemWidth(widthEach);
              ImGui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f");
+             if (ImGui::IsItemActivated() && onEditBegin)
+                 onEditBegin();
+             if (ImGui::IsItemDeactivatedAfterEdit() && onEditEnd)
+                 onEditEnd();
              ImGui::SameLine();
 
              // Y
@@ -205,6 +290,10 @@ namespace Himii
              ImGui::SameLine();
              ImGui::SetNextItemWidth(widthEach);
              ImGui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f");
+             if (ImGui::IsItemActivated() && onEditBegin)
+                 onEditBegin();
+             if (ImGui::IsItemDeactivatedAfterEdit() && onEditEnd)
+                 onEditEnd();
              ImGui::SameLine();
 
              // Z
@@ -220,12 +309,150 @@ namespace Himii
              ImGui::SameLine();
              ImGui::SetNextItemWidth(widthEach);
              ImGui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f");
+             if (ImGui::IsItemActivated() && onEditBegin)
+                 onEditBegin();
+             if (ImGui::IsItemDeactivatedAfterEdit() && onEditEnd)
+                 onEditEnd();
 
              ImGui::PopStyleVar();
 
              ImGui::EndTable();
         }
 
+        ImGui::PopID();
+    }
+
+    static bool IsImageFileExtension(const std::filesystem::path& filePath)
+    {
+        std::string extension = filePath.extension().string();
+        std::transform(extension.begin(), extension.end(), extension.begin(),
+                       [](unsigned char character) { return static_cast<char>(std::tolower(character)); });
+        return extension == ".png" || extension == ".jpg" || extension == ".jpeg" || extension == ".bmp"
+               || extension == ".tga";
+    }
+
+    static bool AssignTextureFromContentBrowserPayload(const ImGuiPayload* payload, Ref<Texture2D>& texture,
+                                                      AssetHandle& textureHandle)
+    {
+        if (!payload)
+            return false;
+
+        const wchar_t* relativePathWide = static_cast<const wchar_t*>(payload->Data);
+        std::filesystem::path relativePath(relativePathWide);
+        std::filesystem::path textureFilePath = Project::GetAssetDirectory() / relativePath;
+
+        if (!std::filesystem::exists(textureFilePath))
+        {
+            HIMII_CORE_WARNING("Texture not found: {0}", textureFilePath.string());
+            return false;
+        }
+
+        if (!IsImageFileExtension(textureFilePath))
+        {
+            HIMII_CORE_WARNING("Not an image file: {0}", textureFilePath.string());
+            return false;
+        }
+
+        auto assetManager = Project::GetAssetManager();
+        if (assetManager)
+        {
+            AssetHandle importedHandle = assetManager->ImportAsset(relativePath);
+            if (importedHandle != 0)
+            {
+                textureHandle = importedHandle;
+                Ref<Asset> asset = assetManager->GetAsset(importedHandle);
+                if (asset)
+                    texture = std::static_pointer_cast<Texture2D>(asset);
+                else
+                    texture = Texture2D::Create(textureFilePath.string());
+                return true;
+            }
+        }
+
+        texture = Texture2D::Create(textureFilePath.string());
+        textureHandle = 0;
+        return true;
+    }
+
+    static ImVec2 ComputeTextureThumbnailSize(const Ref<Texture2D>& texture, float maximumSize)
+    {
+        if (!texture || texture->GetWidth() == 0 || texture->GetHeight() == 0)
+            return ImVec2(maximumSize, maximumSize);
+
+        const float aspectRatio =
+            static_cast<float>(texture->GetWidth()) / static_cast<float>(texture->GetHeight());
+
+        float displayWidth = maximumSize;
+        float displayHeight = displayWidth / aspectRatio;
+
+        if (displayHeight > maximumSize)
+        {
+            displayHeight = maximumSize;
+            displayWidth = displayHeight * aspectRatio;
+        }
+
+        return ImVec2(displayWidth, displayHeight);
+    }
+
+    static void DrawTextureAssignControl(const char* label, Ref<Texture2D>& texture, AssetHandle& textureHandle)
+    {
+        constexpr float maximumThumbnailSize = 96.0f;
+
+        ImGui::PushID(label);
+        if (ImGui::BeginTable("##TextureAssign", 2,
+                              ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingFixedFit))
+        {
+            ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
+            ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableNextColumn();
+            ImGui::Text("%s", label);
+            ImGui::TableNextColumn();
+
+            ImGui::PushItemWidth(-1);
+
+            auto drawDragDropTarget = [&]()
+            {
+                if (ImGui::BeginDragDropTarget())
+                {
+                    if (const ImGuiPayload* payload =
+                            ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+                    {
+                        AssignTextureFromContentBrowserPayload(payload, texture, textureHandle);
+                    }
+                    ImGui::EndDragDropTarget();
+                }
+            };
+
+            if (texture)
+            {
+                const ImVec2 thumbnailSize = ComputeTextureThumbnailSize(texture, maximumThumbnailSize);
+                ImGui::Image((ImTextureID)(intptr_t)texture->GetRendererID(), thumbnailSize,
+                             ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+                drawDragDropTarget();
+
+                const std::string fileName =
+                    std::filesystem::path(texture->GetPath()).filename().string();
+                ImGui::TextWrapped("%s", fileName.c_str());
+
+                if (textureHandle != 0)
+                    ImGui::TextDisabled("Handle: %llu", static_cast<uint64_t>(textureHandle));
+
+                if (ImGui::Button("Clear Texture", ImVec2(-1, 0)))
+                {
+                    texture = nullptr;
+                    textureHandle = 0;
+                }
+            }
+            else
+            {
+                ImGui::Button("Drop Texture Here",
+                              ImVec2(maximumThumbnailSize, maximumThumbnailSize));
+                drawDragDropTarget();
+            }
+
+            ImGui::PopItemWidth();
+            ImGui::EndTable();
+        }
         ImGui::PopID();
     }
 
@@ -391,9 +618,20 @@ namespace Himii
             memset(buffer, 0, sizeof(buffer));
 
             strcat(buffer, tag.c_str());
+            std::string tagBeforeInput = tag;
             if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
-            {
                 tag = std::string(buffer);
+
+            if (ImGui::IsItemActivated())
+                m_TagEditStartValue = tagBeforeInput;
+
+            if (ImGui::IsItemDeactivatedAfterEdit() && m_CommandHistory)
+            {
+                if (tag != m_TagEditStartValue)
+                {
+                    m_CommandHistory->Execute(std::make_unique<ModifyEntityTagCommand>(
+                        m_Context, entity.GetUUID(), m_TagEditStartValue, tag));
+                }
             }
         }
         ImGui::SameLine();
@@ -423,14 +661,48 @@ namespace Himii
             ImGui::EndPopup();
         }
 
+        const UUID entityIdentifier = entity.GetUUID();
         DrawComponent<TransformComponent>("Transform", entity, m_ComponentIcons["Transform"],
-                                          [](auto &component)
+                                          [this, entityIdentifier](auto &component)
                                           {
-                                              DrawVec3Control("Position", component.Position);
+                                              TransformComponent transformBeforeEdit = component;
+                                              bool transformEditCaptured = false;
+
+                                              auto beginTransformEdit = [&]()
+                                              {
+                                                  if (!transformEditCaptured)
+                                                  {
+                                                      transformBeforeEdit = component;
+                                                      transformEditCaptured = true;
+                                                  }
+                                              };
+
+                                              auto endTransformEdit = [&]()
+                                              {
+                                                  if (!transformEditCaptured || !m_CommandHistory)
+                                                      return;
+
+                                                  TransformComponent transformAfterEdit = component;
+                                                  if (transformBeforeEdit.Position != transformAfterEdit.Position
+                                                      || transformBeforeEdit.Rotation != transformAfterEdit.Rotation
+                                                      || transformBeforeEdit.Scale != transformAfterEdit.Scale)
+                                                  {
+                                                      m_CommandHistory->Execute(
+                                                          std::make_unique<ModifyTransformCommand>(
+                                                              m_Context, entityIdentifier, transformBeforeEdit,
+                                                              transformAfterEdit));
+                                                  }
+                                                  transformEditCaptured = false;
+                                              };
+
+                                              DrawVec3Control("Position", component.Position, 0.0f, 100.0f,
+                                                              beginTransformEdit, endTransformEdit);
                                               glm::vec3 rotation = glm::degrees(component.Rotation);
-                                              DrawVec3Control("Rotation", rotation);
+                                              DrawVec3Control("Rotation", rotation, 0.0f, 100.0f,
+                                                              beginTransformEdit, endTransformEdit);
                                               component.Rotation = glm::radians(rotation);
-                                              DrawVec3Control("Scale", component.Scale, 1.0f);
+                                              DrawVec3Control("Scale", component.Scale, 1.0f, 100.0f,
+                                                              beginTransformEdit, endTransformEdit);
                                           });
 
         DrawComponent<CameraComponent>("Camera", entity, m_ComponentIcons["Camera"],
@@ -857,37 +1129,7 @@ namespace Himii
                 [](auto &component)
                 {
                     DrawColorControl("Color", component.Color);
-                    // Texture
-                    ImGui::PushID("Texture");
-                    if(ImGui::BeginTable("##Texture", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingFixedFit))
-                    {
-                        ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
-                        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
-                        ImGui::TableNextColumn();
-                        ImGui::Text("Texture");
-                        ImGui::TableNextColumn();
-                        ImGui::PushItemWidth(-1);
-                        ImGui::Button("Texture", ImVec2(100.0f, 0.0f));
-                        ImGui::PopItemWidth();
-                        if (ImGui::BeginDragDropTarget())
-                        {
-                            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-                            {
-                                const wchar_t *path = (const wchar_t *)payload->Data;
-                                std::filesystem::path texturePath = Project::GetAssetDirectory() / path;
-
-                                if (std::filesystem::exists(texturePath))
-                                    component.Texture = Texture2D::Create(texturePath.string());
-                                else
-                                    HIMII_CORE_WARNING("Texture not found: {0}", texturePath.string());
-                            }
-
-                            ImGui::EndDragDropTarget();
-                        }
-                        ImGui::EndTable();
-                    }
-                    ImGui::PopID();
-
+                    DrawTextureAssignControl("Texture", component.Texture, component.TextureHandle);
                     DrawFloatControl("Tiling Factor", component.TilingFactor, 0.1f, 0.0f, 100.0f);
                 });
 
@@ -1338,14 +1580,47 @@ namespace Himii
         //UI
         DrawComponent<UITransformComponent>("Rect Transform",
             entity, m_ComponentIcons["Rect Transform"],
-        [](auto &component) 
-        {
-                                                DrawVec3Control("Rect Position",component.Position);
-                                                glm::vec3 rotation = glm::degrees(component.Rotation);
-                                                DrawVec3Control("Rotation", rotation);
-                                                component.Rotation = glm::radians(rotation);
-                                                DrawVec3Control("Size", glm::vec3(component.Size,1.0f), 100.0f);
-        });
+            [this, entityIdentifier](auto &component)
+            {
+                UITransformComponent transformBeforeEdit = component;
+                bool transformEditCaptured = false;
+
+                auto beginTransformEdit = [&]()
+                {
+                    if (!transformEditCaptured)
+                    {
+                        transformBeforeEdit = component;
+                        transformEditCaptured = true;
+                    }
+                };
+
+                auto endTransformEdit = [&]()
+                {
+                    if (!transformEditCaptured || !m_CommandHistory)
+                        return;
+
+                    UITransformComponent transformAfterEdit = component;
+                    if (transformBeforeEdit.Position != transformAfterEdit.Position
+                        || transformBeforeEdit.Rotation != transformAfterEdit.Rotation
+                        || transformBeforeEdit.Size != transformAfterEdit.Size)
+                    {
+                        m_CommandHistory->Execute(std::make_unique<ModifyUITransformCommand>(
+                            m_Context, entityIdentifier, transformBeforeEdit, transformAfterEdit));
+                    }
+                    transformEditCaptured = false;
+                };
+
+                DrawVec3Control("Rect Position", component.Position, 0.0f, 100.0f,
+                                beginTransformEdit, endTransformEdit);
+                glm::vec3 rotation = glm::degrees(component.Rotation);
+                DrawVec3Control("Rotation", rotation, 0.0f, 100.0f,
+                                beginTransformEdit, endTransformEdit);
+                component.Rotation = glm::radians(rotation);
+                glm::vec3 sizeVector = glm::vec3(component.Size, 1.0f);
+                DrawVec3Control("Size", sizeVector, 100.0f, 100.0f,
+                                beginTransformEdit, endTransformEdit);
+                component.Size = glm::vec2(sizeVector.x, sizeVector.y);
+            });
 
         DrawComponent<UIImageComponent>("Image", entity, m_ComponentIcons["Image"],
         [](auto &component)
@@ -1353,50 +1628,7 @@ namespace Himii
                     // 1. 颜色控制 (直接复用你的 DrawColorControl)
                     DrawColorControl("Color", component.Color);
 
-                    // 2. 贴图控制 (带拖拽分配功能)
-                    ImGui::PushID("Texture");
-                    if (ImGui::BeginTable("##Texture", 2,
-                                          ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingFixedFit))
-                    {
-                        ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
-                        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
-                        ImGui::TableNextColumn();
-                        ImGui::Text("Texture");
-                        ImGui::TableNextColumn();
-                        ImGui::PushItemWidth(-1);
-
-                        // 如果有贴图，显示贴图的 ID 或者名字；没有则显示 "None"
-                        std::string textureLabel = component.Texture ? "Texture Bound" : "None";
-                        ImGui::Button(textureLabel.c_str(), ImVec2(100.0f, 0.0f));
-                        ImGui::PopItemWidth();
-
-                        // 接受内容浏览器的拖拽
-                        if (ImGui::BeginDragDropTarget())
-                        {
-                            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-                            {
-                                const wchar_t *path = (const wchar_t *)payload->Data;
-                                std::filesystem::path texturePath = Project::GetAssetDirectory() / path;
-
-                                if (std::filesystem::exists(texturePath))
-                                    component.Texture = Texture2D::Create(texturePath.string());
-                                else
-                                    HIMII_CORE_WARNING("UI Texture not found: {0}", texturePath.string());
-                            }
-                            ImGui::EndDragDropTarget();
-                        }
-
-                        // 增加一个清除贴图的小按钮 (可选，但很实用)
-                        if (component.Texture)
-                        {
-                            ImGui::SameLine();
-                            if (ImGui::Button("X"))
-                                component.Texture = nullptr;
-                        }
-
-                        ImGui::EndTable();
-                    }
-                    ImGui::PopID();
+                    DrawTextureAssignControl("Texture", component.Texture, component.TextureHandle);
         });
         DrawComponent<UITextComponent>("Text", entity, m_ComponentIcons["Text"],
                                        [](auto &component)

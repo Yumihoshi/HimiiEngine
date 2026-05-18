@@ -34,6 +34,12 @@ namespace Himii
 
         internal delegate void Physics2DRaycastDelegate(ref Vector2 start, ref Vector2 end, out RaycastHit2D hit);
 
+        internal delegate float TimeGetDeltaTimeDelegate();
+        internal delegate void SceneManagerLoadSceneDelegate(IntPtr scenePath);
+
+        internal delegate void SpriteRendererGetColorDelegate(ulong entityID, out Vector4 color);
+        internal delegate void SpriteRendererSetColorDelegate(ulong entityID, ref Vector4 color);
+
         // static fields to hold the delegates
         internal static LogFuncDelegate NativeLog;
 
@@ -64,6 +70,12 @@ namespace Himii
         internal static TilemapSetTileDelegate Tilemap_SetTile;
 
         internal static Physics2DRaycastDelegate Physics2D_Raycast;
+
+        internal static TimeGetDeltaTimeDelegate Time_GetDeltaTime;
+        internal static SceneManagerLoadSceneDelegate SceneManager_LoadScene;
+
+        internal static SpriteRendererGetColorDelegate SpriteRenderer_GetColor;
+        internal static SpriteRendererSetColorDelegate SpriteRenderer_SetColor;
 
         [UnmanagedCallersOnly]
         public static void Initialize(IntPtr functionTablePtr)
@@ -99,6 +111,15 @@ namespace Himii
             Tilemap_SetTile = Marshal.GetDelegateForFunctionPointer<TilemapSetTileDelegate>(funcs.Tilemap_SetTile);
 
             Physics2D_Raycast = Marshal.GetDelegateForFunctionPointer<Physics2DRaycastDelegate>(funcs.Physics2D_Raycast);
+
+            Time_GetDeltaTime = Marshal.GetDelegateForFunctionPointer<TimeGetDeltaTimeDelegate>(funcs.Time_GetDeltaTime);
+            SceneManager_LoadScene =
+                Marshal.GetDelegateForFunctionPointer<SceneManagerLoadSceneDelegate>(funcs.SceneManager_LoadScene);
+
+            SpriteRenderer_GetColor =
+                Marshal.GetDelegateForFunctionPointer<SpriteRendererGetColorDelegate>(funcs.SpriteRenderer_GetColor);
+            SpriteRenderer_SetColor =
+                Marshal.GetDelegateForFunctionPointer<SpriteRendererSetColorDelegate>(funcs.SpriteRenderer_SetColor);
 
             Console.WriteLine("[C#] InternalCalls initialized.");
         }

@@ -23,6 +23,7 @@ target_link_libraries(HimiiEditor PRIVATE Engine)
 # Include Engine headers
 target_include_directories(HimiiEditor PRIVATE
     ${CMAKE_SOURCE_DIR}/Engine/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
 file(TO_CMAKE_PATH "${CMAKE_SOURCE_DIR}" PROJECT_ROOT_PATH)
@@ -71,6 +72,9 @@ add_custom_command(TARGET HimiiEditor POST_BUILD
             "$<TARGET_FILE_DIR:HimiiEditor>"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${SCRIPT_CORE_BUILD_DIR}/ScriptCore.runtimeconfig.json"
+            "$<TARGET_FILE_DIR:HimiiEditor>"
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${SCRIPT_CORE_BUILD_DIR}/ScriptCore.xml"
             "$<TARGET_FILE_DIR:HimiiEditor>"
 
 

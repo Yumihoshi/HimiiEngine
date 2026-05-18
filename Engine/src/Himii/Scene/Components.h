@@ -66,6 +66,7 @@ namespace Himii
     struct SpriteRendererComponent {
         glm::vec4 Color{1.0f, 1.0f, 1.0f, 1.0f};
         Ref<Texture2D> Texture{};
+        AssetHandle TextureHandle = 0;
         float TilingFactor = 1.0f;
 
         SpriteRendererComponent() = default;
@@ -229,6 +230,7 @@ namespace Himii
 
     struct UIImageComponent {
         Ref<Texture2D> Texture;
+        AssetHandle TextureHandle = 0;
         glm::vec4 Color{1.0f, 1.0f, 1.0f, 1.0f};
 
         UIImageComponent() = default;

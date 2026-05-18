@@ -16,6 +16,9 @@
 #include "Himii/Utils/PlatformUtils.h"
 #include "ImGuizmo.h"
 #include "yaml-cpp/yaml.h"
+#include "commands/EditorCommands.h"
+#include "EditorExternalFileDrop.h"
+#include <GLFW/glfw3.h>
 
 namespace Himii
 {
@@ -54,6 +57,10 @@ namespace Himii
         m_EditorCamera = EditorCamera(45.0f, 1.778f, 0.1f, 1000.0f);
 
         m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+        m_SceneHierarchyPanel.SetCommandHistory(&m_CommandHistory);
+
+        if (GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow()))
+            EditorExternalFileDrop::Install(window);
 
         m_ContentBrowserPanel.SetOnScriptChanged([this]() { RequestScriptCompile(); });
 
@@ -468,6 +475,16 @@ namespace Himii
                         snapValue = 45.0f;
                     float snapValues[3] = {snapValue, snapValue, snapValue};
 
+                    if (ImGuizmo::IsUsing() && !m_GizmoTransformCaptureActive)
+                    {
+                        m_GizmoTransformCaptureActive = true;
+                        m_GizmoCaptureIsUserInterface = isUI;
+                        if (isUI)
+                            m_GizmoStartUITransform = selectEntity.GetComponent<UITransformComponent>();
+                        else
+                            m_GizmoStartTransform = selectEntity.GetComponent<TransformComponent>();
+                    }
+
                     // 绘制 Gizmo
                     ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
                                          currentGizmoOperation, ImGuizmo::LOCAL, glm::value_ptr(transform), nullptr,
@@ -496,6 +513,38 @@ namespace Himii
                             tc.Rotation += deltaRotation;
                             tc.Scale = scale;
                         }
+                    }
+                    else if (m_GizmoTransformCaptureActive)
+                    {
+                        if (m_SceneState == SceneState::Edit)
+                        {
+                            if (m_GizmoCaptureIsUserInterface && selectEntity.HasComponent<UITransformComponent>())
+                            {
+                                const auto &afterTransform = selectEntity.GetComponent<UITransformComponent>();
+                                if (m_GizmoStartUITransform.Position != afterTransform.Position
+                                    || m_GizmoStartUITransform.Rotation != afterTransform.Rotation
+                                    || m_GizmoStartUITransform.Size != afterTransform.Size)
+                                {
+                                    m_CommandHistory.Execute(std::make_unique<ModifyUITransformCommand>(
+                                        m_EditorScene, selectEntity.GetUUID(), m_GizmoStartUITransform,
+                                        afterTransform));
+                                }
+                            }
+                            else if (!m_GizmoCaptureIsUserInterface
+                                     && selectEntity.HasComponent<TransformComponent>())
+                            {
+                                const auto &afterTransform = selectEntity.GetComponent<TransformComponent>();
+                                if (m_GizmoStartTransform.Position != afterTransform.Position
+                                    || m_GizmoStartTransform.Rotation != afterTransform.Rotation
+                                    || m_GizmoStartTransform.Scale != afterTransform.Scale)
+                                {
+                                    m_CommandHistory.Execute(std::make_unique<ModifyTransformCommand>(
+                                        m_EditorScene, selectEntity.GetUUID(), m_GizmoStartTransform,
+                                        afterTransform));
+                                }
+                            }
+                        }
+                        m_GizmoTransformCaptureActive = false;
                     }
                 }
             }
@@ -593,16 +642,39 @@ namespace Himii
             }
             case Key::Delete:
             {
-                if (Application::Get().GetImGuiLayer()->GetActiveWidgetID() == 0)
-				{
-					Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-					if (selectedEntity)
-					{
-						m_SceneHierarchyPanel.SetSelectedEntity({});
-						m_ActiveScene->DestroyEntity(selectedEntity);
-					}
-				}
-				break;
+                if (m_SceneState == SceneState::Edit
+                    && Application::Get().GetImGuiLayer()->GetActiveWidgetID() == 0)
+                {
+                    Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+                    if (selectedEntity)
+                    {
+                        m_SceneHierarchyPanel.SetSelectedEntity({});
+                        m_CommandHistory.Execute(std::make_unique<DeleteEntityCommand>(
+                            m_EditorScene, selectedEntity,
+                            [this](Entity restoredEntity)
+                            {
+                                m_SceneHierarchyPanel.SetSelectedEntity(restoredEntity);
+                            }));
+                    }
+                }
+                break;
+            }
+            case Key::Z:
+            {
+                if (control && m_SceneState == SceneState::Edit && !ImGui::GetIO().WantTextInput)
+                {
+                    if (shift)
+                        m_CommandHistory.Redo();
+                    else
+                        m_CommandHistory.Undo();
+                }
+                break;
+            }
+            case Key::Y:
+            {
+                if (control && m_SceneState == SceneState::Edit && !ImGui::GetIO().WantTextInput)
+                    m_CommandHistory.Redo();
+                break;
             }
         }
         return false;
@@ -793,6 +865,7 @@ namespace Himii
         if (Project::Load(path))
         {
             auto projectDir = Project::GetProjectDirectory();
+            Project::SyncScriptCoreToProjectDirectory(projectDir);
             m_ProjectSettingsPanel.Reset();
 
             // 更新最近项目列表
@@ -1259,6 +1332,7 @@ namespace Himii
         if (m_SceneState == SceneState::Simulate)
             OnSceneStop();
 
+        m_CommandHistory.Clear();
         ConsoleLog::Clear();
 
         m_SceneState = SceneState::Play;
@@ -1274,6 +1348,7 @@ namespace Himii
         if (m_SceneState == SceneState::Play)
             OnSceneStop();
 
+        m_CommandHistory.Clear();
         m_SceneState = SceneState::Simulate;
 
         m_ActiveScene = Scene::Copy(m_EditorScene);
@@ -1333,6 +1408,9 @@ namespace Himii
             OnSceneStop();
 
         m_NotifyReloadAfterCompile = wasPlaying;
+
+        if (Project::GetActive())
+            Project::SyncScriptCoreToProjectDirectory(Project::GetProjectDirectory());
 
         if (!ScriptEngine::RequestCompileAndReload(m_CSharpProjectPath))
             m_NotifyReloadAfterCompile = false;

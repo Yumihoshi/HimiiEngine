@@ -96,6 +96,7 @@ namespace Himii {
         static void OnRuntimeStop();
 
 		static void OnUpdateScript(Entity entity, Timestep ts);
+        static float GetScriptDeltaTime();
 
 		static bool EntityClassExists(const std::string &fullClassName);
 

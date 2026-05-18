@@ -7,5 +7,6 @@
 		<!-- 生成 .runtimeconfig.json，这对 nethost 很重要 -->
 		<EnableDynamicLoading>true</EnableDynamicLoading>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>
 </Project>

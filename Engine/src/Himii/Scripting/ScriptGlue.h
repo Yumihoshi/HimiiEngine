@@ -42,6 +42,16 @@ namespace Himii
 
         // Physics2D
         void *Physics2D_Raycast;
+
+        // Time
+        void *Time_GetDeltaTime;
+
+        // Scene
+        void *SceneManager_LoadScene;
+
+        // SpriteRenderer
+        void *SpriteRenderer_GetColor;
+        void *SpriteRenderer_SetColor;
     };
 
     class ScriptGlue {

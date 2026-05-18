@@ -71,6 +71,9 @@ namespace Himii
 
         static void CreateProjectFiles(const std::string &name, const std::filesystem::path &projectDir);
 
+        /// 将 ScriptCore.dll / .pdb / .xml 与 Himii 脚本 API 源文件同步到项目目录，供 IDE 智能提示解析
+        static void SyncScriptCoreToProjectDirectory(const std::filesystem::path &projectDir);
+
     private:
         ProjectConfig m_Config;
         std::filesystem::path m_ProjectDirectory;

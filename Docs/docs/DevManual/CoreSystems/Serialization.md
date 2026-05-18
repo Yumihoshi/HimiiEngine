@@ -55,13 +55,13 @@ Entities:
 | **TransformComponent** | Position / Rotation / Scale |
 | **CameraComponent** | 投影、裁剪、背景色、Primary 等 |
 | **ScriptComponent** | `ClassName` + `ScriptFields`（含 Entity 引用 UUID） |
-| **SpriteRendererComponent** | Color、TexturePath、TilingFactor |
+| **SpriteRendererComponent** | Color、TextureHandle（优先）、TexturePath（兼容旧场景）、TilingFactor |
 | **CircleRendererComponent** | Color、Thickness、Fade |
 | **MeshComponent** | Type、Color |
 | **Rigidbody2DComponent** | BodyType、FixedRotation |
 | **BoxCollider2DComponent** | Offset、Size、材料参数 |
 | **CircleCollider2DComponent** | Offset、Radius、材料参数 |
-| **UITransform / UIImage / UIText** 等 | UI 实体分支（`CreateUIEntityWithUUID`） |
+| **UITransform / UIImage / UIText** 等 | UI 实体分支（`CreateUIEntityWithUUID`）；UIImage 使用 TextureHandle |
 
 其他组件（粒子、Tilemap、动画等）若已在 `SerializeEntity` 中实现，以源码为准；未列出的组件在保存时不会写入。
 

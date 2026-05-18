@@ -38,6 +38,19 @@ namespace Himii
         }
     }
 
+    public class SpriteRenderer : Component
+    {
+        public Vector4 Color
+        {
+            get
+            {
+                InternalCalls.SpriteRenderer_GetColor(Entity.ID, out Vector4 result);
+                return result;
+            }
+            set => InternalCalls.SpriteRenderer_SetColor(Entity.ID, ref value);
+        }
+    }
+
     public class Rigidbody2D : Component
     {
         public Vector2 Velocity

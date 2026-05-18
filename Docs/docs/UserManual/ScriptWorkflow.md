@@ -60,7 +60,8 @@
 | 现象 | 处理 |
 |------|------|
 | Play 后脚本不执行 | 检查类名是否与 `ScriptComponent` 中一致（含命名空间）；Script Console 是否编译成功 |
-| Inspector 无字段 | 字段须为 **public 实例** 字段；保存场景后重开验证 |
+| Inspector 无字段 | 字段须为 **public 实例** 字段，或 **private + `[SerializeField]`**；保存场景后重开验证 |
+| `[SerializeField]` 无智能提示 | 用 IDE 打开 **`.sln`**；确认存在 `assets/scripts/Himii/SerializeField.cs`（打开项目或编译脚本时会自动同步）；项目根目录还需 `ScriptCore.dll` / `ScriptCore.xml`；重载 C# 语言服务 |
 | Log 无输出 | 使用 `Himii.Log`，非 `Console.WriteLine`；确认 Console 面板已打开 |
 | IDE 打不开 | Preferences / Project Settings 中检查 IDE 路径；VS Code 需 `code` 在 PATH |
 

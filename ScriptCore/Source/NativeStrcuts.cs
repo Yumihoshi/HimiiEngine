@@ -41,6 +41,16 @@ namespace Himii
 
         // Physics2D
         public IntPtr Physics2D_Raycast;
+
+        // Time
+        public IntPtr Time_GetDeltaTime;
+
+        // Scene
+        public IntPtr SceneManager_LoadScene;
+
+        // SpriteRenderer
+        public IntPtr SpriteRenderer_GetColor;
+        public IntPtr SpriteRenderer_SetColor;
     }
 
     [StructLayout(LayoutKind.Sequential)]

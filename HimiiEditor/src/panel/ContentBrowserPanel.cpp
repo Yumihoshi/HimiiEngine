@@ -1,6 +1,10 @@
 #include "Hepch.h"
 #include "ContentBrowserPanel.h"
+#include "EditorExternalFileDrop.h"
 #include "Himii/Project/Project.h"
+#include "Himii/Asset/AssetManager.h"
+#include "Himii/Utils/PlatformUtils.h"
+#include "Himii/Core/Log.h"
 
 #include <fstream>
 #include <imgui.h>
@@ -100,10 +104,36 @@ namespace Himii
             static bool openCreateScriptPopup = false;
             static char scriptName[128] = "NewScript";
 
+            if (ImGui::BeginDragDropTarget())
+            {
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+                {
+                    (void)payload;
+                }
+                ImGui::EndDragDropTarget();
+            }
+
+            std::vector<std::filesystem::path> droppedPaths = EditorExternalFileDrop::ConsumePendingPaths();
+            if (ImGui::IsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows) && !droppedPaths.empty())
+                ImportFilesFromPaths(droppedPaths);
+
             if (ImGui::BeginPopupContextWindow("ContentBrowserContext", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
             {
                 if (ImGui::MenuItem("Create C# Script"))
                     openCreateScriptPopup = true;
+                if (ImGui::MenuItem("Import Asset..."))
+                {
+                    std::string selectedPath = FileDialog::OpenFile(
+                        "Images (*.png;*.jpg;*.jpeg)\0*.png;*.jpg;*.jpeg\0"
+                        "Animations (*.anim)\0*.anim\0"
+                        "Tile Sets (*.tileset)\0*.tileset\0"
+                        "Tile Maps (*.tilemap)\0*.tilemap\0"
+                        "Particle Emitters (*.particle)\0*.particle\0"
+                        "C# Scripts (*.cs)\0*.cs\0"
+                        "All Files (*.*)\0*.*\0");
+                    if (!selectedPath.empty())
+                        ImportFilesFromPaths({selectedPath});
+                }
                 ImGui::EndPopup();
             }
 
@@ -251,6 +281,99 @@ namespace Himii
         }
     }
 
+    std::filesystem::path ContentBrowserPanel::ResolveUniqueDestination(
+        const std::filesystem::path& destinationDirectory, const std::filesystem::path& fileName) const
+    {
+        std::filesystem::path destination = destinationDirectory / fileName;
+        if (!std::filesystem::exists(destination))
+            return destination;
+
+        const std::string stem = fileName.stem().string();
+        const std::string extension = fileName.extension().string();
+
+        for (int duplicateIndex = 1; duplicateIndex < 1000; ++duplicateIndex)
+        {
+            const std::string candidateFileName =
+                stem + " (" + std::to_string(duplicateIndex) + ")" + extension;
+            destination = destinationDirectory / candidateFileName;
+            if (!std::filesystem::exists(destination))
+                return destination;
+        }
+
+        return destinationDirectory / fileName;
+    }
+
+    void ContentBrowserPanel::ImportSingleFile(const std::filesystem::path& sourcePath,
+                                               const std::filesystem::path& assetsDirectory)
+    {
+        if (!std::filesystem::exists(sourcePath) || !std::filesystem::is_regular_file(sourcePath))
+            return;
+
+        const std::filesystem::path fileName = sourcePath.filename();
+        const std::filesystem::path destinationPath =
+            ResolveUniqueDestination(m_CurrentDirectory, fileName);
+
+        try
+        {
+            std::filesystem::copy_file(sourcePath, destinationPath,
+                                       std::filesystem::copy_options::overwrite_existing);
+        }
+        catch (const std::filesystem::filesystem_error& error)
+        {
+            HIMII_CORE_ERROR("Failed to copy asset file: {0}", error.what());
+            return;
+        }
+
+        const std::filesystem::path relativePath =
+            std::filesystem::relative(destinationPath, assetsDirectory);
+
+        if (fileName.extension() == ".cs")
+        {
+            if (m_OnScriptChanged)
+                m_OnScriptChanged();
+            return;
+        }
+
+        auto assetManager = Project::GetAssetManager();
+        if (!assetManager)
+            return;
+
+        AssetHandle handle = assetManager->ImportAsset(relativePath);
+        if (handle == 0)
+            HIMII_CORE_WARNING("Imported file is not a registered asset type: {0}", destinationPath.string());
+    }
+
+    void ContentBrowserPanel::ImportFilesFromPaths(const std::vector<std::filesystem::path>& sourcePaths)
+    {
+        if (!Project::GetActive() || sourcePaths.empty())
+            return;
+
+        const std::filesystem::path assetsDirectory = Project::GetAssetDirectory();
+
+        for (const std::filesystem::path& sourcePath : sourcePaths)
+        {
+            if (!std::filesystem::exists(sourcePath))
+                continue;
+
+            if (std::filesystem::is_directory(sourcePath))
+            {
+                for (const auto& directoryEntry :
+                     std::filesystem::recursive_directory_iterator(sourcePath))
+                {
+                    if (directoryEntry.is_regular_file())
+                        ImportSingleFile(directoryEntry.path(), assetsDirectory);
+                }
+            }
+            else
+            {
+                ImportSingleFile(sourcePath, assetsDirectory);
+            }
+        }
+
+        if (auto assetManager = Project::GetAssetManager())
+            assetManager->SerializeAssetRegistry();
+    }
+
     bool ContentBrowserPanel::CreateCSharpScript(const std::filesystem::path& directory, const std::string& className)
     {
         if (className.empty())
@@ -264,10 +387,10 @@ namespace Himii
         if (!file.is_open())
             return false;
 
-        file << "using Himii;\n\n";
         file << "public class " << className << " : Entity\n";
         file << "{\n";
-        file << "\tpublic float Speed = 1.0f;\n\n";
+        file << "    [SerializeField]\n";
+        file << "    private float moveSpeed = 1.0f;\n\n";
         file << "\tpublic override void OnCreate()\n";
         file << "\t{\n";
         file << "\t}\n\n";

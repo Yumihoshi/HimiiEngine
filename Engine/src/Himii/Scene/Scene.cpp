@@ -109,6 +109,19 @@ namespace Himii
         m_Registry.destroy(e);
     }
 
+    void Scene::ClearEntities()
+    {
+        std::vector<entt::entity> entityHandles;
+        m_Registry.view<IDComponent>().each(
+            [&](entt::entity entityHandle, IDComponent&)
+            {
+                entityHandles.push_back(entityHandle);
+            });
+
+        for (entt::entity entityHandle : entityHandles)
+            DestroyEntity(entityHandle);
+    }
+
     void Scene::OnRuntimeStart()
     {
         ScriptEngine::OnRuntimeStart(this);

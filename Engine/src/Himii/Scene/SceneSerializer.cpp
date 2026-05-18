@@ -5,8 +5,101 @@
 #include "Himii/Scene/Components.h"
 #include "Himii/Core/UUID.h"
 #include "Himii/Scripting/ScriptEngine.h"
+#include "Himii/Project/Project.h"
+#include "Himii/Asset/AssetManager.h"
 
 #include <fstream>
+
+namespace Himii
+{
+    static AssetHandle FindTextureAssetHandleByPath(const std::string& texturePath)
+    {
+        if (texturePath.empty() || !Project::GetActive())
+            return 0;
+
+        auto assetManager = Project::GetAssetManager();
+        if (!assetManager)
+            return 0;
+
+        const std::string normalizedSearchPath =
+            std::filesystem::path(texturePath).generic_string();
+
+        for (const auto& [handle, metadata] : assetManager->GetAssetRegistry())
+        {
+            if (metadata.Type != AssetType::Texture2D)
+                continue;
+
+            if (metadata.FilePath.generic_string() == normalizedSearchPath)
+                return handle;
+
+            const std::string absoluteAssetPath =
+                Project::GetAssetFileSystemPath(metadata.FilePath).generic_string();
+            if (absoluteAssetPath == normalizedSearchPath)
+                return handle;
+        }
+
+        return 0;
+    }
+
+    static Ref<Texture2D> LoadTextureFromSerializedNode(const YAML::Node& componentNode)
+    {
+        if (!componentNode)
+            return nullptr;
+
+        auto assetManager = Project::GetActive() ? Project::GetAssetManager() : nullptr;
+
+        if (componentNode["TextureHandle"])
+        {
+            AssetHandle textureHandle = componentNode["TextureHandle"].as<uint64_t>();
+            if (textureHandle != 0 && assetManager)
+            {
+                Ref<Asset> asset = assetManager->GetAsset(textureHandle);
+                if (asset)
+                    return std::static_pointer_cast<Texture2D>(asset);
+            }
+        }
+
+        if (componentNode["TexturePath"])
+        {
+            const std::string texturePath = componentNode["TexturePath"].as<std::string>();
+            if (assetManager)
+            {
+                AssetHandle existingHandle = FindTextureAssetHandleByPath(texturePath);
+                if (existingHandle != 0)
+                {
+                    Ref<Asset> asset = assetManager->GetAsset(existingHandle);
+                    if (asset)
+                        return std::static_pointer_cast<Texture2D>(asset);
+                }
+
+                AssetHandle importedHandle = assetManager->ImportAsset(texturePath);
+                if (importedHandle != 0)
+                {
+                    Ref<Asset> asset = assetManager->GetAsset(importedHandle);
+                    if (asset)
+                        return std::static_pointer_cast<Texture2D>(asset);
+                }
+            }
+
+            return Texture2D::Create(texturePath);
+        }
+
+        return nullptr;
+    }
+
+    static AssetHandle ResolveTextureHandleForSerialize(const Ref<Texture2D>& texture,
+                                                        AssetHandle explicitHandle)
+    {
+        if (explicitHandle != 0)
+            return explicitHandle;
+
+        if (!texture)
+            return 0;
+
+        AssetHandle handleFromRegistry = FindTextureAssetHandleByPath(texture->GetPath());
+        return handleFromRegistry;
+    }
+}
 
 namespace YAML
 {
@@ -221,7 +314,11 @@ namespace Himii
             out << YAML::BeginMap;
             auto &spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
             out << YAML::Key << "Color" << YAML::Value << spriteRenderer.Color;
-            if (spriteRenderer.Texture)
+            const AssetHandle textureHandle = ResolveTextureHandleForSerialize(
+                spriteRenderer.Texture, spriteRenderer.TextureHandle);
+            if (textureHandle != 0)
+                out << YAML::Key << "TextureHandle" << YAML::Value << (uint64_t)textureHandle;
+            else if (spriteRenderer.Texture)
                 out << YAML::Key << "TexturePath" << YAML::Value << spriteRenderer.Texture->GetPath();
             out << YAML::Key << "TilingFactor" << YAML::Value << spriteRenderer.TilingFactor;
             out << YAML::EndMap;
@@ -325,9 +422,12 @@ namespace Himii
             out << YAML::BeginMap;
             auto &uiImage = entity.GetComponent<UIImageComponent>();
             out << YAML::Key << "Color" << YAML::Value << uiImage.Color;
-            if (uiImage.Texture)
-                out << YAML::Key << "TexturePath" << YAML::Value
-                    << uiImage.Texture->GetPath(); // 假设你的Texture有GetPath
+            const AssetHandle textureHandle =
+                ResolveTextureHandleForSerialize(uiImage.Texture, uiImage.TextureHandle);
+            if (textureHandle != 0)
+                out << YAML::Key << "TextureHandle" << YAML::Value << (uint64_t)textureHandle;
+            else if (uiImage.Texture)
+                out << YAML::Key << "TexturePath" << YAML::Value << uiImage.Texture->GetPath();
             out << YAML::EndMap;
         }
 
@@ -502,17 +602,14 @@ namespace Himii
         {
             auto &src = deserializedEntity.AddComponent<SpriteRendererComponent>();
             src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
+            src.Texture = LoadTextureFromSerializedNode(spriteRendererComponent);
+            if (spriteRendererComponent["TextureHandle"])
+                src.TextureHandle = spriteRendererComponent["TextureHandle"].as<uint64_t>();
+            else if (src.Texture)
+                src.TextureHandle = FindTextureAssetHandleByPath(src.Texture->GetPath());
 
-            if (spriteRendererComponent["TexturePath"])
-            {
-                std::string texturePath = spriteRendererComponent["TexturePath"].as<std::string>();
-                //auto path = Project::GetAssetFileSystemPath(texturePath);
-                src.Texture = Texture2D::Create(texturePath);
-            }
             if (spriteRendererComponent["TilingFactor"])
-            {
                 src.TilingFactor = spriteRendererComponent["TilingFactor"].as<float>();
-            }
         }
         auto circleRendererComponent = entity["CircleRendererComponent"];
         if (circleRendererComponent)
@@ -604,11 +701,11 @@ namespace Himii
         {
             auto &uiImage = deserializedEntity.AddComponent<UIImageComponent>();
             uiImage.Color = uiImageComponent["Color"].as<glm::vec4>();
-            if (uiImageComponent["TexturePath"])
-            {
-                std::string texturePath = uiImageComponent["TexturePath"].as<std::string>();
-                uiImage.Texture = Texture2D::Create(texturePath);
-            }
+            uiImage.Texture = LoadTextureFromSerializedNode(uiImageComponent);
+            if (uiImageComponent["TextureHandle"])
+                uiImage.TextureHandle = uiImageComponent["TextureHandle"].as<uint64_t>();
+            else if (uiImage.Texture)
+                uiImage.TextureHandle = FindTextureAssetHandleByPath(uiImage.Texture->GetPath());
         }
 
         auto uiTextComponent = entity["UITextComponent"];

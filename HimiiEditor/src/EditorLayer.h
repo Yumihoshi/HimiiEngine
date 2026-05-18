@@ -12,6 +12,7 @@
 
 #include "Himii/Core/FileWatcher.h"
 #include "Himii/Renderer/EditorCamera.h"
+#include "commands/EditorCommandHistory.h"
 
 namespace Himii
 {
@@ -130,6 +131,13 @@ namespace Himii
         std::string m_Clipboard;
 
         Ref<Font> m_DefaultFont;
+
+        EditorCommandHistory m_CommandHistory;
+
+        bool m_GizmoTransformCaptureActive = false;
+        bool m_GizmoCaptureIsUserInterface = false;
+        TransformComponent m_GizmoStartTransform;
+        UITransformComponent m_GizmoStartUITransform;
 
     private:
         struct RecentProject

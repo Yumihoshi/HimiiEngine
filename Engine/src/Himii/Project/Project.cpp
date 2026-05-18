@@ -6,6 +6,87 @@
 
 namespace Himii
 {
+    namespace
+    {
+        std::filesystem::path ResolveScriptCoreAssemblyPath()
+        {
+            const std::filesystem::path executableDirectory = Application::Get().GetExecutableDir();
+            std::filesystem::path scriptCoreAssemblyPath = executableDirectory / "ScriptCore.dll";
+
+            if (std::filesystem::exists(scriptCoreAssemblyPath))
+                return scriptCoreAssemblyPath;
+
+            const std::filesystem::path engineDirectory = Application::GetEngineDir();
+#ifdef HIMII_DEBUG
+            scriptCoreAssemblyPath = engineDirectory / "ScriptCore/bin/Debug/net8.0/ScriptCore.dll";
+#else
+            scriptCoreAssemblyPath = engineDirectory / "ScriptCore/bin/Release/net8.0/ScriptCore.dll";
+#endif
+            return scriptCoreAssemblyPath;
+        }
+
+        void CopyIfExists(const std::filesystem::path &sourcePath, const std::filesystem::path &destinationPath)
+        {
+            if (!std::filesystem::exists(sourcePath))
+                return;
+
+            std::error_code errorCode;
+            std::filesystem::copy_file(sourcePath, destinationPath,
+                                       std::filesystem::copy_options::overwrite_existing, errorCode);
+            if (errorCode)
+                HIMII_CORE_WARNING("Failed to copy {0}: {1}", sourcePath.string(), errorCode.message());
+        }
+
+        void CopyScriptingApiSourcesToProject(const std::filesystem::path &projectDir)
+        {
+            const std::filesystem::path engineDirectory = Application::GetEngineDir();
+            const std::filesystem::path apiSourceDirectory = engineDirectory / "Packaging/ScriptingApi/Himii";
+            if (!std::filesystem::exists(apiSourceDirectory))
+            {
+                HIMII_CORE_WARNING("Scripting API sources not found at {0}", apiSourceDirectory.string());
+                return;
+            }
+
+            const std::filesystem::path destinationDirectory = projectDir / "assets" / "scripts" / "Himii";
+            std::error_code errorCode;
+            std::filesystem::create_directories(destinationDirectory, errorCode);
+            if (errorCode)
+            {
+                HIMII_CORE_WARNING("Failed to create {0}: {1}", destinationDirectory.string(), errorCode.message());
+                return;
+            }
+
+            for (const auto &entry : std::filesystem::directory_iterator(apiSourceDirectory))
+            {
+                if (!entry.is_regular_file() || entry.path().extension() != ".cs")
+                    continue;
+
+                CopyIfExists(entry.path(), destinationDirectory / entry.path().filename());
+            }
+        }
+    }
+
+    void Project::SyncScriptCoreToProjectDirectory(const std::filesystem::path &projectDir)
+    {
+        const std::filesystem::path scriptCoreAssemblyPath = ResolveScriptCoreAssemblyPath();
+        if (!std::filesystem::exists(scriptCoreAssemblyPath))
+        {
+            HIMII_CORE_WARNING("ScriptCore.dll not found, IDE may not resolve Himii API types.");
+            return;
+        }
+
+        CopyIfExists(scriptCoreAssemblyPath, projectDir / "ScriptCore.dll");
+
+        std::filesystem::path programDatabasePath = scriptCoreAssemblyPath;
+        programDatabasePath.replace_extension(".pdb");
+        CopyIfExists(programDatabasePath, projectDir / "ScriptCore.pdb");
+
+        std::filesystem::path documentationPath = scriptCoreAssemblyPath;
+        documentationPath.replace_extension(".xml");
+        CopyIfExists(documentationPath, projectDir / "ScriptCore.xml");
+
+        CopyScriptingApiSourcesToProject(projectDir);
+    }
 
     Ref<Project> Project::New()
     {
@@ -55,28 +136,9 @@ namespace Himii
         std::filesystem::create_directories(projectDir / "assets" / "scripts");
         std::filesystem::create_directories(projectDir / "assets" / "textures");
 
-        // 先尝试在可执行文件同级目录找 ScriptCore.dll (运行时的真实环境)
-        auto exeDir = Application::Get().GetExecutableDir();
-        std::filesystem::path scriptCorePath = exeDir / "ScriptCore.dll";
+        SyncScriptCoreToProjectDirectory(projectDir);
 
-        if (!std::filesystem::exists(scriptCorePath))
-        {
-            // 如果没找到 (Dev模式且未拷贝), 尝试源码构建输出路径
-            auto engineDir = Application::GetEngineDir();
-            // Try standard dotnet output path relative to engine root
-#ifdef HIMII_DEBUG
-            scriptCorePath = engineDir / "ScriptCore/bin/Debug/net8.0/ScriptCore.dll";
-#else
-            scriptCorePath = engineDir / "ScriptCore/bin/Release/net8.0/ScriptCore.dll";
-#endif
-        }
-
-        std::string scriptCorePathStr = scriptCorePath.string();
-        HIMII_CORE_INFO("Resolved ScriptCore Path: {0}", scriptCorePathStr);
-        // 简单的替换 / 为 \ (如果需要)
-        std::replace(scriptCorePathStr.begin(), scriptCorePathStr.end(), '/', '\\');
-
-        // 2. 自动生成 GameAssembly.csproj
+        // 2. 自动生成 GameAssembly.csproj（引用项目根目录下的 ScriptCore.dll，便于 IDE 解析）
         std::stringstream ss;
         ss << R"(<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
@@ -89,17 +151,18 @@ namespace Himii
   </PropertyGroup>
 
   <ItemGroup>
+    <Using Include="Himii" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="assets\scripts\**\*.cs" />
   </ItemGroup>
 
-<ItemGroup>)";
-
-        // 核心修改：直接注入绝对路径，不再依赖环境变量
-        ss << "\n    <Reference Include=\"ScriptCore\">\n";
-        ss << "      <HintPath>" << scriptCorePathStr << "</HintPath>\n";
-        ss << "    </Reference>\n";
-
-        ss << R"(
+  <ItemGroup>
+    <Reference Include="ScriptCore">
+      <HintPath>ScriptCore.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 </Project>
 )";
@@ -107,6 +170,24 @@ namespace Himii
         std::ofstream csprojFile(projectDir / "GameAssembly.csproj");
         csprojFile << ss.str();
         csprojFile.close();
+
+        const std::filesystem::path defaultScriptPath = projectDir / "assets" / "scripts" / "SampleScript.cs";
+        if (!std::filesystem::exists(defaultScriptPath))
+        {
+            std::ofstream scriptFile(defaultScriptPath);
+            if (scriptFile.is_open())
+            {
+                scriptFile << "public class SampleScript : Entity\n";
+                scriptFile << "{\n";
+                scriptFile << "    [SerializeField]\n";
+                scriptFile << "    private float moveSpeed = 5.0f;\n\n";
+                scriptFile << "    public override void OnUpdate(float timestep)\n";
+                scriptFile << "    {\n";
+                scriptFile << "        // var delta = Time.DeltaTime;\n";
+                scriptFile << "    }\n";
+                scriptFile << "}\n";
+            }
+        }
 
         // 3. (可选) 生成一个空的默认场景，防止 StartScene 报错
         // 这一步比较复杂，需要 SceneSerializer 支持保存空场景，暂时跳过

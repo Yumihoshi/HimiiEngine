@@ -134,8 +134,8 @@ namespace Himii
         colors[ImGuiCol_PopupBg] = ImVec4{0.14f, 0.14f, 0.14f, 0.94f};
         
         // Headers
-        colors[ImGuiCol_Header] = ImVec4{0.26f, 0.26f, 0.26f, 1.0f};
-        colors[ImGuiCol_HeaderHovered] = ImVec4{0.34f, 0.34f, 0.34f, 1.0f};
+        colors[ImGuiCol_Header] = ImVec4{0.13f, 0.13f, 0.13f, 1.0f};
+        colors[ImGuiCol_HeaderHovered] = ImVec4{0.42f, 0.42f, 0.42f, 1.0f};
         colors[ImGuiCol_HeaderActive] = ImVec4{0.30f, 0.30f, 0.30f, 1.0f};
 
         // Buttons
@@ -149,9 +149,9 @@ namespace Himii
         colors[ImGuiCol_FrameBgActive] = ImVec4{0.14f, 0.14f, 0.14f, 1.0f};
 
         // Tabs
-        colors[ImGuiCol_Tab] = ImVec4{0.2f, 0.2f, 0.2f, 1.0f}; // Match WindowBg
+        colors[ImGuiCol_Tab] = ImVec4{0.18f, 0.18f, 0.18f, 1.0f}; // Match WindowBg
         colors[ImGuiCol_TabHovered] = ImVec4{0.30f, 0.30f, 0.32f, 1.0f}; 
-        colors[ImGuiCol_TabActive] = ImVec4{0.2f, 0.2f, 0.2f, 1.0f};  
+        colors[ImGuiCol_TabActive] = ImVec4{0.25f, 0.25f, 0.25f, 1.0f};  
         colors[ImGuiCol_TabUnfocused] = ImVec4{0.2f, 0.2f, 0.2f, 1.0f};
         colors[ImGuiCol_TabUnfocusedActive] = ImVec4{0.2f, 0.2f, 0.2f, 1.0f};
 

@@ -1,6 +1,7 @@
 #include "Hepch.h"
 #include "ScriptEngine.h"
 #include "ScriptGlue.h"
+#include "ScriptCompiler.h"
 #include "Himii/Project/Project.h"
 #include "Himii/Scene/Components.h"
 #include "Himii/Scene/Entity.h"
@@ -38,14 +39,14 @@ namespace Himii
     Scene *ScriptEngine::s_SceneContext = nullptr;
     std::unordered_map<UUID, void *> ScriptEngine::s_EntityInstanceMap;
 
-    typedef void(CORECLR_DELEGATE_CALLTYPE *OnCreateFn)(uint64_t entityID, const char *className);
-    typedef void(CORECLR_DELEGATE_CALLTYPE *OnUpdateFn)(uint64_t entityID, float ts);
     typedef void(CORECLR_DELEGATE_CALLTYPE *LoadAssemblyFn)(const char *filepath);
     typedef int(CORECLR_DELEGATE_CALLTYPE *ClassExistsFn)(const char *className);
 
-    // [NEW] Interop Typedefs
-    typedef void *(CORECLR_DELEGATE_CALLTYPE *InstantiateClassFn)(uint64_t entityID, const char *className);
+    typedef void *(CORECLR_DELEGATE_CALLTYPE *InstantiateClassFn)(uint64_t entityID, const char *className, int flags);
     typedef void(CORECLR_DELEGATE_CALLTYPE *ReleaseInstanceFn)(void *handle);
+    typedef void(CORECLR_DELEGATE_CALLTYPE *OnDestroyInstanceFn)(void *handle);
+    typedef void(CORECLR_DELEGATE_CALLTYPE *OnUpdateInstanceFn)(void *handle, float ts);
+    typedef void(CORECLR_DELEGATE_CALLTYPE *OnCollision2DInstanceFn)(void *handle, uint64_t otherEntityID);
 
     typedef const char *(CORECLR_DELEGATE_CALLTYPE *GetFieldsFn)(void *handle);
     typedef int(CORECLR_DELEGATE_CALLTYPE *GetFloatFn)(void *handle, const char *name, float *out);
@@ -70,12 +71,13 @@ namespace Himii
 
     static LoadAssemblyFn s_LoadGameAssembly = nullptr;
     static ClassExistsFn s_EntityClassExists = nullptr;
-    static OnCreateFn s_OnCreate = nullptr;
-    static OnUpdateFn s_OnUpdate = nullptr;
 
-    // [NEW] Static Function Pointers
     static InstantiateClassFn s_InstantiateClass = nullptr;
     static ReleaseInstanceFn s_ReleaseInstance = nullptr;
+    static OnDestroyInstanceFn s_OnDestroyInstance = nullptr;
+    static OnUpdateInstanceFn s_OnUpdateInstance = nullptr;
+    static OnCollision2DInstanceFn s_OnCollisionEnter2D = nullptr;
+    static OnCollision2DInstanceFn s_OnCollisionExit2D = nullptr;
 
     // Reflection
     static GetFieldsFn s_GetFields = nullptr;
@@ -94,6 +96,11 @@ namespace Himii
 
     static GetStringFn s_GetString = nullptr;
     static SetStringFn s_SetString = nullptr;
+
+    typedef int(CORECLR_DELEGATE_CALLTYPE *GetEntityIDFn)(void *handle, const char *name, uint64_t *out);
+    typedef void(CORECLR_DELEGATE_CALLTYPE *SetEntityIDFn)(void *handle, const char *name, uint64_t val);
+    static GetEntityIDFn s_GetEntityID = nullptr;
+    static SetEntityIDFn s_SetEntityID = nullptr;
 
     // 加载 hostfxr 库
     static bool LoadHostFxr()
@@ -232,21 +239,28 @@ namespace Himii
                                                (void **)&s_EntityClassExists);
 
         load_assembly_and_get_function_pointer(filepath.c_str(), STR("Himii.ScriptManager, ScriptCore"),
-                                               STR("OnCreateEntity"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
-                                               (void **)&s_OnCreate);
-
-        load_assembly_and_get_function_pointer(filepath.c_str(), STR("Himii.ScriptManager, ScriptCore"),
-                                               STR("OnUpdateEntity"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
-                                               (void **)&s_OnUpdate);
-
-        // [NEW] Load new interop functions
-        load_assembly_and_get_function_pointer(filepath.c_str(), STR("Himii.ScriptManager, ScriptCore"),
                                                STR("InstantiateClass"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
                                                (void **)&s_InstantiateClass);
 
         load_assembly_and_get_function_pointer(filepath.c_str(), STR("Himii.ScriptManager, ScriptCore"),
                                                STR("ReleaseInstance"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
                                                (void **)&s_ReleaseInstance);
+
+        load_assembly_and_get_function_pointer(filepath.c_str(), STR("Himii.ScriptManager, ScriptCore"),
+                                               STR("OnDestroyInstance"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
+                                               (void **)&s_OnDestroyInstance);
+
+        load_assembly_and_get_function_pointer(filepath.c_str(), STR("Himii.ScriptManager, ScriptCore"),
+                                               STR("OnUpdateInstance"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
+                                               (void **)&s_OnUpdateInstance);
+
+        load_assembly_and_get_function_pointer(filepath.c_str(), STR("Himii.ScriptManager, ScriptCore"),
+                                               STR("OnCollisionEnter2DInstance"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
+                                               (void **)&s_OnCollisionEnter2D);
+
+        load_assembly_and_get_function_pointer(filepath.c_str(), STR("Himii.ScriptManager, ScriptCore"),
+                                               STR("OnCollisionExit2DInstance"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
+                                               (void **)&s_OnCollisionExit2D);
 
         // [NEW] Load Reflection Bridge functions
         const char_t *bridge_type = STR("Himii.ReflectionBridge, ScriptCore");
@@ -283,51 +297,83 @@ namespace Himii
                                                UNMANAGEDCALLERSONLY_METHOD, nullptr, (void **)&s_GetString);
         load_assembly_and_get_function_pointer(filepath.c_str(), bridge_type, STR("SetString"),
                                                UNMANAGEDCALLERSONLY_METHOD, nullptr, (void **)&s_SetString);
+        load_assembly_and_get_function_pointer(filepath.c_str(), bridge_type, STR("GetEntityID"),
+                                               UNMANAGEDCALLERSONLY_METHOD, nullptr, (void **)&s_GetEntityID);
+        load_assembly_and_get_function_pointer(filepath.c_str(), bridge_type, STR("SetEntityID"),
+                                               UNMANAGEDCALLERSONLY_METHOD, nullptr, (void **)&s_SetEntityID);
     }
 
-    void ScriptEngine::CompileAndReloadAppAssembly(const std::filesystem::path &projectPath)
+    std::filesystem::path ScriptEngine::GetGameAssemblyDllPath()
     {
-        std::string command = "dotnet build \"" + projectPath.string() + "\" -c Debug";
-        int result = std::system(command.c_str());
+        if (!Project::GetActive())
+            return {};
 
-        if (result == 0)
+        return std::filesystem::absolute(Project::GetProjectDirectory() / Project::GetConfig().ScriptModulePath);
+    }
+
+    bool ScriptEngine::RequestCompileAndReload(const std::filesystem::path &projectPath)
+    {
+        if (ScriptCompiler::IsCompiling())
+            return false;
+
+        ScriptCompiler::RequestBuild(projectPath, [projectPath](bool success)
         {
-            std::filesystem::path dllPath = Project::GetProjectDirectory() / Project::GetConfig().ScriptModulePath;
+            if (!success)
+            {
+                std::cerr << "[ScriptEngine] Script compile failed.\n";
+                return;
+            }
 
+            auto dllPath = GetGameAssemblyDllPath();
             if (std::filesystem::exists(dllPath))
-            {
                 LoadAppAssembly(dllPath);
-            }
             else
-            {
-                std::filesystem::path debugPath =
-                        Project::GetProjectDirectory() / Project::GetConfig().ScriptModulePath;
-                if (std::filesystem::exists(debugPath))
-                {
-                    LoadAppAssembly(debugPath);
-                }
-                else
-                {
-                    std::cerr << "[ScriptEngine] DLL not found! Expected at: " << std::filesystem::absolute(dllPath)
-                              << std::endl;
-                    // 打印一下当前目录，帮你定位问题
-                    std::cerr << "Current Dir: " << std::filesystem::current_path() << std::endl;
-                }
-            }
-        }
-        else
-        {
-            std::cerr << "[ScriptEngine] Failed to compile C# project!" << std::endl;
-        }
+                std::cerr << "[ScriptEngine] DLL not found at: " << dllPath << std::endl;
+        });
+
+        return true;
     }
 
-    void ScriptEngine::LoadAppAssembly(const std::filesystem::path &filepath)
+    bool ScriptEngine::LoadAppAssembly(const std::filesystem::path &filepath)
     {
-        if (s_LoadGameAssembly)
+        if (s_SceneContext != nullptr)
         {
-            // 传递 DLL 路径给 C#
-            s_LoadGameAssembly(filepath.string().c_str());
+            std::cerr << "[ScriptEngine] Cannot reload assembly while runtime is active. Stop Play first.\n";
+            return false;
         }
+
+        ReleaseAllInstances();
+
+        if (!s_LoadGameAssembly)
+            return false;
+
+        auto absolutePath = std::filesystem::absolute(filepath);
+        s_LoadGameAssembly(absolutePath.string().c_str());
+        return true;
+    }
+
+    bool ScriptEngine::IsRuntimeActive()
+    {
+        return s_SceneContext != nullptr;
+    }
+
+    void ScriptEngine::ReleaseAllInstances()
+    {
+        for (auto &[uuid, handle] : s_EntityInstanceMap)
+            DestroyInstance(handle);
+        s_EntityInstanceMap.clear();
+    }
+
+    void ScriptEngine::DestroyInstance(void *handle)
+    {
+        if (!handle)
+            return;
+
+        if (s_OnDestroyInstance)
+            s_OnDestroyInstance(handle);
+
+        if (s_ReleaseInstance)
+            s_ReleaseInstance(handle);
     }
 
     void ScriptEngine::OnCreateEntity(Entity entity)
@@ -338,7 +384,7 @@ namespace Himii
             UUID entityID = entity.GetUUID();
 
             // [MODIFIED] Use InstantiateClass to get handle
-            void* instance = InstantiateClass(entityID, sc.ClassName);
+            void* instance = InstantiateClass(entityID, sc.ClassName, ScriptInstanceFlags::InvokeOnCreate);
             
             // [NEW] Apply serialized fields
             if (instance)
@@ -390,6 +436,11 @@ namespace Himii
                         int value = field.GetValue<int>();
                         SetInt(instance, name, value);
                     }
+                    else if (field.Type == ScriptFieldType::Entity)
+                    {
+                        UUID value = field.GetValue<UUID>();
+                        SetEntityField(instance, name, value);
+                    }
                 }
             }
 
@@ -406,23 +457,18 @@ namespace Himii
 
     void ScriptEngine::OnRuntimeStop()
     {
-        // Release all handles
-        for (auto &[uuid, handle]: s_EntityInstanceMap)
-        {
-            if (s_ReleaseInstance)
-                s_ReleaseInstance(handle);
-        }
-        s_EntityInstanceMap.clear();
+        ReleaseAllInstances();
         s_SceneContext = nullptr;
     }
 
     void ScriptEngine::OnUpdateScript(Entity entity, Timestep ts)
     {
-        if (s_OnUpdate && entity.HasComponent<ScriptComponent>())
-        {
-            // 调用 C# 的 Update
-            s_OnUpdate(entity.GetUUID(), ts.GetSeconds());
-        }
+        if (!entity.HasComponent<ScriptComponent>())
+            return;
+
+        void *handle = GetEntityScriptInstance(entity.GetUUID());
+        if (handle && s_OnUpdateInstance)
+            s_OnUpdateInstance(handle, ts.GetSeconds());
     }
 
     bool ScriptEngine::EntityClassExists(const std::string &fullClassName)
@@ -455,7 +501,7 @@ namespace Himii
         bool createdTemp = false;
         if (!instance)
         {
-             instance = InstantiateClass(entityID, sc.ClassName);
+             instance = InstantiateClass(entityID, sc.ClassName, ScriptInstanceFlags::None);
              createdTemp = true;
         }
 
@@ -553,11 +599,9 @@ namespace Himii
                              }
                              else if (type == ScriptFieldType::Entity)
                              {
-                                 // Entity is referenced by UUID (uint64_t) in serialization?
-                                 // Or fieldInst.SetValue<uint64_t>(id)?
-                                 // We need to implement GetEntity field getter if we support it.
-                                 // For now just ignore value or set to 0.
-                                 // ScriptFieldInstance buffer is 16 bytes, can hold UUID.
+                                 UUID entityID{};
+                                 if (GetEntityField(instance, name, entityID))
+                                     fieldInst.SetValue(entityID);
                              }
                              else if (type == ScriptFieldType::String)
                              {
@@ -583,9 +627,7 @@ namespace Himii
             
             if (createdTemp)
             {
-                // Cleanup temp instance
-                if (s_ReleaseInstance)
-                    s_ReleaseInstance(instance);
+                DestroyInstance(instance);
                 s_EntityInstanceMap.erase(entityID);
             }
         }
@@ -598,12 +640,13 @@ namespace Himii
         // Placeholder implementation
     }
 
-    void *ScriptEngine::InstantiateClass(UUID entityID, const std::string &className)
+    void *ScriptEngine::InstantiateClass(UUID entityID, const std::string &className, ScriptInstanceFlags flags)
     {
         if (s_InstantiateClass)
         {
-            void *handle = s_InstantiateClass(entityID, className.c_str());
-            s_EntityInstanceMap[entityID] = handle;
+            void *handle = s_InstantiateClass(entityID, className.c_str(), static_cast<int>(flags));
+            if (handle)
+                s_EntityInstanceMap[entityID] = handle;
             return handle;
         }
         return nullptr;
@@ -728,6 +771,46 @@ namespace Himii
         {
             s_SetString(instanceHandle, fieldName.c_str(), value.c_str());
         }
+    }
+
+    bool ScriptEngine::GetEntityField(void *instanceHandle, const std::string &fieldName, UUID &outEntityID)
+    {
+        if (s_GetEntityID && instanceHandle)
+        {
+            uint64_t id = 0;
+            if (s_GetEntityID(instanceHandle, fieldName.c_str(), &id))
+            {
+                outEntityID = id;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void ScriptEngine::SetEntityField(void *instanceHandle, const std::string &fieldName, UUID entityID)
+    {
+        if (s_SetEntityID && instanceHandle)
+            s_SetEntityID(instanceHandle, fieldName.c_str(), entityID);
+    }
+
+    void ScriptEngine::OnCollisionEnter2D(Entity entity, Entity other)
+    {
+        if (!entity || !other || !entity.HasComponent<ScriptComponent>())
+            return;
+
+        void *handle = GetEntityScriptInstance(entity.GetUUID());
+        if (handle && s_OnCollisionEnter2D)
+            s_OnCollisionEnter2D(handle, other.GetUUID());
+    }
+
+    void ScriptEngine::OnCollisionExit2D(Entity entity, Entity other)
+    {
+        if (!entity || !other || !entity.HasComponent<ScriptComponent>())
+            return;
+
+        void *handle = GetEntityScriptInstance(entity.GetUUID());
+        if (handle && s_OnCollisionExit2D)
+            s_OnCollisionExit2D(handle, other.GetUUID());
     }
 
     void *ScriptEngine::GetEntityScriptInstance(UUID entityID)

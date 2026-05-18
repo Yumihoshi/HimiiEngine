@@ -1,5 +1,6 @@
 #include "Hepch.h"
 #include "ProjectSerializer.h"
+#include "Himii/Scripting/ScriptIDE.h"
 #include <fstream>
 #include <yaml-cpp/yaml.h>
 
@@ -25,6 +26,9 @@ namespace Himii
                 out << YAML::Key << "AssetDirectory" << YAML::Value << config.AssetDirectory.string();
                 out << YAML::Key << "ScriptModulePath" << YAML::Value << config.ScriptModulePath.string();
                 out << YAML::Key << "Is2D" << YAML::Value << config.Is2D;
+                out << YAML::Key << "ScriptIDE" << YAML::Value << ScriptIDETypeToString(config.ScriptIDEOverride);
+                out << YAML::Key << "CustomScriptIDEPath" << YAML::Value << config.CustomScriptIDEPath;
+                out << YAML::Key << "CustomScriptIDEArguments" << YAML::Value << config.CustomScriptIDEArguments;
                 out << YAML::EndMap; // Project
             }
             out << YAML::EndMap; // Root
@@ -62,6 +66,17 @@ namespace Himii
         
         if (projectNode["Is2D"])
              config.Is2D = projectNode["Is2D"].as<bool>();
+
+        if (projectNode["ScriptIDE"])
+            config.ScriptIDEOverride = ScriptIDETypeFromString(projectNode["ScriptIDE"].as<std::string>());
+        else
+            config.ScriptIDEOverride = ScriptIDEType::Inherit;
+
+        if (projectNode["CustomScriptIDEPath"])
+            config.CustomScriptIDEPath = projectNode["CustomScriptIDEPath"].as<std::string>();
+
+        if (projectNode["CustomScriptIDEArguments"])
+            config.CustomScriptIDEArguments = projectNode["CustomScriptIDEArguments"].as<std::string>();
         
         return true;
     }

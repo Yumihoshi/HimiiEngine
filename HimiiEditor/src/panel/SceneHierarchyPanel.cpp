@@ -2,6 +2,7 @@
 #include "Himii/Project/Project.h"
 
 #include "Himii/Scripting/ScriptEngine.h"
+#include "Himii/Scripting/ScriptIDELauncher.h"
 #include "Himii/Scene/TileSet.h"
 #include "Himii/Scene/TileMapData.h"
 #include "Himii/Scene/ParticleEmitterAsset.h"
@@ -512,10 +513,6 @@ namespace Himii
                                            }
                                        });
 
-        #include <cstdlib> // for system()
-
-        // ...
-
         DrawComponent<ScriptComponent>(
                 "Script", entity, m_ComponentIcons["Script"],
                 [entity, scene = m_Context](auto &component) mutable
@@ -562,9 +559,10 @@ namespace Himii
 
                                 if (std::filesystem::exists(scriptPath))
                                 {
-                                    std::string cmd =
-                                            "code \"" + projectDir.string() + "\" \"" + scriptPath.string() + "\"";
-                                    system(cmd.c_str());
+                                    ScriptIDELauncher::OpenScript(
+                                        projectDir,
+                                        project->GetConfig().Name,
+                                        scriptPath);
                                 }
                             }
                         }
@@ -777,6 +775,69 @@ namespace Himii
                                                 }
                                                 if (isSelected)
                                                     ImGui::SetItemDefaultFocus();
+                                            }
+                                            ImGui::EndCombo();
+                                        }
+
+                                        ImGui::PopItemWidth();
+                                        ImGui::EndTable();
+                                    }
+                                    ImGui::PopID();
+                                }
+                                else if (field.Type == ScriptFieldType::Entity)
+                                {
+                                    UUID data = field.GetValue<UUID>();
+                                    ImGui::PushID(name.c_str());
+                                    if (ImGui::BeginTable("##EntityControl", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
+                                    {
+                                        ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
+                                        ImGui::TableSetupColumn("Value");
+                                        ImGui::TableNextColumn();
+                                        ImGui::Text("%s", name.c_str());
+                                        ImGui::TableNextColumn();
+                                        ImGui::PushItemWidth(-1);
+
+                                        std::string preview = "None";
+                                        if (data)
+                                        {
+                                            Entity refEntity = scene->GetEntityByUUID(data);
+                                            if (refEntity)
+                                                preview = refEntity.GetName();
+                                            else
+                                                preview = "Missing";
+                                        }
+
+                                        if (ImGui::BeginCombo("##Value", preview.c_str()))
+                                        {
+                                            if (ImGui::Selectable("None", data == UUID{}))
+                                            {
+                                                data = {};
+                                                field.SetValue(data);
+                                                ScriptEngine::SetEntityField(
+                                                    ScriptEngine::GetEntityScriptInstance(entity.GetUUID()), name, data);
+                                            }
+
+                                            if (scene)
+                                            {
+                                                const auto &view = scene->m_Registry.view<TagComponent>();
+                                                for (auto sceneHandle : view)
+                                                {
+                                                    Entity sceneEntity{sceneHandle, scene.get()};
+                                                    if (sceneEntity == entity)
+                                                        continue;
+
+                                                    UUID sceneUUID = sceneEntity.GetUUID();
+                                                    bool isSelected = (sceneUUID == data);
+                                                    if (ImGui::Selectable(sceneEntity.GetName().c_str(), isSelected))
+                                                    {
+                                                        data = sceneUUID;
+                                                        field.SetValue(data);
+                                                        ScriptEngine::SetEntityField(
+                                                            ScriptEngine::GetEntityScriptInstance(entity.GetUUID()), name, data);
+                                                    }
+                                                    if (isSelected)
+                                                        ImGui::SetItemDefaultFocus();
+                                                }
                                             }
                                             ImGui::EndCombo();
                                         }

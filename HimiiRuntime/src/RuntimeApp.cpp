@@ -36,8 +36,9 @@ namespace Himii
             HIMII_CORE_INFO("Loading Project: {0}", projectFile.string());
             Ref<Project> project = Project::Load(projectFile);
 
-            std::filesystem::path gameDllName = project->GetConfig().ScriptModulePath.filename();
-            ScriptEngine::LoadAppAssembly(gameDllName);
+            std::filesystem::path gameDllPath =
+                    std::filesystem::absolute(Project::GetProjectDirectory() / Project::GetConfig().ScriptModulePath);
+            ScriptEngine::LoadAppAssembly(gameDllPath);
 
             std::filesystem::path startScenePath = Project::GetAssetDirectory() / Project::GetConfig().StartScene;
 

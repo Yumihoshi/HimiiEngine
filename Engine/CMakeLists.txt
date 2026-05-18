@@ -37,7 +37,6 @@ file(GLOB_RECURSE HEADERS "src/*.h")
 if (WIN32)
     list(APPEND SOURCES "src/Platform/Windows/WindowsPlatformUtils.cpp")
 elseif (UNIX AND NOT APPLE)
-    # 排除Windows特定的平台工具（使用Win32 API）
     list(REMOVE_ITEM SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Windows/WindowsPlatformUtils.cpp")
     file(GLOB_RECURSE DIRECTX_SOURCES "src/Platform/DirectX/*.cpp")
     if (DIRECTX_SOURCES)

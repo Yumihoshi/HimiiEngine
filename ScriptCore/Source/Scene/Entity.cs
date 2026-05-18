@@ -87,5 +87,9 @@ namespace Himii
 
         public virtual void OnCreate() { }
         public virtual void OnUpdate(float ts) { }
+        public virtual void OnDestroy() { }
+
+        public virtual void OnCollisionEnter2D(Collision2DInfo collision) { }
+        public virtual void OnCollisionExit2D(Collision2DInfo collision) { }
     }
 }

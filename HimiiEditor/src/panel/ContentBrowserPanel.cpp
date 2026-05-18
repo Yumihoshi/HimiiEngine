@@ -2,6 +2,7 @@
 #include "ContentBrowserPanel.h"
 #include "Himii/Project/Project.h"
 
+#include <fstream>
 #include <imgui.h>
 
 namespace Himii
@@ -95,7 +96,41 @@ namespace Himii
             }
             ImGui::NewLine();
             ImGui::Separator();
-            
+
+            static bool openCreateScriptPopup = false;
+            static char scriptName[128] = "NewScript";
+
+            if (ImGui::BeginPopupContextWindow("ContentBrowserContext", ImGuiPopupFlags_MouseButtonRight | ImGuiPopupFlags_NoOpenOverItems))
+            {
+                if (ImGui::MenuItem("Create C# Script"))
+                    openCreateScriptPopup = true;
+                ImGui::EndPopup();
+            }
+
+            if (openCreateScriptPopup)
+                ImGui::OpenPopup("CreateScriptPopup");
+
+            if (ImGui::BeginPopupModal("CreateScriptPopup", &openCreateScriptPopup, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::InputText("Class Name", scriptName, sizeof(scriptName));
+                if (ImGui::Button("Create"))
+                {
+                    if (CreateCSharpScript(m_CurrentDirectory, scriptName))
+                    {
+                        if (m_OnScriptChanged)
+                            m_OnScriptChanged();
+                    }
+                    openCreateScriptPopup = false;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel"))
+                {
+                    openCreateScriptPopup = false;
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
 
             // Adaptive Flow Layout
             static float thumbnailSize = 64.0f;
@@ -214,5 +249,34 @@ namespace Himii
         {
             m_CurrentDirectory = Project::GetAssetDirectory();
         }
+    }
+
+    bool ContentBrowserPanel::CreateCSharpScript(const std::filesystem::path& directory, const std::string& className)
+    {
+        if (className.empty())
+            return false;
+
+        std::filesystem::path scriptPath = directory / (className + ".cs");
+        if (std::filesystem::exists(scriptPath))
+            return false;
+
+        std::ofstream file(scriptPath);
+        if (!file.is_open())
+            return false;
+
+        file << "using Himii;\n\n";
+        file << "public class " << className << " : Entity\n";
+        file << "{\n";
+        file << "\tpublic float Speed = 1.0f;\n\n";
+        file << "\tpublic override void OnCreate()\n";
+        file << "\t{\n";
+        file << "\t}\n\n";
+        file << "\tpublic override void OnUpdate(float ts)\n";
+        file << "\t{\n";
+        file << "\t}\n";
+        file << "}\n";
+        file.close();
+
+        return true;
     }
 } // namespace Himii

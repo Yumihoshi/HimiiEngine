@@ -37,14 +37,18 @@ namespace Himii {
         KeyCode
     };
 
+    enum class ScriptInstanceFlags : int
+    {
+        None = 0,
+        InvokeOnCreate = 1
+    };
+
     struct ScriptFieldInstance
     {
         ScriptFieldType Type = ScriptFieldType::None;
 
-        // 对于数值和向量类型，直接存放在固定大小的缓冲区中。
         uint8_t m_Buffer[16];
 
-        // 对于字符串，我们单独存储，避免固定缓冲区限制。
         std::string StringValue;
 
         template<typename T>
@@ -62,7 +66,6 @@ namespace Himii {
         }
     };
 
-    // 针对 std::string 的特化：绕过固定缓冲区，直接使用 StringValue
     template<>
     inline std::string ScriptFieldInstance::GetValue<std::string>() const
     {
@@ -84,11 +87,11 @@ namespace Himii {
 		static void Shutdown();
 
 		static void LoadAssembly(const std::filesystem::path& filepath);
-        static void CompileAndReloadAppAssembly(const std::filesystem::path &projectPath);
-		static void LoadAppAssembly(const std::filesystem::path& filepath);
+        static bool RequestCompileAndReload(const std::filesystem::path &projectPath);
+        static std::filesystem::path GetGameAssemblyDllPath();
+		static bool LoadAppAssembly(const std::filesystem::path& filepath);
 
-		// 运行时生命周期
-        static void OnCreateEntity(Entity entity);
+		static void OnCreateEntity(Entity entity);
         static void OnRuntimeStart(Scene* scene);
         static void OnRuntimeStop();
 
@@ -96,12 +99,11 @@ namespace Himii {
 
 		static bool EntityClassExists(const std::string &fullClassName);
 
-        // [NEW] Instantiate C# class and return handle
-        static void* InstantiateClass(UUID entityID, const std::string& className);
+        static void* InstantiateClass(UUID entityID, const std::string& className,
+                                      ScriptInstanceFlags flags = ScriptInstanceFlags::InvokeOnCreate);
         
         static ScriptFieldMap& GetScriptFieldMap(Entity entity);
 
-        // [NEW] Reflection helpers
         static std::string GetFields(void *instanceHandle);
         static bool GetFloat(void *instanceHandle, const std::string &fieldName, float &outValue);
         static void SetFloat(void *instanceHandle, const std::string &fieldName, float value);
@@ -122,19 +124,27 @@ namespace Himii {
         static bool GetString(void *instanceHandle, const std::string &fieldName, std::string &outValue);
         static void SetString(void *instanceHandle, const std::string &fieldName, const std::string &value);
 
+        static bool GetEntityField(void *instanceHandle, const std::string &fieldName, UUID &outEntityID);
+        static void SetEntityField(void *instanceHandle, const std::string &fieldName, UUID entityID);
+
+        static void OnCollisionEnter2D(Entity entity, Entity other);
+        static void OnCollisionExit2D(Entity entity, Entity other);
+
         static void* GetEntityScriptInstance(UUID entityID);
 
         static std::string Serialize(void* instanceHandle);
         static void Deserialize(void* instanceHandle, const std::string& json);
 
 		static Scene* GetSceneContext();
+        static bool IsRuntimeActive();
 
     private:
         static void InitInterop();
+        static void ReleaseAllInstances();
+        static void DestroyInstance(void* handle);
 
     private:
         static Scene* s_SceneContext;
-        // Map Entity UUID to GCHandle (void*)
         static std::unordered_map<UUID, void*> s_EntityInstanceMap;
 	};
 

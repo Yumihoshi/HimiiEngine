@@ -224,6 +224,7 @@ namespace Himii
         {
             const int32_t subStepCount = 2;
             b2World_Step(m_Box2DWorld, ts, subStepCount);
+            ProcessPhysics2DContacts();
 
             auto view = m_Registry.view<Rigidbody2DComponent>();
             for (auto e: view)
@@ -455,6 +456,7 @@ namespace Himii
         {
             const int32_t subStepCount = 2;
             b2World_Step(m_Box2DWorld, ts, subStepCount);
+            ProcessPhysics2DContacts();
 
             auto view = m_Registry.view<Rigidbody2DComponent>();
             for (auto e: view)
@@ -693,6 +695,7 @@ namespace Himii
                 auto &bc2d = entity.GetComponent<BoxCollider2DComponent>();
 
                 b2ShapeDef shapeDef = b2DefaultShapeDef();
+                shapeDef.enableContactEvents = true;
                 shapeDef.density = bc2d.Density;
                 shapeDef.material.friction = bc2d.Friction;
                 shapeDef.material.restitution = bc2d.Restitution;
@@ -714,6 +717,7 @@ namespace Himii
                 auto &cc2d = entity.GetComponent<CircleCollider2DComponent>();
 
                 b2ShapeDef shapeDef = b2DefaultShapeDef();
+                shapeDef.enableContactEvents = true;
                 shapeDef.density = cc2d.Density;
                 shapeDef.material.friction = cc2d.Friction;
                 shapeDef.material.restitution = cc2d.Restitution;
@@ -736,6 +740,61 @@ namespace Himii
         {
             b2DestroyWorld(m_Box2DWorld);
             m_Box2DWorld = {0}; // Reset ID
+        }
+    }
+
+    Entity Scene::GetEntityFromShape(b2ShapeId shapeId)
+    {
+        if (!b2Shape_IsValid(shapeId))
+            return {};
+
+        b2BodyId bodyId = b2Shape_GetBody(shapeId);
+        if (!b2Body_IsValid(bodyId))
+            return {};
+
+        void *userData = b2Body_GetUserData(bodyId);
+        if (!userData)
+            return {};
+
+        entt::entity handle = static_cast<entt::entity>(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(userData)));
+        if (!m_Registry.valid(handle))
+            return {};
+
+        return Entity{handle, this};
+    }
+
+    void Scene::ProcessPhysics2DContacts()
+    {
+        if (!b2World_IsValid(m_Box2DWorld))
+            return;
+
+        b2ContactEvents events = b2World_GetContactEvents(m_Box2DWorld);
+
+        for (int i = 0; i < events.beginCount; ++i)
+        {
+            const b2ContactBeginTouchEvent &ev = events.beginEvents[i];
+            Entity entityA = GetEntityFromShape(ev.shapeIdA);
+            Entity entityB = GetEntityFromShape(ev.shapeIdB);
+            if (entityA && entityB)
+            {
+                ScriptEngine::OnCollisionEnter2D(entityA, entityB);
+                ScriptEngine::OnCollisionEnter2D(entityB, entityA);
+            }
+        }
+
+        for (int i = 0; i < events.endCount; ++i)
+        {
+            const b2ContactEndTouchEvent &ev = events.endEvents[i];
+            if (!b2Shape_IsValid(ev.shapeIdA) || !b2Shape_IsValid(ev.shapeIdB))
+                continue;
+
+            Entity entityA = GetEntityFromShape(ev.shapeIdA);
+            Entity entityB = GetEntityFromShape(ev.shapeIdB);
+            if (entityA && entityB)
+            {
+                ScriptEngine::OnCollisionExit2D(entityA, entityB);
+                ScriptEngine::OnCollisionExit2D(entityB, entityA);
+            }
         }
     }
 

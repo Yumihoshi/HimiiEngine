@@ -249,6 +249,62 @@ namespace Himii
         }
 
         [UnmanagedCallersOnly]
+        public static unsafe int GetEntityID(IntPtr instanceHandle, IntPtr fieldNamePtr, ulong* outValue)
+        {
+            try
+            {
+                if (instanceHandle == IntPtr.Zero || fieldNamePtr == IntPtr.Zero || outValue == null)
+                    return 0;
+
+                GCHandle handle = GCHandle.FromIntPtr(instanceHandle);
+                object instance = handle.Target;
+                if (instance == null) return 0;
+
+                string fieldName = Marshal.PtrToStringUTF8(fieldNamePtr);
+                FieldInfo field = instance.GetType().GetField(fieldName);
+                if (field == null || field.FieldType != typeof(Entity))
+                    return 0;
+
+                var entityRef = field.GetValue(instance) as Entity;
+                *outValue = entityRef != null ? entityRef.ID : 0;
+                return 1;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[C# Error] GetEntityID failed: {e.Message}");
+                return 0;
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        public static void SetEntityID(IntPtr instanceHandle, IntPtr fieldNamePtr, ulong entityID)
+        {
+            try
+            {
+                if (instanceHandle == IntPtr.Zero || fieldNamePtr == IntPtr.Zero)
+                    return;
+
+                GCHandle handle = GCHandle.FromIntPtr(instanceHandle);
+                object instance = handle.Target;
+                if (instance == null) return;
+
+                string fieldName = Marshal.PtrToStringUTF8(fieldNamePtr);
+                FieldInfo field = instance.GetType().GetField(fieldName);
+                if (field == null || field.FieldType != typeof(Entity))
+                    return;
+
+                if (entityID > 0)
+                    field.SetValue(instance, new Entity(entityID));
+                else
+                    field.SetValue(instance, null);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[C# Error] SetEntityID failed: {e.Message}");
+            }
+        }
+
+        [UnmanagedCallersOnly]
         public static void SetString(IntPtr instanceHandle, IntPtr fieldNamePtr, IntPtr valuePtr)
         {
             try

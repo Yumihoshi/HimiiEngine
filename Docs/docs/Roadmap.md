@@ -33,13 +33,19 @@
 | [x] | **Box2D World** | 物理世界初始化与步进 (Step) |
 | [x] | **Rigidbody2D** | 刚体组件属性同步 (Transform <-> Box2D Body) |
 | [x] | **BoxCollider2D** | 矩形碰撞体与夹具 (Fixture) 创建 |
+| [x] | **Collision Events 2D** | `OnCollisionEnter2D` / `OnCollisionExit2D` 脚本回调 |
 
 ### 核心模块：脚本系统 (Scripting)
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 说明 |
 | :--- | :--- | :--- |
-| [x] | **Mono Host** | 初始化 Mono 运行时环境 |
-| [x] | **Script Class** | C# 类加载与实例化 |
+| [x] | **CoreCLR Host** | .NET 8 + 可收集 AssemblyLoadContext（非 Mono） |
+| [x] | **Script Class** | C# 类加载与实例化（OnCreate / OnUpdate / OnDestroy） |
 | [x] | **Internal Calls** | C++ 与 C# 互操作绑定 |
+| [x] | **Input API** | C# `Input.IsKeyDown` 等接口 |
+| [x] | **Script Fields** | Inspector 公开字段读写与 YAML 序列化（含 Entity 引用） |
+| [x] | **Async Compile** | `dotnet build` 异步编译与文件监视 |
+| [x] | **Script Console** | 编译日志面板，错误行跳转 IDE |
+| [x] | **IDE Launcher** | 全局/项目 IDE 配置（VS / VS Code / Rider / Custom） |
 
 ### 核心模块：编辑器 (Editor Interface)
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 说明 |
@@ -49,6 +55,14 @@
 | [x] | **Hierarchy Panel** | 实体层级树状列表 |
 | [x] | **Properties Panel** | 组件属性检视与修改 |
 | [x] | **Content Browser** | 资源文件浏览与拖拽 |
+| [x] | **ImGuizmo** | 视口内物体变换 Gizmo |
+| [x] | **Editor Preferences** | 全局编辑器设置（含默认脚本 IDE） |
+| [x] | **Project Settings** | 项目级 IDE 覆盖与 `.hproj` 序列化 |
+
+### 核心模块：发布 (Distribution)
+| 状态 | 最小执行单元 (Minimum Execution Unit) | 说明 |
+| :--- | :--- | :--- |
+| [x] | **Runtime Application** | `HimiiRuntime` 剥离编辑器的游戏运行程序 |
 
 ---
 
@@ -61,7 +75,7 @@
 | [ ] | **Point Shadow** | 全向阴影 (CubeMap) |
 | [ ] | **Bloom** | 泛光后处理特效 |
 | [ ] | **Post-Processing Stack** | 包含 ToneMapping, Gamma Correction 的后处理管线 |
-| [ ] | **Particle System** | 基于 GPU 或 CPU 的粒子发射器 |
+| [ ] | **Particle System** | 基于 GPU 或 CPU 的粒子发射器（编辑器部分已有基础） |
 
 ### 核心模块：物理系统升级 (Physics 3D)
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |
@@ -75,21 +89,19 @@
 ### 核心模块：游戏性与脚本 (Gameplay & Scripting)
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |
 | :--- | :--- | :--- |
-| [ ] | **Input API** | C# 端获取 `Input.IsKeyDown` 等接口 |
-| [ ] | **Physics Events** | `OnCollisionEnter/Exit` 回调 |
 | [ ] | **Prefab System** | 预制体资产的保存与实例化 |
 | [ ] | **Scene Transition** | 运行时场景切换 API |
+| [ ] | **[SerializeField]** | 支持 private 字段在 Inspector 中显示 |
 
 ### 核心模块：编辑器交互 (Editor UX)
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |
 | :--- | :--- | :--- |
-| [ ] | **Guizmo Integration** | 引入 ImGuizmo 实现视口内物体变换 |
 | [ ] | **Undo/Redo** | 命令模式实现操作撤销重做 |
 | [ ] | **Asset Importer** | 统一的资源导入设置面板 |
-| [ ] | **Console Panel** | 捕获 Stdout/Stderr 并彩色显示日志 |
+| [ ] | **Console Panel** | 通用 Log 面板：重定向 `HIMII_CORE_*` / spdlog 到 ImGui |
 
 ### 核心模块：发布 (Distribution)
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |
 | :--- | :--- | :--- |
-| [ ] | **Runtime Application** | 剥离编辑器代码的纯游戏运行程序 |
 | [ ] | **Project Packager** | 自动打包脚本与资源到发布的目录 |
+| [ ] | **Build Pipeline** | 确保 GameAssembly、ScriptCore、资源、`.hproj` 一并输出 |

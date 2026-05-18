@@ -97,6 +97,8 @@ namespace Himii
 
         void OnPhysics2DStart();
         void OnPhysics2DStop();
+        void ProcessPhysics2DContacts();
+        Entity GetEntityFromShape(b2ShapeId shapeId);
 
         void RenderScene(EditorCamera &camera);
 

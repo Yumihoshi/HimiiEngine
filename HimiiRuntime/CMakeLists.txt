@@ -13,7 +13,7 @@ target_include_directories(HimiiRuntime PRIVATE
     ${CMAKE_SOURCE_DIR}/Engine/src
 )
 
-# 链接引擎核心库 (假设你的引擎库 Target 叫 Himii-Engine)
+# 链接引擎核心库
 target_link_libraries(HimiiRuntime PRIVATE Engine)
 
 set(SCRIPT_CORE_BUILD_DIR "${CMAKE_SOURCE_DIR}/ScriptCore/bin/$<IF:$<CONFIG:Debug>,Debug,Release>/net8.0")

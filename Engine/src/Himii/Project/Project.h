@@ -2,8 +2,9 @@
 #include <string>
 #include <filesystem>
 #include <Himii/Core/Core.h>
-#include "Himii/Asset/AssetManager.h" 
+#include "Himii/Asset/AssetManager.h"
 #include "Himii/Core/Log.h"
+#include "Himii/Scripting/ScriptIDE.h"
 
 namespace Himii
 {
@@ -14,6 +15,10 @@ namespace Himii
 		std::filesystem::path AssetDirectory = "assets";
         std::filesystem::path ScriptModulePath = "bin/Debug/GameAssembly.dll";
         bool Is2D = false;
+
+        ScriptIDEType ScriptIDEOverride = ScriptIDEType::Inherit;
+        std::string CustomScriptIDEPath;
+        std::string CustomScriptIDEArguments;
 	};
 
 	class Project {

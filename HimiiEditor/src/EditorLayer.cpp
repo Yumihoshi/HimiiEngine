@@ -1,6 +1,9 @@
 #include "EditorLayer.h"
 #include "imgui.h"
 #include "Himii/Scripting/ScriptEngine.h"
+#include "Himii/Scripting/ScriptCompiler.h"
+#include "Himii/Scripting/ScriptIDELauncher.h"
+#include "Himii/Editor/EditorSettings.h"
 #include "Himii/Project/Project.h"
 
 #include "Himii/Renderer/Renderer3D.h"
@@ -15,10 +18,8 @@
 
 namespace Himii
 {
-    //extern const std::filesystem::path s_AssetsPath;
-
     EditorLayer::EditorLayer() :
-        Layer("Example2D"), m_CameraController(1280.0f / 720.0f), m_SquareColor({0.2f, 0.38f, 0.64f, 1.0f})
+        Layer("Example2D"), m_CameraController(1280.0f / 720.0f)
     {
     }
 
@@ -26,6 +27,7 @@ namespace Himii
     {
         HIMII_PROFILE_FUNCTION();
 
+        //编辑器资源引入
         m_IconPlay = Texture2D::Create("resources/icons/play.png");
         m_IconStop = Texture2D::Create("resources/icons/stop.png");
         m_IconSimulate = Texture2D::Create("resources/icons/simulate.png");
@@ -35,14 +37,13 @@ namespace Himii
                                                 "resources/skybox/front.bmp", "resources/skybox/back.bmp"};
         m_SkyboxTexture = TextureCube::Create(skyboxFaces);
 
-        //m_DefaultFont = CreateRef<Font>("assets/fonts/msyh.ttc");
         Font::InitDefault("assets/fonts/msyh.ttc");
         HIMII_CORE_INFO("Default font loaded successfully!");
 
+        //初始化
         m_EditorScene = CreateRef<Scene>();
         m_EditorScene->SetSkybox(m_SkyboxTexture);
         m_ActiveScene = m_EditorScene;
-
 
         // 创建离屏帧缓冲，尺寸先用窗口大小，后续由 EditorLayer 面板驱动调整
         FramebufferSpecification fbSpec{1280, 720};
@@ -53,7 +54,10 @@ namespace Himii
 
         m_SceneHierarchyPanel.SetContext(m_ActiveScene);
 
+        m_ContentBrowserPanel.SetOnScriptChanged([this]() { RequestScriptCompile(); });
+
         LoadRecentProjects();
+        EditorSettings::Get().Load();
 
         auto commandLineArgs = Application::Get().GetCommandLineArgs();
         if (commandLineArgs.Count > 1)
@@ -69,6 +73,35 @@ namespace Himii
     void EditorLayer::OnUpdate(Timestep ts)
     {
         HIMII_PROFILE_FUNCTION();
+
+        const bool wasCompiling = m_WasScriptCompiling;
+        ScriptCompiler::Update();
+
+        if (Project::GetActive())
+            m_ScriptFileWatcher.Update(ts.GetSeconds());
+
+        if (wasCompiling && !ScriptCompiler::IsCompiling())
+        {
+            if (ScriptCompiler::GetLastExitCode() == 0)
+            {
+                m_ScriptsDirty = false;
+                m_ScriptFileWatcher.ClearPendingChange();
+            }
+
+            if (m_NotifyReloadAfterCompile)
+            {
+                m_ShowScriptReloadNotice = true;
+                m_NotifyReloadAfterCompile = false;
+            }
+        }
+        m_WasScriptCompiling = ScriptCompiler::IsCompiling();
+
+        if (m_PendingPlayAfterCompile && !ScriptCompiler::IsCompiling())
+        {
+            m_PendingPlayAfterCompile = false;
+            if (ScriptCompiler::GetLastExitCode() == 0)
+                StartScenePlay();
+        }
 
         if (FramebufferSpecification spec = m_Framebuffer->GetSpecification();
             m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f &&
@@ -221,10 +254,18 @@ namespace Himii
                     {
                         SaveProject();
                     }
+                    if (ImGui::MenuItem("Project Settings..."))
+                        m_ShowProjectSettings = true;
                     if (ImGui::MenuItem("Build Project..."))
                     {
                         BuildProject();
                     }
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("Edit"))
+                {
+                    if (ImGui::MenuItem("Preferences..."))
+                        m_ShowEditorPreferences = true;
                     ImGui::EndMenu();
                 }
                 if (ImGui::BeginMenu("Options"))
@@ -250,14 +291,11 @@ namespace Himii
                 }
                 if (ImGui::BeginMenu("Script"))
                 {
-                    if (ImGui::MenuItem("Compile and Reload"))
-                    {
+                    bool compiling = ScriptCompiler::IsCompiling();
+                    if (ImGui::MenuItem("Compile and Reload", nullptr, false, !compiling))
                         CompileAndReloadScripts();
-                    }
                     if (ImGui::MenuItem("Open C# Solution"))
-                    {
                         OpenCSProject();
-                    }
                     ImGui::EndMenu();
                 }
                 if (ImGui::BeginMenu("Window"))
@@ -265,6 +303,7 @@ namespace Himii
                     ImGui::MenuItem("Animation Editor", nullptr, &m_ShowAnimationPanel);
                     ImGui::MenuItem("TileMap Editor", nullptr, &m_ShowTileMapEditor);
                     ImGui::MenuItem("Particle Emitter Editor", nullptr, &m_ShowParticleEmitterEditor);
+                    ImGui::MenuItem("Script Console", nullptr, &m_ShowScriptConsole);
                     ImGui::MenuItem("Show Grid", nullptr, &m_ShowGrid);
                     ImGui::EndMenu();
                 }
@@ -272,8 +311,27 @@ namespace Himii
             }
             ImGui::End();
 
+            if (m_ShowScriptReloadNotice)
+            {
+                ImGui::OpenPopup("ScriptReloadNotice");
+                m_ShowScriptReloadNotice = false;
+            }
+            if (ImGui::BeginPopupModal("ScriptReloadNotice", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::Text("Scripts reloaded. Press Play again to run.");
+                if (ImGui::Button("OK"))
+                    ImGui::CloseCurrentPopup();
+                ImGui::EndPopup();
+            }
+
             m_SceneHierarchyPanel.OnImGuiRender();
             m_ContentBrowserPanel.OnImGuiRender();
+            if (m_ShowScriptConsole)
+                m_ScriptConsolePanel.OnImGuiRender(&m_ShowScriptConsole);
+            if (m_ShowEditorPreferences)
+                m_EditorPreferencesPanel.OnImGuiRender(&m_ShowEditorPreferences);
+            if (m_ShowProjectSettings)
+                m_ProjectSettingsPanel.OnImGuiRender(&m_ShowProjectSettings);
             m_AnimationPanel.OnImGuiRender(m_ShowAnimationPanel);
             m_TileMapEditorPanel.OnImGuiRender(m_ShowTileMapEditor);
             m_ParticleEmitterEditorPanel.OnImGuiRender(m_ShowParticleEmitterEditor);
@@ -290,8 +348,6 @@ namespace Himii
                 m_ShowParticleEmitterEditor = true;
                 m_ParticleEmitterEditorPanel.Open(peEditorRequest);
             }
-
-            
 
             ImGui::Begin("Stats");
             auto stats = Himii::Renderer2D::GetStatistics();
@@ -438,8 +494,6 @@ namespace Himii
                         }
                     }
                 }
-
-                
             }
 
             // ImGui::End();
@@ -735,6 +789,7 @@ namespace Himii
         if (Project::Load(path))
         {
             auto projectDir = Project::GetProjectDirectory();
+            m_ProjectSettingsPanel.Reset();
 
             // 更新最近项目列表
             {
@@ -757,10 +812,12 @@ namespace Himii
             }
 
             // 假设 csproj 就在项目根目录
-            // 如果你的结构是 csproj 在 assets 下，则改为 projectDir / "assets" / "GameAssembly.csproj"
-            m_CSharpProjectPath = projectDir /Project::GetProjectDirectory()/ "GameAssembly.csproj";
+            m_CSharpProjectPath = projectDir / "GameAssembly.csproj";
 
-            // 编译脚本
+            auto scriptsDir = Project::GetAssetDirectory() / "scripts";
+            m_ScriptFileWatcher.Watch(scriptsDir, [this]() { m_ScriptsDirty = true; RequestScriptCompile(); });
+            m_ScriptsDirty = false;
+
             CompileAndReloadScripts();
 
             // 重置 ContentBrowser 面板
@@ -782,7 +839,7 @@ namespace Himii
 
     void EditorLayer::BuildProject()
     {
-        // 1. 让用户选择输出路径 (这里复用 SaveFile，让用户输入 exe 名字)
+        // 选择输出路径
         std::string filepath = FileDialog::SaveFile("Executable (*.exe)\0*.exe\0");
 
         if (filepath.empty())
@@ -791,22 +848,20 @@ namespace Himii
         std::filesystem::path exePath(filepath);
         std::filesystem::path buildDir = exePath.parent_path();
 
-        // 如果目录不存在，创建它
+        // 如果目录不存在，创建目录
         if (!std::filesystem::exists(buildDir))
             std::filesystem::create_directories(buildDir);
 
         HIMII_CORE_INFO("Starting Build to: {0}", buildDir.string());
 
-        // 2. 确定源文件位置 (Editor 和 Runtime 通常在同一个构建目录下)
         // 获取当前 Editor.exe 所在的目录
         std::filesystem::path engineBinDir = Application::Get().GetExecutableDir();
         
-        // 注意：这里的相对路径依赖于 CMake 的输出目录结构
-        // engineBinDir = .../bin/HimiiEditor/Debug
+        // 这里的相对路径依赖于 CMake 的输出目录结构
         std::filesystem::path binRoot = engineBinDir.parent_path().parent_path(); // .../bin
         std::filesystem::path runtimeDir = binRoot / "HimiiRuntime" / "Debug";
 
-        // 3. 定义需要复制的文件清单
+        // 定义需要复制的文件清单
         struct CopyEntry {
             std::filesystem::path Source;
             std::filesystem::path Dest;
@@ -815,7 +870,7 @@ namespace Himii
 
         std::vector<CopyEntry> filesToCopy;
 
-        // A. 复制 Runtime 可执行文件 (HimiiRuntime.exe -> 用户指定的 MyGame.exe)
+        // 复制 Runtime 可执行文件 (HimiiRuntime.exe -> 用户指定的 MyGame.exe)
         filesToCopy.push_back({runtimeDir/"HimiiRuntime.exe", exePath});
 
         filesToCopy.push_back({runtimeDir / "ScriptCore.runtimeconfig.json", buildDir / "ScriptCore.runtimeconfig.json"});
@@ -911,55 +966,8 @@ namespace Himii
         auto projectDir = Project::GetProjectDirectory();
         std::string projectName = Project::GetConfig().Name;
 
-        // 方案 A: 打开 .sln (推荐，VS 和 Rider 会直接识别，VS Code 也会提示打开工作区)
-        std::filesystem::path slnPath = projectDir / (projectName + ".sln");
-
-        if (std::filesystem::exists(slnPath))
-        {
-            // 尝试1: 环境变量中的 code
-            // 使用 where code (Windows)检测是否存在
-            bool hasCodeInPath = system("where code >nul 2>nul") == 0;
-
-            std::string cmd;
-            if (hasCodeInPath) 
-            {
-                 cmd = "code \"" + projectDir.string() + "\"";
-            }
-            else
-            {
-                // 尝试2: 常见安装路径
-                std::vector<std::string> vscodePaths = {
-                    "\"C:\\Users\\" + std::string(getenv("USERNAME")) + "\\AppData\\Local\\Programs\\Microsoft VS Code\\bin\\code.cmd\"",
-                    "\"C:\\Program Files\\Microsoft VS Code\\bin\\code.cmd\"",
-                    "\"C:\\Program Files (x86)\\Microsoft VS Code\\bin\\code.cmd\""
-                };
-                
-                bool found = false;
-                for(const auto& path : vscodePaths) {
-                    // 去掉引号判断是否存在
-                    std::string rawPath = path.substr(1, path.length() - 2);
-                    if(std::filesystem::exists(rawPath)) {
-                        cmd = path + " \"" + projectDir.string() + "\"";
-                        found = true;
-                        break;
-                    }
-                }
-
-                if(!found) {
-                     // 实在找不到，只能尝试 explorer 打开文件夹，让用户自己拖
-                     HIMII_CORE_ERROR("VS Code not found in PATH or default locations.");
-                     system(("explorer \"" + projectDir.string() + "\"").c_str());
-                     return;
-                }
-            }
-            
-            system(cmd.c_str());
-            HIMII_CORE_INFO("Opening C# Project: {0}", projectDir.string());
-        }
-        else
-        {
-            HIMII_CORE_WARNING("Solution file not found! Please regenerate project.");
-        }
+        if (!ScriptIDELauncher::OpenProject(projectDir, projectName))
+            HIMII_CORE_WARNING("Failed to open script IDE for project: {0}", projectName);
     }
 
     void EditorLayer::NewScene()
@@ -1052,9 +1060,6 @@ namespace Himii
 
         ImGui::Begin("Project Hub", nullptr, window_flags);
         ImGui::PopStyleVar(3);
-
-        // Center content
-        // ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 600) * 0.5f);
         
         ImGui::Text("Himii Engine - Project Hub");
         ImGui::Separator();
@@ -1235,6 +1240,18 @@ namespace Himii
 
     void EditorLayer::OnScenePlay()
     {
+        if (m_ScriptsDirty || ScriptCompiler::IsCompiling())
+        {
+            m_PendingPlayAfterCompile = true;
+            RequestScriptCompile();
+            return;
+        }
+
+        StartScenePlay();
+    }
+
+    void EditorLayer::StartScenePlay()
+    {
         if (m_SceneState == SceneState::Simulate)
             OnSceneStop();
 
@@ -1261,8 +1278,6 @@ namespace Himii
 
     void EditorLayer::OnSceneStop()
     {
-        //HIMII_CORE_ASSERT(m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate);
-
         m_SceneHierarchyPanel.SetSelectedEntity({});
 
         if (m_SceneState == SceneState::Play)
@@ -1290,9 +1305,31 @@ namespace Himii
         }
     }
 
+    void EditorLayer::RequestScriptCompile()
+    {
+        if (!Project::GetActive() || m_CSharpProjectPath.empty())
+            return;
+
+        if (ScriptCompiler::IsCompiling())
+            return;
+
+        const bool wasPlaying = (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate);
+        if (wasPlaying)
+            OnSceneStop();
+
+        ScriptEngine::RequestCompileAndReload(m_CSharpProjectPath);
+    }
+
     void EditorLayer::CompileAndReloadScripts()
     {
-        ScriptEngine::CompileAndReloadAppAssembly(m_CSharpProjectPath);
+        const bool wasPlaying = (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate);
+        if (wasPlaying)
+            OnSceneStop();
+
+        m_NotifyReloadAfterCompile = wasPlaying;
+
+        if (!ScriptEngine::RequestCompileAndReload(m_CSharpProjectPath))
+            m_NotifyReloadAfterCompile = false;
     }
 
     void EditorLayer::UI_Toolbar()
@@ -1401,7 +1438,7 @@ namespace Himii
         ImGui::SameLine();
         {
             Ref<Texture2D> icon = (m_SceneState == SceneState::Edit||m_SceneState==SceneState::Play) ? m_IconSimulate : m_IconStop;
-            //ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x * 0.5f) - (size * 0.5f));
+
             if (ImGui::ImageButton("state1", (ImTextureID)icon->GetRendererID(), ImVec2(size, size), ImVec2(0, 0),ImVec2(1, 1),ImVec4(0.0f,0.0f,0.0f,0.0f),tintColor)&&toolbarEnable)
             {
                 if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)

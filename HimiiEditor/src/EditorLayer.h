@@ -5,7 +5,11 @@
 #include "panel/AnimationPanel.h"
 #include "panel/TileMapEditorPanel.h"
 #include "panel/ParticleEmitterEditorPanel.h"
+#include "panel/ScriptConsolePanel.h"
+#include "panel/EditorPreferencesPanel.h"
+#include "panel/ProjectSettingsPanel.h"
 
+#include "Himii/Core/FileWatcher.h"
 #include "Himii/Renderer/EditorCamera.h"
 
 namespace Himii
@@ -49,6 +53,8 @@ namespace Himii
 
         void OnDuplicateEntity();
         void CompileAndReloadScripts();
+        void RequestScriptCompile();
+        void StartScenePlay();
 
         //UI panel
         void UI_Toolbar();
@@ -69,15 +75,11 @@ namespace Himii
 
         bool m_ViewportFocused = false, m_ViewportHovered = false;
 
-        // 可选：后续可扩展纹理/渲染资源，这里最小示例仅用颜色方块
-
         // Scene 视口用的离屏帧缓冲
         Ref<Framebuffer> m_Framebuffer;
 
         glm::vec2 m_ViewportSize = {0.0f, 0.0f};
         glm::vec2 m_ViewportBounds[2];
-
-        glm::vec4 m_SquareColor = {0.5f, 0.26f, 0.56f, 1.0f};
 
         int m_GizmoType = -1;
 
@@ -100,6 +102,22 @@ namespace Himii
 
         ParticleEmitterEditorPanel m_ParticleEmitterEditorPanel;
         bool m_ShowParticleEmitterEditor = false;
+
+        ScriptConsolePanel m_ScriptConsolePanel;
+        bool m_ShowScriptConsole = true;
+
+        EditorPreferencesPanel m_EditorPreferencesPanel;
+        bool m_ShowEditorPreferences = false;
+
+        ProjectSettingsPanel m_ProjectSettingsPanel;
+        bool m_ShowProjectSettings = false;
+
+        FileWatcher m_ScriptFileWatcher;
+        bool m_ScriptsDirty = false;
+        bool m_PendingPlayAfterCompile = false;
+        bool m_ShowScriptReloadNotice = false;
+        bool m_WasScriptCompiling = false;
+        bool m_NotifyReloadAfterCompile = false;
 
         Ref<Texture2D> m_IconPlay, m_IconStop, m_IconSimulate;
         Ref<TextureCube> m_SkyboxTexture;

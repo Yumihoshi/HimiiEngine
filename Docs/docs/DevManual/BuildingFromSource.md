@@ -2,7 +2,7 @@
 
 ## 前置要求 (Prerequisites)
 
-* **操作系统**: Windows 10/11（Linux 见根目录 `README.md`）
+* **操作系统**: Windows 10/11（Linux 构建说明见仓库 [README](https://github.com/HimiiFish/Himii-Engine/blob/main/README.md)）
 * **Visual Studio 2022**: 安装 “使用 C++ 的桌面开发” 工作负载
 * **CMake** 3.12+
 * **Python 3**: 用于 `build.py`（可选）
@@ -56,4 +56,4 @@ Post-build 会将 `assets`、`resources`、`ScriptCore.dll` 等拷贝到 HimiiEd
 
 * **找不到 ScriptCore.dll**：先完整构建 HimiiEditor，或单独 `dotnet build ScriptCore`。
 * **vcpkg 依赖失败**：确认仓库内 `vcpkg` 子模块存在，并重跑 `cmake --preset x64-debug`。
-* 更多平台说明见根目录 [README.md](../../../README.md)。
+* 更多平台说明见仓库 [README](https://github.com/HimiiFish/Himii-Engine/blob/main/README.md)（含 Linux 与 `build.py` 用法）。

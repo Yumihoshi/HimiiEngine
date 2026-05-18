@@ -5,7 +5,9 @@
 [![编程语言](https://img.shields.io/badge/编程语言-C++_17-blue.svg?style=for-the-badge)](#)
 [![构建工具](https://img.shields.io/badge/构建工具-Cmake_>=3.8-green.svg?style=for-the-badge)](#)
 
-It is a modern game engine designed to build high-performance rendering, multi-threaded operation, and based on the ESC framework
+It is a modern game engine designed to build high-performance rendering, multi-threaded operation, and based on the ECS framework.
+
+**中文文档**：[Docs/docs/index.md](Docs/docs/index.md)（用户手册、开发者手册、路线图）
 
 > [!IMPORTANT]
 > 本项目遵循 [**MIT License**](https://github.com/HimiiFish/HimiiEngine/blob/main/LICENSE)
@@ -68,24 +70,20 @@ python build.py debug --clean-only
 
 ## 构建输出
 
-构建生成的文件位于：
+构建目录（由 `CMakePresets.json` 与 `himii_set_output_dirs` 决定）：
 
-- Windows: `build/x64-debug/` 或 `build/x64-release/`
+- Windows Debug: `build/x64-debug/`
+- Windows Release: `build/x64-release/`
 - Linux: `build/linux-debug/` 或 `build/linux-release/`
 
-可执行文件位于以下位置：
+主要可执行文件：
 
-- Windows: `Engine/Debug/` 或 `Engine/Release/` 子目录中，文件名为 `Engine.exe`
-- Linux: `Engine/` 目录中，文件名为 `Engine`
+| 目标 | Windows Debug 路径（示例） |
+|------|---------------------------|
+| **HimiiEditor**（编辑器） | `build/x64-debug/bin/HimiiEditor/Debug/HimiiEditor.exe` |
+| **HimiiRuntime**（运行时） | `build/x64-debug/bin/HimiiRuntime/Debug/HimiiRuntime.exe` |
 
-### Windows平台可执行文件位置说明
-
-在Windows平台上，Visual Studio生成器会根据构建类型将可执行文件放在不同的子目录中：
-
-- **Debug构建**: 可执行文件位于 `build/x64-debug/Engine/Debug/` 目录
-- **Release构建**: 可执行文件位于 `build/x64-release/Engine/Release/` 目录
-
-这是Visual Studio的默认行为，构建脚本会自动查找正确的目录。
+构建 **HimiiEditor** 时会自动编译并拷贝 **ScriptCore**（`ScriptCore.dll`）到输出目录。将 Visual Studio 启动项目设为 **HimiiEditor** 即可调试编辑器。
 
 ## 故障排除
 

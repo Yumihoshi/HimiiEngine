@@ -1,176 +1,124 @@
-# 场景序列化实现思路（YAML）
+# 场景序列化（YAML）
 
-本文档总结当前 Scene 序列化/反序列化（YAML）的设计目标、数据模型、YAML Schema、关键实现与扩展点，方便维护与后续接入编辑器 UI。
+本文档描述 `.himii` 场景文件的序列化/反序列化设计，实现位于 `Engine/src/Himii/Scene/SceneSerializer.cpp`。
 
-## 目标与范围
+## 目标
 
-- 目标：将场景中的实体与核心组件保存为可读可编辑的 `.yaml`，并支持从 `.yaml` 还原。
-- 范围（当前版本）：
-  - 仅序列化包含 `Transform` 的实体（作为最小存在条件）。
-  - 组件覆盖：`ID`（如存在）、`Tag`、`Transform`、`SpriteRenderer`、`CameraComponent`。
-  - 未覆盖：纹理资源路径/UV 细节（仅保留颜色与 tiling）、脚本/网格资源、层级关系等。
+- 将场景中实体与组件保存为可读 YAML（`.himii`）。
+- 支持从文件还原场景，并在编辑器中 **File → Open Scene** / **Save Scene As** 使用。
 
-## 数据模型与字段
-
-- Entity 最低要求：必须有 `Transform` 才会被写入。
-- 组件字段映射：
-  - ID：`ID.id`（UUID，若存在则写入 `ID` 字段，类型为 uint64）
-  - Tag：`Tag.name` → `Tag`
-  - Transform：
-    - `Position: [x, y, z]`
-    - `Rotation: [x, y, z]`（欧拉角，单位：弧度/度 取决于项目内部约定；当前实现与引擎一致）
-    - `Scale: [x, y, z]`
-  - SpriteRenderer：
-    - `Color: [r, g, b, a]`
-    - `Tiling: float`
-  - Camera：
-    - `Primary: bool`
-    - `Projection: "Perspective" | "Orthographic"`
-    - 透视：`FovYDeg: float`
-    - 正交：`OrthoSize: float`（以可视高度为基准的缩放/zoom 值）
-    - 裁剪：`NearZ: float`, `FarZ: float`
-    - 朝向控制：
-      - `UseLookAt: bool`
-      - `LookAtTarget: [x,y,z]`
-      - `Up: [x,y,z]`
-
-## YAML Schema 示例
+## 文件格式概览
 
 ```yaml
-Scene: Untitled
+Scene: ExampleScene
 Entities:
-  - ID: 123456789        # 可选，存在 ID 组件才写入
-    Tag: "Camera"
-    Transform:
-      Position: [0, 0, 5]
-      Rotation: [0, 0, 0]
-      Scale:    [1, 1, 1]
-    Camera:
-      Primary: true
-      Projection: Perspective
-      FovYDeg: 45.0
-      OrthoSize: 10.0
-      NearZ: 0.1
-      FarZ: 100.0
-      UseLookAt: false
-      LookAtTarget: [0, 0, 0]
-      Up: [0, 1, 0]
-
-  - Tag: "Quad"
-    Transform:
+  - Entity: 1234567890123456789
+    TagComponent:
+      Tag: Player
+    TransformComponent:
       Position: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale:    [1, 1, 1]
-    SpriteRenderer:
-      Color: [1, 0.5, 0.2, 1]
-      Tiling: 1.0
+      Scale: [1, 1, 1]
+    ScriptComponent:
+      ClassName: MyGame.PlayerController
+      ScriptFields:
+        - Name: Speed
+          Type: 5          # ScriptFieldType 枚举整型
+          Data: 8.0
+        - Name: Target
+          Type: 12         # Entity
+          Data: 9876543210987654321
+    SpriteRendererComponent:
+      Color: [1, 1, 1, 1]
+      TexturePath: assets/textures/player.png
+      TilingFactor: 1.0
+    Rigidbody2DComponent:
+      BodyType: 1
+      FixedRotation: false
+    BoxCollider2DComponent:
+      Offset: [0, 0]
+      Size: [1, 1]
+      Density: 1.0
+      Friction: 0.5
+      Restitution: 0.0
+      RestitutionThreshold: 0.5
 ```
 
-## 关键实现细节
+实际键名与 `SceneSerializer` 中 `YAML::Key` 一致（如 `TagComponent`、`TransformComponent` 等）。
 
-文件位置：
-- `Engine/src/Himii/Scene/SceneSerializer.h/.cpp`
+## 已序列化的组件（当前）
 
-### 1) 基于 yaml-cpp 的读写
+| 组件 | 说明 |
+|------|------|
+| **Entity** (UUID) | `entity["Entity"]`，反序列化用 `CreateEntityWithUUID` |
+| **TagComponent** | 实体名称 |
+| **TransformComponent** | Position / Rotation / Scale |
+| **CameraComponent** | 投影、裁剪、背景色、Primary 等 |
+| **ScriptComponent** | `ClassName` + `ScriptFields`（含 Entity 引用 UUID） |
+| **SpriteRendererComponent** | Color、TexturePath、TilingFactor |
+| **CircleRendererComponent** | Color、Thickness、Fade |
+| **MeshComponent** | Type、Color |
+| **Rigidbody2DComponent** | BodyType、FixedRotation |
+| **BoxCollider2DComponent** | Offset、Size、材料参数 |
+| **CircleCollider2DComponent** | Offset、Radius、材料参数 |
+| **UITransform / UIImage / UIText** 等 | UI 实体分支（`CreateUIEntityWithUUID`） |
 
-- 依赖：`yaml-cpp`（已在 `Engine/CMakeLists.txt` 中 `find_package` 并链接）。
-- 写入使用 `YAML::Emitter`，读取使用 `YAML::LoadFile`。
+其他组件（粒子、Tilemap、动画等）若已在 `SerializeEntity` 中实现，以源码为准；未列出的组件在保存时不会写入。
 
-### 2) GLM 向量的序列化支持
+## ScriptFields
 
-- 在 `SceneSerializer.cpp` 内提供 `YAML::convert<glm::vec3/vec4>` 与 `Emitter` 运算符重载：
-  - 写入为 Flow 序列（`[x, y, z]` / `[x, y, z, w]`）。
-  - 读取时验证为定长序列并解析为 `glm` 向量。
+- 与编辑器 Inspector 中 `ScriptComponent::Fields` 一致。
+- `Type` 为 `ScriptFieldType` 整型；`Data` 类型随字段变化（标量、向量、UUID、字符串等）。
+- 游戏脚本仅 **public 实例字段** 参与反射与保存。
 
-### 3) Serialize 流程（写入）
+## 实现要点
 
-- 遍历 `entt::registry` 内所有实体：
-  - 过滤：若实体无 `Transform`，跳过（保证最小有效实体）。
-  - 按组件依次写入对应字段（见“数据模型与字段”）。
-- 最终写入到指定路径的文本文件。
+### 写入 (`Serialize`)
 
-伪代码（与实现一致）：
-- BeginMap: Scene/Entities
-- For each entity with Transform:
-  - BeginMap: Entity
-    - if ID: write `ID`
-    - if Tag: write `Tag`
-    - if Transform: write Position/Rotation/Scale
-    - if SpriteRenderer: write Color/Tiling
-    - if Camera: write Primary/Projection/Fov/OrthoSize/Near/Far/UseLookAt/LookAtTarget/Up
-  - EndMap
-- EndSeq/EndMap, flush to file
+1. 遍历 `registry` 中带 `TransformComponent` 的实体（或 UI 实体路径）。
+2. `SerializeEntity` 按组件存在性逐项 `Emitter` 输出。
+3. 写入磁盘路径由 `SceneSerializer::Serialize(path)` 指定。
 
-### 4) Deserialize 流程（读取）
+### 读取 (`Deserialize`)
 
-- 读取 `Entities` 数组，逐个创建实体：
-  - 目前默认使用 `Scene::CreateEntity(name)` 生成新 UUID。
-  - 依次检测并还原 Transform、SpriteRenderer、Camera 字段。
-- 注意：当前版本未写回 `ID`（即使 YAML 中存在 `ID`），因此会生成新的 UUID。
+1. `YAML::LoadFile` 解析 `Entities` 序列。
+2. 每个条目调用 `DeserializeEntity`：
+   - 读取 `Entity` UUID → `CreateEntityWithUUID` / `CreateUIEntityWithUUID`
+   - 按块还原各组件字段
+3. 缺失字段保留组件默认值。
 
-改进建议（已在引擎具备能力）：
-- 当 YAML 存在 `ID` 时，调用 `Scene::CreateEntityWithUUID(uuid, name)`，确保稳定 ID 回放；
-- 同时更新 `Scene::m_EntityMap`（`CreateEntityWithUUID` 已内部处理）。
+### GLM 向量
 
-## 相机与渲染的配合
+`SceneSerializer.cpp` 内对 `glm::vec2/vec3/vec4` 提供 `YAML::convert` 与 Emitter 支持，格式为 Flow 序列 `[x, y, z]`。
 
-- `CameraComponent` 在 `Scene::OnUpdate` 中被读取：
-  - 根据 `Projection` 自动刷新投影矩阵：
-    - 透视：`SetFovYDeg(fov)`
-    - 正交：`SetOrthographicBySize(orthoSize, near, far)`（保持垂直尺寸，水平按纵横比）
-  - 视图矩阵：
-    - `UseLookAt == true`：使用 `glm::lookAt(Position, LookAtTarget, Up)`；
-    - 否则：通过 `Transform` 欧拉角设置相机旋转与位置，避免 `SetPosition` 影响旋转。
+## 编辑器集成
 
-## 错误处理与边界情况
+- **File → Open Scene**：加载 `.himii` 到当前编辑场景。
+- **File → Save Scene As**：`EditorLayer::SerializeScene` → `SceneSerializer::Serialize`。
+- 项目 **Start Scene** 在 `.hproj` 中配置，打开项目时可自动加载。
 
-- 打开文件/解析失败：返回 `false`，外层可据此提示用户。
-- YAML 结构缺失：若缺 `Entities`，反序列化返回 `false`。
-- 字段缺失：采用“存在则解析，否则使用组件默认值”的模式（例如 `Tiling`、`FovYDeg` 等）。
-- 非法向量：`convert<>` 会校验序列长度，失败则不覆盖默认值。
+## 错误处理
 
-## 现状与待办
+- 文件打开/解析失败：`Deserialize` 返回 `false`。
+- 缺少 `Entities` 节点：反序列化失败。
+- 可选字段：有则解析，无则跳过。
 
-- 已完成：
-  - 序列化/反序列化核心逻辑（ID/Tag/Transform/SpriteRenderer/Camera）。
-  - `Engine` 构建已链接 `yaml-cpp`。
-- 待完成：
-  - 编辑器 UI 接入：添加菜单项“File > Save Scene… / Open Scene…”，调用 `SceneSerializer`；
-  - 反序列化使用 `CreateEntityWithUUID` 保持稳定 ID；
-  - 扩展序列化内容：
-    - `SpriteRenderer.texture`（资源路径/句柄）、`uvs`；
-    - `NativeScriptComponent`（脚本类名与可序列化参数）；
-    - `MeshRenderer`（网格/材质/纹理资源标识）；
-    - 实体层级/关系（若引入 Parent/Child 组件）；
-    - 选择/拾取所需的稳定 `PickID`（若与选择系统耦合）。
+## 待扩展（真实缺口）
 
-## 与编辑器的集成建议
-
-- 保存：
-  - 从当前 `Scene*` 构造 `SceneSerializer`，`Serialize(path)`。
-- 打开：
-  - 可先清空场景，再 `Deserialize(path)`；或提供“追加合并”模式（需要冲突策略与 UUID 处理）。
-- Windows 文件对话框：
-  - 可使用现有跨平台封装（若有），或临时集成原生对话框/ImGui file dialog。
+- **Prefab** 引用与实例化覆盖
+- 部分高级组件的统一资源句柄格式（AssetHandle vs 路径混用时的规范化）
+- **实体父子层级** 若引入 Parent 组件，需在序列化中增加关系块
+- 更完整的 **NativeScriptComponent** / 程序集拆分（多 asmdef）
 
 ## 测试建议
 
-- 最小回放：
-  - 仅 Transform 的实体 1~2 个；保存→清空→读取→比对位置/旋转/缩放。
-- SpriteRenderer：
-  - 颜色、tiling 的保存与恢复；
-- Camera：
-  - 透视/正交切换、FOV/OrthoSize、Near/Far、UseLookAt 路径回放；
-- UUID 稳定性（在迁移到 `CreateEntityWithUUID` 后）：
-  - 写入 ID→读取后比对 ID 是否保持一致。
+1. 空场景 + 单实体 Transform：保存 → 重新打开 → 比对变换。
+2. 带 `ScriptComponent` 与 public 字段：Inspector 修改 → 保存 → 重开 → 字段与 Entity 引用一致。
+3. 2D 物理组件：保存后碰撞体参数一致。
+4. Play 模式前无需重新手动挂脚本类名（类名在 YAML 中）。
 
-## 代码指引
+## 代码索引
 
-- 入口：`SceneSerializer::Serialize/Deserialize`
-- 组件定义：`Engine/src/Himii/Scene/Components.h`
-- 场景入口与实体创建：`Engine/src/Himii/Scene/Scene.h/.cpp`
-- 相机基类与编辑器相机：`Engine/src/Himii/Scene/SceneCamera.*`、`Engine/src/Himii/Renderer/EditorCamera.*`
-
----
-
-如需扩展更多组件的序列化，请遵循“存在则写入/读取，缺省使用默认值”的策略，并尽量使用资源标识（路径/UUID）而非裸指针，以便跨会话还原。
+- `SceneSerializer::Serialize` / `Deserialize` / `SerializeEntity` / `DeserializeEntity`
+- `Engine/src/Himii/Scene/Components.h`
+- `Engine/src/Himii/Scene/Scene.h`

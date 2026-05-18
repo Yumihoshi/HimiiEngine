@@ -46,6 +46,7 @@
 | [x] | **Async Compile** | `dotnet build` 异步编译与文件监视 |
 | [x] | **Script Console** | 编译日志面板，错误行跳转 IDE |
 | [x] | **IDE Launcher** | 全局/项目 IDE 配置（VS / VS Code / Rider / Custom） |
+| [x] | **Script Log API** | C# `Log.Info` / `Warning` / `Error`，经 C++ `Log::PrintMessage` 输出 |
 
 ### 核心模块：编辑器 (Editor Interface)
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 说明 |
@@ -58,6 +59,7 @@
 | [x] | **ImGuizmo** | 视口内物体变换 Gizmo |
 | [x] | **Editor Preferences** | 全局编辑器设置（含默认脚本 IDE） |
 | [x] | **Project Settings** | 项目级 IDE 覆盖与 `.hproj` 序列化 |
+| [x] | **Console Panel** | 运行时脚本日志 ImGui 面板（`Window → Console`） |
 
 ### 核心模块：发布 (Distribution)
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 说明 |
@@ -98,7 +100,7 @@
 | :--- | :--- | :--- |
 | [ ] | **Undo/Redo** | 命令模式实现操作撤销重做 |
 | [ ] | **Asset Importer** | 统一的资源导入设置面板 |
-| [ ] | **Console Panel** | 通用 Log 面板：重定向 `HIMII_CORE_*` / spdlog 到 ImGui |
+| [ ] | **Console 增强** | 日志过滤/搜索/复制；默认展示引擎日志；`Console.WriteLine` 重定向等 |
 
 ### 核心模块：发布 (Distribution)
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |

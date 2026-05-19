@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Himii
+namespace HimiiEngine
 {
 	[StructLayout(LayoutKind.Sequential)]
 	internal struct NativeFunctionsMap

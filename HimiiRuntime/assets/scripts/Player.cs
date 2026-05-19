@@ -1,4 +1,4 @@
-using Himii;
+using HimiiEngine;
 
 public class Player:Entity
 {
@@ -14,10 +14,10 @@ public class Player:Entity
         
         if(Input.IsKeyDown(KeyCode.Space))
         {
-            if(HasComponent<Rigidbody2DComponent>())
+            if (HasComponent<Rigidbody2D>())
             {
-                var rb = GetComponent<Rigidbody2DComponent>();
-                rb.ApplyLinearImpulseToCenter(new Vector2(0, 1f),true);
+                var rigidbody = GetComponent<Rigidbody2D>();
+                rigidbody.ApplyImpulse(new Vector2(0, 1f), true);
             }
         }
     }

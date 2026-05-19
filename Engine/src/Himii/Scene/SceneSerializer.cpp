@@ -316,6 +316,8 @@ namespace Himii
             out << YAML::Key << "Color" << YAML::Value << spriteRenderer.Color;
             const AssetHandle textureHandle = ResolveTextureHandleForSerialize(
                 spriteRenderer.Texture, spriteRenderer.TextureHandle);
+            if (spriteRenderer.SpriteHandle != 0)
+                out << YAML::Key << "SpriteHandle" << YAML::Value << (uint64_t)spriteRenderer.SpriteHandle;
             if (textureHandle != 0)
                 out << YAML::Key << "TextureHandle" << YAML::Value << (uint64_t)textureHandle;
             else if (spriteRenderer.Texture)
@@ -603,6 +605,8 @@ namespace Himii
             auto &src = deserializedEntity.AddComponent<SpriteRendererComponent>();
             src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
             src.Texture = LoadTextureFromSerializedNode(spriteRendererComponent);
+            if (spriteRendererComponent["SpriteHandle"])
+                src.SpriteHandle = spriteRendererComponent["SpriteHandle"].as<uint64_t>();
             if (spriteRendererComponent["TextureHandle"])
                 src.TextureHandle = spriteRendererComponent["TextureHandle"].as<uint64_t>();
             else if (src.Texture)
@@ -610,6 +614,9 @@ namespace Himii
 
             if (spriteRendererComponent["TilingFactor"])
                 src.TilingFactor = spriteRendererComponent["TilingFactor"].as<float>();
+
+            if (auto assetManager = Project::TryGetAssetManager())
+                src.ResolveResources(assetManager.get());
         }
         auto circleRendererComponent = entity["CircleRendererComponent"];
         if (circleRendererComponent)

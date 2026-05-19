@@ -3,6 +3,8 @@
 #include <fstream>
 #include <yaml-cpp/yaml.h>
 #include "Himii/Core/Log.h"
+#include "Himii/Project/Project.h"
+#include "Himii/Asset/AssetManager.h"
 #include "Himii/Scene/ParticleEmitterAsset.h"
 
 namespace Himii
@@ -114,6 +116,33 @@ namespace Himii
         out << YAML::Key << "AssetType" << YAML::Value << "SpriteAnimation";
         out << YAML::Key << "Handle" << YAML::Value << (uint64_t)animation->Handle;
 
+        bool usesSpriteFrames = false;
+        if (auto assetManager = Project::GetActive() ? Project::GetAssetManager() : nullptr)
+        {
+            for (const auto& frameHandle : animation->GetFrames())
+            {
+                if (assetManager->IsSpriteHandle(frameHandle))
+                {
+                    usesSpriteFrames = true;
+                    break;
+                }
+            }
+        }
+
+        out << YAML::Key << "UsesSpriteFrames" << YAML::Value << usesSpriteFrames;
+        out << YAML::Key << "UsesAtlasFrames" << YAML::Value << animation->UsesAtlasFrames();
+        if (animation->UsesAtlasFrames())
+        {
+            out << YAML::Key << "AtlasTextureHandle" << YAML::Value << (uint64_t)animation->GetAtlasTextureHandle();
+            out << YAML::Key << "AtlasGridCellSize" << YAML::Value << animation->GetAtlasGridCellSize();
+            out << YAML::Key << "AtlasFrameCoordinates" << YAML::Value << YAML::BeginSeq;
+            for (const glm::ivec2 &coordinates : animation->GetAtlasFrameCoordinatesList())
+            {
+                out << YAML::Flow << YAML::BeginSeq << coordinates.x << coordinates.y << YAML::EndSeq;
+            }
+            out << YAML::EndSeq;
+        }
+
         out << YAML::Key << "Frames" << YAML::Value << YAML::BeginSeq;
         for (const auto &frameHandle: animation->GetFrames())
         {
@@ -145,7 +174,27 @@ namespace Himii
         if (data["Handle"])
             animation->Handle = data["Handle"].as<uint64_t>();
 
-        if (data["Frames"])
+        if (data["UsesAtlasFrames"] && data["UsesAtlasFrames"].as<bool>())
+        {
+            AssetHandle atlasTextureHandle = 0;
+            uint32_t gridCellSize = 16;
+            if (data["AtlasTextureHandle"])
+                atlasTextureHandle = data["AtlasTextureHandle"].as<uint64_t>();
+            if (data["AtlasGridCellSize"])
+                gridCellSize = data["AtlasGridCellSize"].as<uint32_t>();
+
+            animation->SetAtlasTexture(atlasTextureHandle, gridCellSize);
+
+            if (data["AtlasFrameCoordinates"])
+            {
+                for (auto coordinateNode : data["AtlasFrameCoordinates"])
+                {
+                    if (coordinateNode.IsSequence() && coordinateNode.size() >= 2)
+                        animation->AddAtlasFrame({coordinateNode[0].as<int>(), coordinateNode[1].as<int>()});
+                }
+            }
+        }
+        else if (data["Frames"])
         {
             for (auto frameNode: data["Frames"])
             {

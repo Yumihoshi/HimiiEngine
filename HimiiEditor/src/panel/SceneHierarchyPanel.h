@@ -41,6 +41,13 @@ namespace Himii
             return h;
         }
 
+        AssetHandle GetTextureInspectorRequest()
+        {
+            AssetHandle handle = m_TextureInspectorRequest;
+            m_TextureInspectorRequest = 0;
+            return handle;
+        }
+
     private:
         template<typename T>
         void DisplayAddComponentEntry(const std::string &entryName);
@@ -54,6 +61,7 @@ namespace Himii
         std::unordered_map<std::string, Ref<Texture2D>> m_ComponentIcons;
         AssetHandle m_TileMapEditorRequest = 0;
         AssetHandle m_ParticleEmitterEditorRequest = 0;
+        AssetHandle m_TextureInspectorRequest = 0;
 
         EditorCommandHistory* m_CommandHistory = nullptr;
 

@@ -95,6 +95,29 @@ namespace Himii
             return maxID + 1;
         }
 
+        void ClearTileDefs()
+        {
+            m_TileDefs.clear();
+        }
+
+        void GenerateGridTileDefs(uint32_t atlasSourceIndex, uint32_t columnCount, uint32_t rowCount)
+        {
+            ClearTileDefs();
+            uint16_t tileIdentifier = 1;
+            for (uint32_t row = 0; row < rowCount; ++row)
+            {
+                for (uint32_t column = 0; column < columnCount; ++column)
+                {
+                    TileDef tileDefinition;
+                    tileDefinition.ID = tileIdentifier++;
+                    tileDefinition.SourceType = TileSourceType::Atlas;
+                    tileDefinition.AtlasSourceIndex = atlasSourceIndex;
+                    tileDefinition.AtlasCoords = {static_cast<int>(column), static_cast<int>(row)};
+                    AddTileDef(tileDefinition);
+                }
+            }
+        }
+
     private:
         std::vector<TileAtlasSource> m_AtlasSources;
         std::unordered_map<uint16_t, TileDef> m_TileDefs;

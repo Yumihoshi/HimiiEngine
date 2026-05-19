@@ -18,6 +18,9 @@
 #include "yaml-cpp/yaml.h"
 #include "commands/EditorCommands.h"
 #include "EditorExternalFileDrop.h"
+#include "TilemapEditorUtility.h"
+#include "Himii/Asset/SpriteSheetUtility.h"
+#include "Himii/Scene/TileSet.h"
 #include <GLFW/glfw3.h>
 
 namespace Himii
@@ -309,7 +312,8 @@ namespace Himii
                 if (ImGui::BeginMenu("Window"))
                 {
                     ImGui::MenuItem("Animation Editor", nullptr, &m_ShowAnimationPanel);
-                    ImGui::MenuItem("TileMap Editor", nullptr, &m_ShowTileMapEditor);
+                    ImGui::MenuItem("Texture Inspector", nullptr, &m_ShowTextureInspector);
+                    ImGui::MenuItem("TileMap Setup", nullptr, &m_ShowTileMapEditor);
                     ImGui::MenuItem("Particle Emitter Editor", nullptr, &m_ShowParticleEmitterEditor);
                     ImGui::MenuItem("Script Console", nullptr, &m_ShowScriptConsole);
                     ImGui::MenuItem("Console", nullptr, &m_ShowConsole);
@@ -344,6 +348,7 @@ namespace Himii
             if (m_ShowProjectSettings)
                 m_ProjectSettingsPanel.OnImGuiRender(&m_ShowProjectSettings);
             m_AnimationPanel.OnImGuiRender(m_ShowAnimationPanel);
+            m_TextureInspectorPanel.OnImGuiRender(m_ShowTextureInspector);
             m_TileMapEditorPanel.OnImGuiRender(m_ShowTileMapEditor);
             m_ParticleEmitterEditorPanel.OnImGuiRender(m_ShowParticleEmitterEditor);
 
@@ -353,6 +358,13 @@ namespace Himii
                 m_ShowTileMapEditor = true;
                 m_TileMapEditorPanel.Open(tmEditorRequest);
             }
+            AssetHandle textureInspectorRequest = m_SceneHierarchyPanel.GetTextureInspectorRequest();
+            if (textureInspectorRequest != 0)
+            {
+                m_ShowTextureInspector = true;
+                m_TextureInspectorPanel.SetTextureHandle(textureInspectorRequest);
+            }
+
             AssetHandle peEditorRequest = m_SceneHierarchyPanel.GetParticleEmitterEditorRequest();
             if (peEditorRequest != 0)
             {
@@ -401,6 +413,7 @@ namespace Himii
             }
 
             uint64_t textureID = m_Framebuffer->GetColorAttachmentRendererID();
+            const ImVec2 viewportImageMin = ImGui::GetCursorScreenPos();
             ImGui::Image(reinterpret_cast<void *>(textureID), ImVec2(m_ViewportSize.x, m_ViewportSize.y), ImVec2(0, 1),
                          ImVec2(1, 0));
 
@@ -414,9 +427,21 @@ namespace Himii
 
                 ImGui::EndDragDropTarget();
             }
-            // gizmos
+
             Entity selectEntity = m_SceneHierarchyPanel.GetSelectedEntity();
-            if (selectEntity && m_GizmoType != -1 && m_SceneState == SceneState::Edit)
+            const bool isTilemapEditEntity =
+                    selectEntity && selectEntity.HasComponent<TilemapComponent>();
+            const bool tilemapPaintModeActive =
+                    isTilemapEditEntity && m_TileMapEditorPanel.IsPaintModeEnabled();
+
+            if (m_ViewportFocused || m_ViewportHovered)
+            {
+                if (ImGui::IsKeyPressed(ImGuiKey_P) && isTilemapEditEntity)
+                    m_TileMapEditorPanel.TogglePaintMode();
+            }
+
+            // gizmos（Tilemap 绘制模式关闭时才显示，避免与笔刷抢鼠标）
+            if (selectEntity && m_GizmoType != -1 && m_SceneState == SceneState::Edit && !tilemapPaintModeActive)
             {
                 bool isUI = selectEntity.HasComponent<UITransformComponent>();
                 bool isTransform = selectEntity.HasComponent<TransformComponent>();
@@ -455,9 +480,24 @@ namespace Himii
                         transform = selectEntity.GetComponent<TransformComponent>().GetTransform();
                     }
 
+                    const bool isSpriteRendererEntity =
+                            !isUI && selectEntity.HasComponent<SpriteRendererComponent>()
+                            && Project::GetActive() && Project::GetConfig().Is2D;
+
                     // 决定 Gizmo 的操作类型 (2D/UI 通常只需 XY 移动和缩放)
                     ImGuizmo::OPERATION currentGizmoOperation = (ImGuizmo::OPERATION)m_GizmoType;
-                    if (Project::GetConfig().Is2D || isUI)
+                    if (isSpriteRendererEntity)
+                    {
+                        if (m_GizmoType == ImGuizmo::TRANSLATE)
+                            currentGizmoOperation =
+                                    (ImGuizmo::OPERATION)(ImGuizmo::TRANSLATE_X | ImGuizmo::TRANSLATE_Y);
+                        else if (m_GizmoType == ImGuizmo::ROTATE)
+                            currentGizmoOperation = ImGuizmo::ROTATE_Z;
+                        else if (m_GizmoType == ImGuizmo::SCALE)
+                            currentGizmoOperation =
+                                    (ImGuizmo::OPERATION)(ImGuizmo::SCALE_X | ImGuizmo::SCALE_Y);
+                    }
+                    else if (Project::GetConfig().Is2D || isUI)
                     {
                         if (m_GizmoType == ImGuizmo::TRANSLATE)
                             currentGizmoOperation =
@@ -508,10 +548,26 @@ namespace Himii
                         else
                         {
                             auto &tc = selectEntity.GetComponent<TransformComponent>();
-                            glm::vec3 deltaRotation = rotation - tc.Rotation;
-                            tc.Position = translation;
-                            tc.Rotation += deltaRotation;
-                            tc.Scale = scale;
+                            if (isSpriteRendererEntity)
+                            {
+                                tc.Position = translation;
+                                if (m_GizmoType == ImGuizmo::ROTATE)
+                                {
+                                    glm::vec3 deltaRotation = rotation - tc.Rotation;
+                                    tc.Rotation += deltaRotation;
+                                }
+                                else if (m_GizmoType == ImGuizmo::SCALE)
+                                {
+                                    tc.Scale = scale;
+                                }
+                            }
+                            else
+                            {
+                                glm::vec3 deltaRotation = rotation - tc.Rotation;
+                                tc.Position = translation;
+                                tc.Rotation += deltaRotation;
+                                tc.Scale = scale;
+                            }
                         }
                     }
                     else if (m_GizmoTransformCaptureActive)
@@ -547,6 +603,22 @@ namespace Himii
                         m_GizmoTransformCaptureActive = false;
                     }
                 }
+            }
+
+            if (tilemapPaintModeActive)
+            {
+                ImGui::SetCursorScreenPos(viewportImageMin);
+                ImGui::InvisibleButton("##viewport_tilemap_paint", ImVec2(m_ViewportSize.x, m_ViewportSize.y),
+                                        ImGuiButtonFlags_MouseButtonLeft | ImGuiButtonFlags_MouseButtonRight);
+                m_TilemapViewportCapture = ImGui::IsItemHovered() || ImGui::IsItemActive();
+                HandleTilemapScenePaint(true);
+                DrawTilemapGhostPreviewInViewport();
+            }
+            else
+            {
+                m_TilemapViewportCapture = false;
+                if (isTilemapEditEntity)
+                    HandleTilemapScenePaint(false);
             }
 
             // ImGui::End();
@@ -684,14 +756,56 @@ namespace Himii
     {
         if (e.GetMouseButton() == Mouse::ButtonLeft)
         {
-            if (m_ViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt)&&m_SceneState == SceneState::Edit)
+            bool blockViewportSelectionPick = false;
+            if (m_SceneState == SceneState::Edit && m_TileMapEditorPanel.IsPaintModeEnabled())
+            {
+                Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+                if (selectedEntity && selectedEntity.HasComponent<TilemapComponent>())
+                    blockViewportSelectionPick = true;
+            }
+
+            if (m_ViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt)
+                && m_SceneState == SceneState::Edit && !blockViewportSelectionPick)
                 m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
         }
         return false;
     }
 
+    void EditorLayer::UpdateTilemapHoverFromInput()
+    {
+        if (m_SceneState != SceneState::Edit)
+            return;
+
+        Entity selectedEntity;
+        Ref<TileMapData> mapData;
+        const TransformComponent *transformComponent = nullptr;
+        if (!TryGetTilemapPaintContext(selectedEntity, mapData, transformComponent))
+            return;
+
+        const glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+        if (viewportSize.x <= 1.0f || viewportSize.y <= 1.0f)
+            return;
+
+        glm::vec2 viewportMouse = {Input::GetMouseX() - m_ViewportBounds[0].x,
+                                   Input::GetMouseY() - m_ViewportBounds[0].y};
+        viewportMouse.y = viewportSize.y - viewportMouse.y;
+
+        const glm::vec3 worldPosition = TilemapEditorUtility::ViewportMouseToWorldOnPlane(
+                viewportMouse, viewportSize, m_EditorCamera.GetViewProjection(), transformComponent->Position.z);
+
+        const glm::mat4 inverseEntityTransform = glm::inverse(transformComponent->GetTransform());
+        const glm::vec3 localPosition = inverseEntityTransform * glm::vec4(worldPosition, 1.0f);
+
+        m_TilemapHoveredTile =
+                TilemapEditorUtility::LocalPositionToTileCoordinates(glm::vec2(localPosition), *mapData);
+        m_TileMapEditorPanel.SetHoveredTileCoordinates(m_TilemapHoveredTile);
+    }
+
     void EditorLayer::OnOverlayRender()
     {
+        if (m_SceneState == SceneState::Edit)
+            UpdateTilemapHoverFromInput();
+
         if (m_SceneState == SceneState::Play)
         {
             Entity camera = m_ActiveScene->GetPrimaryCameraEntity();
@@ -769,9 +883,24 @@ namespace Himii
                 if (selectedEntity.HasComponent<TransformComponent>())
                 {
                     const TransformComponent &transform = selectedEntity.GetComponent<TransformComponent>();
-                    Renderer2D::DrawRect(transform.GetTransform(), glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
+                    glm::mat4 outlineTransform = transform.GetTransform();
+
+                    if (selectedEntity.HasComponent<SpriteRendererComponent>())
+                    {
+                        SpriteRendererComponent &spriteRenderer =
+                                selectedEntity.GetComponent<SpriteRendererComponent>();
+                        if (auto assetManager = Project::TryGetAssetManager())
+                        {
+                            spriteRenderer.ResolveResources(assetManager.get());
+                            outlineTransform = spriteRenderer.GetVisualTransform(transform);
+                        }
+                    }
+
+                    Renderer2D::DrawRect(outlineTransform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
                 }
             }
+
+            DrawTilemapEditOverlay();
         }
 
         Renderer2D::EndScene();
@@ -1535,4 +1664,292 @@ namespace Himii
         ImGui::PopStyleColor(3);
         ImGui::End();
     }
+
+    bool EditorLayer::TryGetTilemapPaintContext(Entity &outEntity, Ref<TileMapData> &outMapData,
+                                                TransformComponent const *&outTransform)
+    {
+        outEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+        if (!outEntity || !outEntity.HasComponent<TilemapComponent>()
+            || !outEntity.HasComponent<TransformComponent>())
+            return false;
+
+        const TilemapComponent &tilemapComponent = outEntity.GetComponent<TilemapComponent>();
+        if (tilemapComponent.TileMapHandle == 0)
+            return false;
+
+        if (m_TileMapEditorPanel.GetTileMapHandle() != tilemapComponent.TileMapHandle)
+            m_TileMapEditorPanel.Open(tilemapComponent.TileMapHandle);
+
+        outMapData = m_TileMapEditorPanel.GetMapData();
+        if (!outMapData)
+            return false;
+
+        outTransform = &outEntity.GetComponent<TransformComponent>();
+        return true;
+    }
+
+    void EditorLayer::HandleTilemapScenePaint(bool allowPainting)
+    {
+        if (m_SceneState != SceneState::Edit)
+            return;
+
+        if (!m_ViewportHovered && !m_TilemapViewportCapture)
+            return;
+
+        Entity selectedEntity;
+        Ref<TileMapData> mapData;
+        const TransformComponent *transformComponent = nullptr;
+        if (!TryGetTilemapPaintContext(selectedEntity, mapData, transformComponent))
+            return;
+
+        if (allowPainting && !m_TileMapEditorPanel.IsPaintModeEnabled())
+            return;
+
+        if (m_TilemapViewportCapture || m_ViewportFocused || m_ViewportHovered)
+        {
+            if (ImGui::IsKeyPressed(ImGuiKey_B))
+                m_TileMapEditorPanel.SetCurrentTool(TileMapEditorPanel::Tool::Brush);
+            if (ImGui::IsKeyPressed(ImGuiKey_E))
+                m_TileMapEditorPanel.SetCurrentTool(TileMapEditorPanel::Tool::Eraser);
+            if (ImGui::IsKeyPressed(ImGuiKey_G))
+                m_TileMapEditorPanel.SetCurrentTool(TileMapEditorPanel::Tool::Fill);
+        }
+
+        const glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+        glm::vec2 viewportMouse = {ImGui::GetMousePos().x - m_ViewportBounds[0].x,
+                                   ImGui::GetMousePos().y - m_ViewportBounds[0].y};
+        viewportMouse.y = viewportSize.y - viewportMouse.y;
+
+        const float paintPlaneZ = transformComponent->Position.z;
+        const glm::vec3 worldPosition = TilemapEditorUtility::ViewportMouseToWorldOnPlane(
+                viewportMouse, viewportSize, m_EditorCamera.GetViewProjection(), paintPlaneZ);
+
+        const glm::mat4 inverseEntityTransform = glm::inverse(transformComponent->GetTransform());
+        const glm::vec3 localPosition = inverseEntityTransform * glm::vec4(worldPosition, 1.0f);
+
+        const glm::ivec2 tileCoordinates =
+                TilemapEditorUtility::LocalPositionToTileCoordinates(glm::vec2(localPosition), *mapData);
+
+        m_TilemapHoveredTile = tileCoordinates;
+        m_TileMapEditorPanel.SetHoveredTileCoordinates(tileCoordinates);
+
+        if (tileCoordinates.x < 0 || !allowPainting)
+            return;
+
+        if (!m_TilemapViewportCapture && !m_ViewportHovered)
+            return;
+
+        if (!ImGuizmo::IsUsing() && Input::IsMouseButtonPressed(Mouse::ButtonLeft))
+            m_TileMapEditorPanel.ApplyToolAtTile(tileCoordinates.x, tileCoordinates.y);
+
+        if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
+            mapData->SetTile((uint32_t)tileCoordinates.x, (uint32_t)tileCoordinates.y, 0);
+    }
+
+    void EditorLayer::DrawTilemapGhostPreviewInViewport()
+    {
+        if (m_SceneState != SceneState::Edit || m_TilemapHoveredTile.x < 0
+            || !m_TileMapEditorPanel.IsPaintModeEnabled())
+            return;
+
+        Entity selectedEntity;
+        Ref<TileMapData> mapData;
+        const TransformComponent *transformComponent = nullptr;
+        if (!TryGetTilemapPaintContext(selectedEntity, mapData, transformComponent))
+            return;
+
+        const uint16_t selectedTileIdentifier = m_TileMapEditorPanel.GetSelectedTileID();
+        if (selectedTileIdentifier == 0)
+            return;
+
+        if (m_TileMapEditorPanel.GetCurrentTool() == TileMapEditorPanel::Tool::Eraser)
+            return;
+
+        Ref<TileSet> tileSet = m_TileMapEditorPanel.GetTileSet();
+        if (!tileSet)
+            return;
+
+        const TileDef *tileDefinition = tileSet->GetTileDef(selectedTileIdentifier);
+        if (!tileDefinition || tileDefinition->SourceType != TileSourceType::Atlas)
+            return;
+
+        auto assetManager = Project::GetAssetManager();
+        if (!assetManager)
+            return;
+
+        const auto &atlasSources = tileSet->GetAtlasSources();
+        if (tileDefinition->AtlasSourceIndex >= atlasSources.size())
+            return;
+
+        const TileAtlasSource &atlasSource = atlasSources[tileDefinition->AtlasSourceIndex];
+        Ref<Texture2D> atlasTexture =
+                std::static_pointer_cast<Texture2D>(assetManager->GetAsset(atlasSource.TextureHandle));
+        if (!atlasTexture)
+            return;
+
+        const float cellSize = mapData->GetCellSize();
+        const glm::vec2 origin = TilemapEditorUtility::GetMapLocalOrigin(*mapData);
+        const float localX = origin.x + (float)m_TilemapHoveredTile.x * cellSize;
+        const float localY = origin.y + (float)m_TilemapHoveredTile.y * cellSize;
+
+        const glm::mat4 entityTransform = transformComponent->GetTransform();
+        const glm::vec3 worldBottomLeft = entityTransform * glm::vec4(localX, localY, 0.06f, 1.0f);
+        const glm::vec3 worldBottomRight =
+                entityTransform * glm::vec4(localX + cellSize, localY, 0.06f, 1.0f);
+        const glm::vec3 worldTopLeft =
+                entityTransform * glm::vec4(localX, localY + cellSize, 0.06f, 1.0f);
+        const glm::vec3 worldTopRight =
+                entityTransform * glm::vec4(localX + cellSize, localY + cellSize, 0.06f, 1.0f);
+
+        const glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+        const glm::vec2 viewportOrigin = m_ViewportBounds[0];
+        const glm::mat4 viewProjection = m_EditorCamera.GetViewProjection();
+
+        const glm::vec2 screenBottomLeft =
+                TilemapEditorUtility::WorldToViewportScreen(worldBottomLeft, viewportSize, viewportOrigin, viewProjection);
+        const glm::vec2 screenBottomRight = TilemapEditorUtility::WorldToViewportScreen(
+                worldBottomRight, viewportSize, viewportOrigin, viewProjection);
+        const glm::vec2 screenTopLeft =
+                TilemapEditorUtility::WorldToViewportScreen(worldTopLeft, viewportSize, viewportOrigin, viewProjection);
+        const glm::vec2 screenTopRight =
+                TilemapEditorUtility::WorldToViewportScreen(worldTopRight, viewportSize, viewportOrigin, viewProjection);
+
+        const float textureWidth = (float)atlasTexture->GetWidth();
+        const float textureHeight = (float)atlasTexture->GetHeight();
+        const float tilePixelSize = (float)atlasSource.TileSize;
+        if (tilePixelSize <= 0.0f)
+            return;
+
+        const std::array<glm::vec2, 4> imguiQuadUVs = TilemapEditorUtility::AtlasCoordsToImGuiQuadUVs(
+                tileDefinition->AtlasCoords, static_cast<uint32_t>(tilePixelSize),
+                atlasTexture->GetWidth(), atlasTexture->GetHeight());
+
+        ImDrawList *drawList = ImGui::GetWindowDrawList();
+        drawList->AddImageQuad((ImTextureID)(uint64_t)atlasTexture->GetRendererID(),
+                               ImVec2(screenBottomLeft.x, screenBottomLeft.y),
+                               ImVec2(screenBottomRight.x, screenBottomRight.y),
+                               ImVec2(screenTopRight.x, screenTopRight.y),
+                               ImVec2(screenTopLeft.x, screenTopLeft.y),
+                               ImVec2(imguiQuadUVs[0].x, imguiQuadUVs[0].y),
+                               ImVec2(imguiQuadUVs[1].x, imguiQuadUVs[1].y),
+                               ImVec2(imguiQuadUVs[2].x, imguiQuadUVs[2].y),
+                               ImVec2(imguiQuadUVs[3].x, imguiQuadUVs[3].y),
+                               IM_COL32(255, 255, 255, 180));
+    }
+
+    void EditorLayer::DrawTilemapEditOverlay()
+    {
+        if (m_SceneState != SceneState::Edit)
+            return;
+
+        Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+        if (!selectedEntity || !selectedEntity.HasComponent<TilemapComponent>()
+            || !selectedEntity.HasComponent<TransformComponent>())
+            return;
+
+        Ref<TileMapData> mapData = m_TileMapEditorPanel.GetMapData();
+        if (!mapData)
+            return;
+
+        const TransformComponent &transformComponent = selectedEntity.GetComponent<TransformComponent>();
+        const glm::mat4 entityTransform = transformComponent.GetTransform();
+
+        const float cellSize = mapData->GetCellSize();
+        const uint32_t mapWidth = mapData->GetWidth();
+        const uint32_t mapHeight = mapData->GetHeight();
+        const glm::vec2 origin = TilemapEditorUtility::GetMapLocalOrigin(*mapData);
+        const float mapWorldWidth = (float)mapWidth * cellSize;
+        const float mapWorldHeight = (float)mapHeight * cellSize;
+
+        const glm::vec4 gridColor = {0.4f, 0.8f, 1.0f, 0.35f};
+        const glm::vec4 borderColor = {0.9f, 0.9f, 0.2f, 0.7f};
+
+        for (uint32_t gridX = 0; gridX <= mapWidth; ++gridX)
+        {
+            const float localX = origin.x + (float)gridX * cellSize;
+            const glm::vec3 start = entityTransform * glm::vec4(localX, origin.y, 0.02f, 1.0f);
+            const glm::vec3 end = entityTransform * glm::vec4(localX, origin.y + mapWorldHeight, 0.02f, 1.0f);
+            Renderer2D::DrawLine(start, end, gridColor);
+        }
+
+        for (uint32_t gridY = 0; gridY <= mapHeight; ++gridY)
+        {
+            const float localY = origin.y + (float)gridY * cellSize;
+            const glm::vec3 start = entityTransform * glm::vec4(origin.x, localY, 0.02f, 1.0f);
+            const glm::vec3 end = entityTransform * glm::vec4(origin.x + mapWorldWidth, localY, 0.02f, 1.0f);
+            Renderer2D::DrawLine(start, end, gridColor);
+        }
+
+        const glm::vec3 cornerBottomLeft = entityTransform * glm::vec4(origin.x, origin.y, 0.02f, 1.0f);
+        const glm::vec3 cornerBottomRight =
+                entityTransform * glm::vec4(origin.x + mapWorldWidth, origin.y, 0.02f, 1.0f);
+        const glm::vec3 cornerTopRight =
+                entityTransform * glm::vec4(origin.x + mapWorldWidth, origin.y + mapWorldHeight, 0.02f, 1.0f);
+        const glm::vec3 cornerTopLeft =
+                entityTransform * glm::vec4(origin.x, origin.y + mapWorldHeight, 0.02f, 1.0f);
+
+        Renderer2D::DrawLine(cornerBottomLeft, cornerBottomRight, borderColor);
+        Renderer2D::DrawLine(cornerBottomRight, cornerTopRight, borderColor);
+        Renderer2D::DrawLine(cornerTopRight, cornerTopLeft, borderColor);
+        Renderer2D::DrawLine(cornerTopLeft, cornerBottomLeft, borderColor);
+
+        if (m_TilemapHoveredTile.x >= 0)
+        {
+            const float highlightX = origin.x + (float)m_TilemapHoveredTile.x * cellSize;
+            const float highlightY = origin.y + (float)m_TilemapHoveredTile.y * cellSize;
+
+            glm::mat4 highlightTransform = entityTransform
+                    * glm::translate(glm::mat4(1.0f),
+                                     glm::vec3(highlightX + cellSize * 0.5f, highlightY + cellSize * 0.5f, 0.05f))
+                    * glm::scale(glm::mat4(1.0f), glm::vec3(cellSize * 0.98f, cellSize * 0.98f, 1.0f));
+
+            const glm::vec4 highlightColor = {0.3f, 0.85f, 1.0f, 0.25f};
+            Renderer2D::DrawRect(highlightTransform, highlightColor);
+
+            const uint16_t selectedTileIdentifier = m_TileMapEditorPanel.GetSelectedTileID();
+            if (m_TileMapEditorPanel.IsPaintModeEnabled() && selectedTileIdentifier != 0
+                && m_TileMapEditorPanel.GetCurrentTool() != TileMapEditorPanel::Tool::Eraser)
+            {
+                Ref<TileSet> tileSet = m_TileMapEditorPanel.GetTileSet();
+                if (tileSet)
+                {
+                    const TileDef *tileDefinition = tileSet->GetTileDef(selectedTileIdentifier);
+                    if (tileDefinition && tileDefinition->SourceType == TileSourceType::Atlas)
+                    {
+                        const auto &atlasSources = tileSet->GetAtlasSources();
+                        if (tileDefinition->AtlasSourceIndex < atlasSources.size())
+                        {
+                            auto assetManager = Project::GetAssetManager();
+                            if (assetManager)
+                            {
+                                const TileAtlasSource &atlasSource =
+                                        atlasSources[tileDefinition->AtlasSourceIndex];
+                                Ref<Texture2D> atlasTexture = std::static_pointer_cast<Texture2D>(
+                                        assetManager->GetAsset(atlasSource.TextureHandle));
+                                if (atlasTexture && atlasSource.TileSize > 0)
+                                {
+                                    const std::array<glm::vec2, 4> textureCoordinates =
+                                            SpriteSheetUtility::AtlasGridCoordsToUVs(
+                                                    tileDefinition->AtlasCoords, atlasSource.TileSize,
+                                                    atlasTexture->GetWidth(), atlasTexture->GetHeight());
+
+                                    glm::mat4 ghostTransform = entityTransform
+                                            * glm::translate(
+                                                    glm::mat4(1.0f),
+                                                    glm::vec3(highlightX + cellSize * 0.5f,
+                                                              highlightY + cellSize * 0.5f, 0.06f))
+                                            * glm::scale(glm::mat4(1.0f),
+                                                         glm::vec3(cellSize * 0.98f, cellSize * 0.98f, 1.0f));
+
+                                    Renderer2D::DrawQuadUV(ghostTransform, atlasTexture, textureCoordinates, 1.0f,
+                                                          glm::vec4(1.0f, 1.0f, 1.0f, 0.55f));
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 } // namespace Himii

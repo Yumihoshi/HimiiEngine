@@ -10,6 +10,7 @@
 #include "Himii/Scene/ParticleEmitterAsset.h"
 #include "Himii/Asset/AssetSerializer.h"
 #include "Himii/Asset/AssetManager.h"
+#include "Himii/Asset/Sprite.h"
 #include "Himii/Core/Log.h"
 
 #include <imgui.h>
@@ -1126,10 +1127,62 @@ namespace Himii
 
         DrawComponent<SpriteRendererComponent>(
                 "Sprite Renderer", entity, m_ComponentIcons["Sprite Renderer"],
-                [](auto &component)
+                [this](auto &component)
                 {
                     DrawColorControl("Color", component.Color);
                     DrawTextureAssignControl("Texture", component.Texture, component.TextureHandle);
+
+                    auto assetManager = Project::GetAssetManager();
+                    if (assetManager && component.TextureHandle != 0)
+                    {
+                        assetManager->EnsureDefaultTextureMeta(component.TextureHandle);
+                        const std::vector<SpriteDefinition>& sprites =
+                            assetManager->GetSpritesForTexture(component.TextureHandle);
+
+                        int currentSpriteIndex = 0;
+                        for (int spriteIndex = 0; spriteIndex < static_cast<int>(sprites.size()); ++spriteIndex)
+                        {
+                            if (sprites[spriteIndex].Handle == component.SpriteHandle)
+                            {
+                                currentSpriteIndex = spriteIndex;
+                                break;
+                            }
+                        }
+
+                        const char* previewLabel = sprites.empty()
+                            ? "No Sprites"
+                            : sprites[currentSpriteIndex].Name.c_str();
+                        if (ImGui::BeginCombo("Sprite", previewLabel))
+                        {
+                            for (int spriteIndex = 0; spriteIndex < static_cast<int>(sprites.size()); ++spriteIndex)
+                            {
+                                const bool isSelected = (spriteIndex == currentSpriteIndex);
+                                if (ImGui::Selectable(sprites[spriteIndex].Name.c_str(), isSelected))
+                                {
+                                    component.SpriteHandle = sprites[spriteIndex].Handle;
+                                    component.ResolveResources(assetManager.get());
+                                }
+                                if (isSelected)
+                                    ImGui::SetItemDefaultFocus();
+                            }
+                            ImGui::EndCombo();
+                        }
+
+                        if (ImGui::Button("Edit Texture / Slice"))
+                            m_TextureInspectorRequest = component.TextureHandle;
+                    }
+
+                    if (assetManager && component.TextureHandle != 0)
+                    {
+                        if (component.SpriteHandle == 0 ||
+                            !assetManager->IsSpriteHandle(component.SpriteHandle))
+                        {
+                            component.SpriteHandle =
+                                assetManager->GetDefaultSpriteHandleForTexture(component.TextureHandle);
+                        }
+                        component.ResolveResources(assetManager.get());
+                    }
+
                     DrawFloatControl("Tiling Factor", component.TilingFactor, 0.1f, 0.0f, 100.0f);
                 });
 
@@ -1406,7 +1459,7 @@ namespace Himii
                     if (component.TileMapHandle != 0 && assetManager && assetManager->IsAssetHandleValid(component.TileMapHandle))
                     {
                         ImGui::Spacing();
-                        if (ImGui::Button("Open in TileMap Editor", ImVec2(-1, 0)))
+                        if (ImGui::Button("Open TileMap Setup", ImVec2(-1, 0)))
                         {
                             m_TileMapEditorRequest = component.TileMapHandle;
                         }

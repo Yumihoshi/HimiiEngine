@@ -4,6 +4,7 @@
 
 #include "Components.h"
 #include "Himii/Asset/AssetManager.h"
+#include "Himii/Asset/SpriteSheetUtility.h"
 #include "Himii/Project/Project.h"
 #include "Himii/Renderer/Renderer2D.h"
 #include "Himii/Renderer/Renderer3D.h"
@@ -188,9 +189,8 @@ namespace Himii
         {
             auto view = m_Registry.group<SpriteAnimationComponent, SpriteRendererComponent>();
 
-            // 获取 AssetManager
-            auto assetManager = Project::GetAssetManager();
-
+            if (auto assetManager = Project::TryGetAssetManager())
+            {
             for (auto e: view)
             {
                 auto [animComponent, spriteComponent] = view.get<SpriteAnimationComponent, SpriteRendererComponent>(e);
@@ -217,19 +217,55 @@ namespace Himii
                                         (animComponent.CurrentFrame + 1) % animation->GetFrameCount();
                             }
 
-                            // 获取当前帧的纹理句柄
-                            AssetHandle textureHandle = animation->GetFrame(animComponent.CurrentFrame);
-
-                            // 将纹理应用到 SpriteRenderer
-                            if (assetManager->IsAssetHandleValid(textureHandle))
+                            if (animation->UsesAtlasFrames())
                             {
-                                Ref<Texture2D> texture =
-                                        std::static_pointer_cast<Texture2D>(assetManager->GetAsset(textureHandle));
-                                spriteComponent.Texture = texture;
+                                const glm::ivec2 atlasCoordinates =
+                                        animation->GetAtlasFrameCoordinates(animComponent.CurrentFrame);
+                                const AssetHandle atlasTextureHandle = animation->GetAtlasTextureHandle();
+                                const uint32_t gridCellSize = animation->GetAtlasGridCellSize();
+
+                                Ref<Texture2D> atlasTexture = std::static_pointer_cast<Texture2D>(
+                                        assetManager->GetAsset(atlasTextureHandle));
+                                if (atlasTexture)
+                                {
+                                    spriteComponent.SpriteHandle = 0;
+                                    spriteComponent.TextureHandle = atlasTextureHandle;
+                                    spriteComponent.Texture = atlasTexture;
+                                    spriteComponent.CachedUVs = SpriteSheetUtility::AtlasGridCoordsToUVs(
+                                            atlasCoordinates, gridCellSize,
+                                            atlasTexture->GetWidth(), atlasTexture->GetHeight());
+                                    spriteComponent.SpritePixelSize = {(int)gridCellSize, (int)gridCellSize};
+                                    spriteComponent.UseSpriteRegion = true;
+
+                                    const TextureImportData *importData =
+                                            assetManager->GetTextureImportData(atlasTextureHandle);
+                                    if (importData && importData->PixelsPerUnit > 0)
+                                        spriteComponent.PixelsPerUnit = importData->PixelsPerUnit;
+                                }
+                            }
+                            else
+                            {
+                                AssetHandle frameHandle = animation->GetFrame(animComponent.CurrentFrame);
+                                if (frameHandle == 0)
+                                    continue;
+
+                                if (assetManager->IsSpriteHandle(frameHandle))
+                                {
+                                    spriteComponent.SpriteHandle = frameHandle;
+                                    spriteComponent.TextureHandle = 0;
+                                }
+                                else if (assetManager->IsAssetHandleValid(frameHandle))
+                                {
+                                    spriteComponent.SpriteHandle = 0;
+                                    spriteComponent.TextureHandle = frameHandle;
+                                }
+
+                                spriteComponent.ResolveResources(assetManager.get());
                             }
                         }
                     }
                 }
+            }
             }
         }
 
@@ -314,9 +350,14 @@ namespace Himii
         {
             Renderer2D::BeginScene(*mainCamera, cameraTransform);
             {
+                auto assetManager = Project::TryGetAssetManager();
                 auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
                 view.each([&](entt::entity entity, TransformComponent &transform, SpriteRendererComponent &sprite)
-                          { Himii::Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity); });
+                          {
+                              if (assetManager)
+                                  sprite.ResolveResources(assetManager.get());
+                              Himii::Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+                          });
             }
             {
                 if (Project::GetActive())
@@ -817,9 +858,14 @@ namespace Himii
 
         // Draw Sprites
         {
+            auto assetManager = Project::TryGetAssetManager();
             auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
             view.each([&](entt::entity entity, TransformComponent &transform, SpriteRendererComponent &sprite)
-                      { Himii::Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity); });
+                      {
+                          if (assetManager)
+                              sprite.ResolveResources(assetManager.get());
+                          Himii::Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+                      });
         }
         
         // Draw Tilemaps

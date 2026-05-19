@@ -9,6 +9,7 @@
 #include "panel/ConsolePanel.h"
 #include "panel/EditorPreferencesPanel.h"
 #include "panel/ProjectSettingsPanel.h"
+#include "panel/TextureInspectorPanel.h"
 
 #include "Himii/Core/FileWatcher.h"
 #include "Himii/Renderer/EditorCamera.h"
@@ -33,6 +34,12 @@ namespace Himii
         bool OnMouseButtonPressed(MouseButtonPressedEvent &e);
 
         void OnOverlayRender();
+        void HandleTilemapScenePaint(bool allowPainting);
+        void DrawTilemapEditOverlay();
+        void DrawTilemapGhostPreviewInViewport();
+        void UpdateTilemapHoverFromInput();
+        bool TryGetTilemapPaintContext(Entity &outEntity, Ref<TileMapData> &outMapData,
+                                       TransformComponent const *&outTransform);
 
         void CreateProject(const std::filesystem::path& projectPath, bool is2D = true);
         void OpenProject(const std::filesystem::path &path);
@@ -99,6 +106,9 @@ namespace Himii
         AnimationPanel m_AnimationPanel;
         bool m_ShowAnimationPanel = false;
 
+        TextureInspectorPanel m_TextureInspectorPanel;
+        bool m_ShowTextureInspector = false;
+
         TileMapEditorPanel m_TileMapEditorPanel;
         bool m_ShowTileMapEditor = false;
 
@@ -138,6 +148,9 @@ namespace Himii
         bool m_GizmoCaptureIsUserInterface = false;
         TransformComponent m_GizmoStartTransform;
         UITransformComponent m_GizmoStartUITransform;
+
+        glm::ivec2 m_TilemapHoveredTile{-1, -1};
+        bool m_TilemapViewportCapture = false;
 
     private:
         struct RecentProject

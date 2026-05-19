@@ -1,10 +1,12 @@
 #pragma once
 #include "Hepch.h"
 #include "Himii/Renderer/Renderer2D.h"
+#include "Himii/Asset/SpriteSheetUtility.h"
 #include "Himii/Renderer/RenderCommand.h"
 #include "Himii/Renderer/Shader.h"
 #include "Himii/Renderer/UniformBuffer.h"
 #include "Himii/Renderer/VertexArray.h"
+#include "Himii/Project/Project.h"
 
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
@@ -708,6 +710,34 @@ namespace Himii
         if (tiles.size() < (size_t)(width * height))
             return;
 
+        if (tileSet)
+        {
+            if (auto assetManager = Project::TryGetAssetManager())
+            {
+                for (auto &atlasSource : tileSet->GetAtlasSources())
+                {
+                    if (!atlasSource.CachedTexture && atlasSource.TextureHandle != 0
+                        && assetManager->IsAssetHandleValid(atlasSource.TextureHandle))
+                    {
+                        atlasSource.CachedTexture =
+                                std::static_pointer_cast<Texture2D>(assetManager->GetAsset(atlasSource.TextureHandle));
+                    }
+                }
+
+                for (auto &[tileIdentifier, tileDefinition] : tileSet->GetTileDefs())
+                {
+                    if (tileDefinition.SourceType == TileSourceType::Individual
+                        && !tileDefinition.CachedIndividualTexture
+                        && tileDefinition.IndividualTextureHandle != 0
+                        && assetManager->IsAssetHandleValid(tileDefinition.IndividualTextureHandle))
+                    {
+                        tileDefinition.CachedIndividualTexture = std::static_pointer_cast<Texture2D>(
+                                assetManager->GetAsset(tileDefinition.IndividualTextureHandle));
+                    }
+                }
+            }
+        }
+
         // 预缓存 Atlas 纹理槽位：为每个 AtlasSource 分配纹理槽
         // key: atlasSourceIndex, value: textureIndex in batch
         std::unordered_map<uint32_t, float> atlasTextureIndices;
@@ -787,18 +817,14 @@ namespace Himii
                                         float uSize = ts / texW;
                                         float vSize = ts / texH;
 
-                                        int col = def->AtlasCoords.x;
-                                        int row = def->AtlasCoords.y;
-
-                                        float u0 = col * uSize;
-                                        float u1 = (col + 1) * uSize;
-                                        float v0 = row * vSize;
-                                        float v1 = (row + 1) * vSize;
-
-                                        texCoords[0] = {u0, v0};
-                                        texCoords[1] = {u1, v0};
-                                        texCoords[2] = {u1, v1};
-                                        texCoords[3] = {u0, v1};
+                                        const std::array<glm::vec2, 4> atlasUVs =
+                                                SpriteSheetUtility::AtlasGridCoordsToUVs(
+                                                        def->AtlasCoords,
+                                                        static_cast<uint32_t>(ts),
+                                                        src.CachedTexture->GetWidth(),
+                                                        src.CachedTexture->GetHeight());
+                                        for (size_t vertexIndex = 0; vertexIndex < 4; ++vertexIndex)
+                                            texCoords[vertexIndex] = atlasUVs[vertexIndex];
                                     }
                                 }
                             }
@@ -979,10 +1005,27 @@ namespace Himii
 
     void Renderer2D::DrawSprite(const glm::mat4 &transform, SpriteRendererComponent &sprite, int entityID)
     {
-        if (sprite.Texture)
-            DrawQuad(transform, sprite.Texture, sprite.TilingFactor, sprite.Color, entityID);
-        else
+        if (!sprite.Texture)
+        {
             DrawQuad(transform, sprite.Color, entityID);
+            return;
+        }
+
+        glm::mat4 renderTransform = transform;
+        if (sprite.SpritePixelSize.x > 0 && sprite.SpritePixelSize.y > 0)
+        {
+            renderTransform = SpriteSheetUtility::BuildSpriteRenderTransform(
+                transform, sprite.SpritePixelSize, sprite.PixelsPerUnit, sprite.Pivot);
+        }
+
+        float tilingFactor = sprite.TilingFactor;
+        if (sprite.UseSpriteRegion)
+            tilingFactor = 1.0f;
+
+        if (sprite.UseSpriteRegion)
+            DrawQuadUV(renderTransform, sprite.Texture, sprite.CachedUVs, tilingFactor, sprite.Color, entityID);
+        else
+            DrawQuad(renderTransform, sprite.Texture, tilingFactor, sprite.Color, entityID);
     }
 
     float Renderer2D::GetLineWidth()

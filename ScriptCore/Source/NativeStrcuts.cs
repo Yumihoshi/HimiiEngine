@@ -51,6 +51,10 @@ namespace HimiiEngine
         // SpriteRenderer
         public IntPtr SpriteRenderer_GetColor;
         public IntPtr SpriteRenderer_SetColor;
+        public IntPtr SpriteRenderer_GetSpriteHandle;
+        public IntPtr SpriteRenderer_SetSpriteHandle;
+        public IntPtr SpriteRenderer_GetTextureHandle;
+        public IntPtr SpriteRenderer_SetTextureHandle;
     }
 
     [StructLayout(LayoutKind.Sequential)]

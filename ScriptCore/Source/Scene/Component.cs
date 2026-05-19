@@ -49,6 +49,18 @@ namespace HimiiEngine
             }
             set => InternalCalls.SpriteRenderer_SetColor(Entity.ID, ref value);
         }
+
+        public ulong SpriteHandle
+        {
+            get => InternalCalls.SpriteRenderer_GetSpriteHandle(Entity.ID);
+            set => InternalCalls.SpriteRenderer_SetSpriteHandle(Entity.ID, value);
+        }
+
+        public ulong TextureHandle
+        {
+            get => InternalCalls.SpriteRenderer_GetTextureHandle(Entity.ID);
+            set => InternalCalls.SpriteRenderer_SetTextureHandle(Entity.ID, value);
+        }
     }
 
     public class Rigidbody2D : Component

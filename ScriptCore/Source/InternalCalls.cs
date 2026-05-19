@@ -39,6 +39,8 @@ namespace HimiiEngine
 
         internal delegate void SpriteRendererGetColorDelegate(ulong entityID, out Vector4 color);
         internal delegate void SpriteRendererSetColorDelegate(ulong entityID, ref Vector4 color);
+        internal delegate ulong SpriteRendererGetHandleDelegate(ulong entityID);
+        internal delegate void SpriteRendererSetHandleDelegate(ulong entityID, ulong handle);
 
         // static fields to hold the delegates
         internal static LogFuncDelegate NativeLog;
@@ -76,6 +78,10 @@ namespace HimiiEngine
 
         internal static SpriteRendererGetColorDelegate SpriteRenderer_GetColor;
         internal static SpriteRendererSetColorDelegate SpriteRenderer_SetColor;
+        internal static SpriteRendererGetHandleDelegate SpriteRenderer_GetSpriteHandle;
+        internal static SpriteRendererSetHandleDelegate SpriteRenderer_SetSpriteHandle;
+        internal static SpriteRendererGetHandleDelegate SpriteRenderer_GetTextureHandle;
+        internal static SpriteRendererSetHandleDelegate SpriteRenderer_SetTextureHandle;
 
         [UnmanagedCallersOnly]
         public static void Initialize(IntPtr functionTablePtr)
@@ -120,6 +126,14 @@ namespace HimiiEngine
                 Marshal.GetDelegateForFunctionPointer<SpriteRendererGetColorDelegate>(funcs.SpriteRenderer_GetColor);
             SpriteRenderer_SetColor =
                 Marshal.GetDelegateForFunctionPointer<SpriteRendererSetColorDelegate>(funcs.SpriteRenderer_SetColor);
+            SpriteRenderer_GetSpriteHandle =
+                Marshal.GetDelegateForFunctionPointer<SpriteRendererGetHandleDelegate>(funcs.SpriteRenderer_GetSpriteHandle);
+            SpriteRenderer_SetSpriteHandle =
+                Marshal.GetDelegateForFunctionPointer<SpriteRendererSetHandleDelegate>(funcs.SpriteRenderer_SetSpriteHandle);
+            SpriteRenderer_GetTextureHandle =
+                Marshal.GetDelegateForFunctionPointer<SpriteRendererGetHandleDelegate>(funcs.SpriteRenderer_GetTextureHandle);
+            SpriteRenderer_SetTextureHandle =
+                Marshal.GetDelegateForFunctionPointer<SpriteRendererSetHandleDelegate>(funcs.SpriteRenderer_SetTextureHandle);
 
             Console.WriteLine("[C#] InternalCalls initialized.");
         }

@@ -52,6 +52,10 @@ namespace Himii
         // SpriteRenderer
         void *SpriteRenderer_GetColor;
         void *SpriteRenderer_SetColor;
+        void *SpriteRenderer_GetSpriteHandle;
+        void *SpriteRenderer_SetSpriteHandle;
+        void *SpriteRenderer_GetTextureHandle;
+        void *SpriteRenderer_SetTextureHandle;
     };
 
     class ScriptGlue {

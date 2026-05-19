@@ -1,7 +1,6 @@
 project(HimiiRuntime)
 
 # 添加可执行文件
-# WIN32 选项会让程序在 Windows 上启动时不显示黑框控制台
 # 如果你想看日志调试，可以先去掉 WIN32
 add_executable(HimiiRuntime src/RuntimeApp.cpp)
 

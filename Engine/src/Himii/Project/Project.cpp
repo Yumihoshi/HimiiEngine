@@ -151,7 +151,7 @@ namespace Himii
   </PropertyGroup>
 
   <ItemGroup>
-    <Using Include="Himii" />
+    <Using Include="HimiiEngine" />
   </ItemGroup>
 
   <ItemGroup>

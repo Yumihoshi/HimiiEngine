@@ -9,7 +9,6 @@
 #include "Himii/Scene/SceneSerializer.h"
 #include "Himii/Project/Project.h"
 #include "Himii/Asset/AssetManager.h"
-#include "Himii/Project/Project.h"
 #include "Himii/Core/Input.h"
 #include "Himii/Core/KeyCodes.h"
 #include "Himii/Core/Log.h"
@@ -98,9 +97,10 @@ namespace Himii {
 
         // ScriptCore 侧的类型全名（namespace + class）
         // 这里先做“最小可用”的映射：满足 Tilemap 脚本用例
-        static const uint32_t TilemapId = Fnv1A32("Himii.Tilemap");
-        static const uint32_t Rigidbody2DId = Fnv1A32("Himii.Rigidbody2D");
-        static const uint32_t TransformId = Fnv1A32("Himii.Transform");
+        static const uint32_t TilemapId = Fnv1A32("HimiiEngine.Tilemap");
+        static const uint32_t Rigidbody2DId = Fnv1A32("HimiiEngine.Rigidbody2D");
+        static const uint32_t TransformId = Fnv1A32("HimiiEngine.Transform");
+        static const uint32_t SpriteRendererId = Fnv1A32("HimiiEngine.SpriteRenderer");
 
         if (typeId == TilemapId)
             return entity.HasComponent<TilemapComponent>() ? 1 : 0;
@@ -108,6 +108,8 @@ namespace Himii {
             return entity.HasComponent<Rigidbody2DComponent>() ? 1 : 0;
         if (typeId == TransformId)
             return entity.HasComponent<TransformComponent>() ? 1 : 0;
+        if (typeId == SpriteRendererId)
+            return entity.HasComponent<SpriteRendererComponent>() ? 1 : 0;
 
         // 未注册的组件类型：默认认为不存在
         return 0;
@@ -406,6 +408,79 @@ namespace Himii {
             entity.GetComponent<SpriteRendererComponent>().Color = *color;
     }
 
+    static uint64_t SpriteRenderer_GetSpriteHandle(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (entity && entity.HasComponent<SpriteRendererComponent>())
+            return static_cast<uint64_t>(entity.GetComponent<SpriteRendererComponent>().SpriteHandle);
+        return 0;
+    }
+
+    static void SpriteRenderer_SetSpriteHandle(uint64_t entityID, uint64_t spriteHandle)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SpriteRendererComponent>())
+            return;
+
+        auto& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
+        spriteRenderer.SpriteHandle = spriteHandle;
+        spriteRenderer.TextureHandle = 0;
+
+        if (Project::GetActive())
+        {
+            auto assetManager = Project::GetAssetManager();
+            if (assetManager)
+                spriteRenderer.ResolveResources(assetManager.get());
+        }
+    }
+
+    static uint64_t SpriteRenderer_GetTextureHandle(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (entity && entity.HasComponent<SpriteRendererComponent>())
+            return static_cast<uint64_t>(entity.GetComponent<SpriteRendererComponent>().TextureHandle);
+        return 0;
+    }
+
+    static void SpriteRenderer_SetTextureHandle(uint64_t entityID, uint64_t textureHandle)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SpriteRendererComponent>())
+            return;
+
+        auto& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
+        spriteRenderer.TextureHandle = textureHandle;
+        spriteRenderer.SpriteHandle = 0;
+        spriteRenderer.UseSpriteRegion = false;
+
+        if (Project::GetActive())
+        {
+            auto assetManager = Project::GetAssetManager();
+            if (assetManager && textureHandle != 0)
+            {
+                Ref<Asset> asset = assetManager->GetAsset(textureHandle);
+                if (asset)
+                    spriteRenderer.Texture = std::static_pointer_cast<Texture2D>(asset);
+            }
+        }
+    }
+
     static void SceneManager_LoadScene(const char* scenePath)
     {
         if (!scenePath || scenePath[0] == '\0')
@@ -483,6 +558,10 @@ namespace Himii {
         data.SceneManager_LoadScene = (void *)&SceneManager_LoadScene;
         data.SpriteRenderer_GetColor = (void *)&SpriteRenderer_GetColor;
         data.SpriteRenderer_SetColor = (void *)&SpriteRenderer_SetColor;
+        data.SpriteRenderer_GetSpriteHandle = (void *)&SpriteRenderer_GetSpriteHandle;
+        data.SpriteRenderer_SetSpriteHandle = (void *)&SpriteRenderer_SetSpriteHandle;
+        data.SpriteRenderer_GetTextureHandle = (void *)&SpriteRenderer_GetTextureHandle;
+        data.SpriteRenderer_SetTextureHandle = (void *)&SpriteRenderer_SetTextureHandle;
 
         return data;
     }

@@ -58,6 +58,13 @@ namespace Himii
             return s_ActiveProject->m_AssetManager;
         }
 
+        static Ref<AssetManager> TryGetAssetManager()
+        {
+            if (!s_ActiveProject)
+                return nullptr;
+            return s_ActiveProject->m_AssetManager;
+        }
+
         static std::filesystem::path GetAssetRegistryPath()
         {
             HIMII_CORE_ASSERT(s_ActiveProject);

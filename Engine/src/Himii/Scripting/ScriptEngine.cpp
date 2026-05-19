@@ -214,7 +214,7 @@ namespace Himii
 
         // 6. 调用 C# 的 Interop.Initialize
         // 格式: Namespace.Class, AssemblyName
-        const char_t *dotnet_type = STR("Himii.InternalCalls, ScriptCore");
+        const char_t *dotnet_type = STR("HimiiEngine.InternalCalls, ScriptCore");
         const char_t *dotnet_type_method = STR("Initialize");
 
         int rc = load_assembly_and_get_function_pointer(
@@ -230,41 +230,41 @@ namespace Himii
         }
 
         // 2. 获取 C# 的生命周期函数 (OnCreate, OnUpdate)
-        // 假设我们在 C# Himii.ScriptManager 类中定义这些静态方法
-        load_assembly_and_get_function_pointer(filepath.c_str(), STR("Himii.ScriptManager, ScriptCore"),
+        // 假设我们在 C# HimiiEngine.ScriptManager 类中定义这些静态方法
+        load_assembly_and_get_function_pointer(filepath.c_str(), STR("HimiiEngine.ScriptManager, ScriptCore"),
                                                STR("LoadGameAssembly"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
                                                (void **)&s_LoadGameAssembly);
 
-        load_assembly_and_get_function_pointer(filepath.c_str(), STR("Himii.ScriptManager, ScriptCore"),
+        load_assembly_and_get_function_pointer(filepath.c_str(), STR("HimiiEngine.ScriptManager, ScriptCore"),
                                                STR("EntityClassExists"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
                                                (void **)&s_EntityClassExists);
 
-        load_assembly_and_get_function_pointer(filepath.c_str(), STR("Himii.ScriptManager, ScriptCore"),
+        load_assembly_and_get_function_pointer(filepath.c_str(), STR("HimiiEngine.ScriptManager, ScriptCore"),
                                                STR("InstantiateClass"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
                                                (void **)&s_InstantiateClass);
 
-        load_assembly_and_get_function_pointer(filepath.c_str(), STR("Himii.ScriptManager, ScriptCore"),
+        load_assembly_and_get_function_pointer(filepath.c_str(), STR("HimiiEngine.ScriptManager, ScriptCore"),
                                                STR("ReleaseInstance"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
                                                (void **)&s_ReleaseInstance);
 
-        load_assembly_and_get_function_pointer(filepath.c_str(), STR("Himii.ScriptManager, ScriptCore"),
+        load_assembly_and_get_function_pointer(filepath.c_str(), STR("HimiiEngine.ScriptManager, ScriptCore"),
                                                STR("OnDestroyInstance"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
                                                (void **)&s_OnDestroyInstance);
 
-        load_assembly_and_get_function_pointer(filepath.c_str(), STR("Himii.ScriptManager, ScriptCore"),
+        load_assembly_and_get_function_pointer(filepath.c_str(), STR("HimiiEngine.ScriptManager, ScriptCore"),
                                                STR("OnUpdateInstance"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
                                                (void **)&s_OnUpdateInstance);
 
-        load_assembly_and_get_function_pointer(filepath.c_str(), STR("Himii.ScriptManager, ScriptCore"),
+        load_assembly_and_get_function_pointer(filepath.c_str(), STR("HimiiEngine.ScriptManager, ScriptCore"),
                                                STR("OnCollisionEnter2DInstance"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
                                                (void **)&s_OnCollisionEnter2D);
 
-        load_assembly_and_get_function_pointer(filepath.c_str(), STR("Himii.ScriptManager, ScriptCore"),
+        load_assembly_and_get_function_pointer(filepath.c_str(), STR("HimiiEngine.ScriptManager, ScriptCore"),
                                                STR("OnCollisionExit2DInstance"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
                                                (void **)&s_OnCollisionExit2D);
 
         // [NEW] Load Reflection Bridge functions
-        const char_t *bridge_type = STR("Himii.ReflectionBridge, ScriptCore");
+        const char_t *bridge_type = STR("HimiiEngine.ReflectionBridge, ScriptCore");
         load_assembly_and_get_function_pointer(filepath.c_str(), bridge_type, STR("GetFields"),
                                                UNMANAGEDCALLERSONLY_METHOD, nullptr, (void **)&s_GetFields);
         load_assembly_and_get_function_pointer(filepath.c_str(), bridge_type, STR("GetFloat"),

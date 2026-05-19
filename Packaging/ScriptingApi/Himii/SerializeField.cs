@@ -1,6 +1,6 @@
 using System;
 
-namespace Himii
+namespace HimiiEngine
 {
     /// <summary>
     /// 标记 private 实例字段参与 Inspector 反射与场景序列化（与 public 字段行为一致）。

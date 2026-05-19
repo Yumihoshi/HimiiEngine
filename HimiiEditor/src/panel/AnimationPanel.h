@@ -4,6 +4,7 @@
 #include "Himii/Renderer/Texture.h"
 #include "Himii/Scene/SpriteAnimation.h"
 
+#include <imgui.h>
 #include <filesystem>
 
 namespace Himii
@@ -27,8 +28,21 @@ namespace Himii
         void SaveAnimationAs();
         void SaveAnimation();
 
-        // 辅助：从 AssetHandle 获取纹理用于预览
-        Ref<Texture2D> GetTextureFromHandle(AssetHandle handle);
+        Ref<Texture2D> GetTextureFromHandle(AssetHandle handle) const;
+        void RenderAtlasSetup();
+        void DrawFramePreview(int frameIndex, const ImVec2 &displaySize);
+        void ImportTextureAsAtlas(const std::filesystem::path &assetPath);
+
+    private:
+        struct AnimationFramePreview
+        {
+            Ref<Texture2D> Texture;
+            ImVec2 UV0{0.0f, 1.0f};
+            ImVec2 UV1{1.0f, 0.0f};
+            bool Valid = false;
+        };
+
+        AnimationFramePreview ResolveFramePreview(int frameIndex) const;
 
     private:
         Ref<SpriteAnimation> m_CurrentAnimation;
@@ -42,6 +56,7 @@ namespace Himii
 
         // UI 状态
         int m_SelectedFrameIndex = -1;
+        uint32_t m_AtlasGridCellSize = 16;
     };
 
 } // namespace Himii

@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Linq;
 using System.Runtime.Loader;
 
-namespace Himii
+namespace HimiiEngine
 {
     public enum ScriptInstanceFlags : int
     {

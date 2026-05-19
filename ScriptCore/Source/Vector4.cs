@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Himii
+namespace HimiiEngine
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct Vector4

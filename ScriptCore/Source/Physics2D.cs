@@ -1,6 +1,6 @@
 using System;
 
-namespace Himii
+namespace HimiiEngine
 {
     public static class Physics2D
     {

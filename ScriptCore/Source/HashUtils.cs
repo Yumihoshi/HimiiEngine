@@ -1,6 +1,6 @@
 using System;
 
-namespace Himii
+namespace HimiiEngine
 {
     internal static class HashUtils
     {

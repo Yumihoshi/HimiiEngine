@@ -3,7 +3,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace Himii
+namespace HimiiEngine
 {
     public static class ReflectionBridge
     {

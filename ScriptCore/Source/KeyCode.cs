@@ -1,4 +1,4 @@
-namespace Himii
+namespace HimiiEngine
 {
     public enum KeyCode
     {

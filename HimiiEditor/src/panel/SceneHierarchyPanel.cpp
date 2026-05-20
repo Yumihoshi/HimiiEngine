@@ -1,4 +1,5 @@
 #include "SceneHierarchyPanel.h"
+#include "InspectorControls.h"
 #include "commands/EditorCommandHistory.h"
 #include "commands/EditorCommands.h"
 #include "Himii/Project/Project.h"
@@ -332,181 +333,27 @@ namespace Himii
                || extension == ".tga";
     }
 
-    static bool AssignTextureFromContentBrowserPayload(const ImGuiPayload* payload, Ref<Texture2D>& texture,
-                                                      AssetHandle& textureHandle)
-    {
-        if (!payload)
-            return false;
-
-        const wchar_t* relativePathWide = static_cast<const wchar_t*>(payload->Data);
-        std::filesystem::path relativePath(relativePathWide);
-        std::filesystem::path textureFilePath = Project::GetAssetDirectory() / relativePath;
-
-        if (!std::filesystem::exists(textureFilePath))
-        {
-            HIMII_CORE_WARNING("Texture not found: {0}", textureFilePath.string());
-            return false;
-        }
-
-        if (!IsImageFileExtension(textureFilePath))
-        {
-            HIMII_CORE_WARNING("Not an image file: {0}", textureFilePath.string());
-            return false;
-        }
-
-        auto assetManager = Project::GetAssetManager();
-        if (assetManager)
-        {
-            AssetHandle importedHandle = assetManager->ImportAsset(relativePath);
-            if (importedHandle != 0)
-            {
-                textureHandle = importedHandle;
-                Ref<Asset> asset = assetManager->GetAsset(importedHandle);
-                if (asset)
-                    texture = std::static_pointer_cast<Texture2D>(asset);
-                else
-                    texture = Texture2D::Create(textureFilePath.string());
-                return true;
-            }
-        }
-
-        texture = Texture2D::Create(textureFilePath.string());
-        textureHandle = 0;
-        return true;
-    }
-
-    static ImVec2 ComputeTextureThumbnailSize(const Ref<Texture2D>& texture, float maximumSize)
-    {
-        if (!texture || texture->GetWidth() == 0 || texture->GetHeight() == 0)
-            return ImVec2(maximumSize, maximumSize);
-
-        const float aspectRatio =
-            static_cast<float>(texture->GetWidth()) / static_cast<float>(texture->GetHeight());
-
-        float displayWidth = maximumSize;
-        float displayHeight = displayWidth / aspectRatio;
-
-        if (displayHeight > maximumSize)
-        {
-            displayHeight = maximumSize;
-            displayWidth = displayHeight * aspectRatio;
-        }
-
-        return ImVec2(displayWidth, displayHeight);
-    }
-
     static void DrawTextureAssignControl(const char* label, Ref<Texture2D>& texture, AssetHandle& textureHandle)
     {
-        constexpr float maximumThumbnailSize = 96.0f;
-
-        ImGui::PushID(label);
-        if (ImGui::BeginTable("##TextureAssign", 2,
-                              ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingFixedFit))
+        const char* displayName = "None";
+        std::string displayNameStorage;
+        if (texture)
         {
-            ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
-            ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
-            ImGui::TableNextColumn();
-            ImGui::Text("%s", label);
-            ImGui::TableNextColumn();
+            displayNameStorage = std::filesystem::path(texture->GetPath()).filename().string();
+            displayName = displayNameStorage.c_str();
+        }
 
-            ImGui::PushItemWidth(-1);
-
-            auto drawDragDropTarget = [&]()
+        DrawObjectReferenceField(
+            label, displayName, textureHandle != 0, texture,
+            [&]()
             {
-                if (ImGui::BeginDragDropTarget())
-                {
-                    if (const ImGuiPayload* payload =
-                            ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-                    {
-                        AssignTextureFromContentBrowserPayload(payload, texture, textureHandle);
-                    }
-                    ImGui::EndDragDropTarget();
-                }
-            };
-
-            if (texture)
+                texture = nullptr;
+                textureHandle = 0;
+            },
+            [&](const ImGuiPayload* payload)
             {
-                const ImVec2 thumbnailSize = ComputeTextureThumbnailSize(texture, maximumThumbnailSize);
-                ImGui::Image((ImTextureID)(intptr_t)texture->GetRendererID(), thumbnailSize,
-                             ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
-                drawDragDropTarget();
-
-                const std::string fileName =
-                    std::filesystem::path(texture->GetPath()).filename().string();
-                ImGui::TextWrapped("%s", fileName.c_str());
-
-                if (textureHandle != 0)
-                    ImGui::TextDisabled("Handle: %llu", static_cast<uint64_t>(textureHandle));
-
-                if (ImGui::Button("Clear Texture", ImVec2(-1, 0)))
-                {
-                    texture = nullptr;
-                    textureHandle = 0;
-                }
-            }
-            else
-            {
-                ImGui::Button("Drop Texture Here",
-                              ImVec2(maximumThumbnailSize, maximumThumbnailSize));
-                drawDragDropTarget();
-            }
-
-            ImGui::PopItemWidth();
-            ImGui::EndTable();
-        }
-        ImGui::PopID();
-    }
-
-    static void DrawFloatControl(const std::string& label, float& value, float speed = 0.1f, float min = 0.0f, float max = 0.0f, float columnWidth = 100.0f)
-    {
-        ImGui::PushID(label.c_str());
-        if(ImGui::BeginTable("##FloatControl", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
-        {
-            ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
-            ImGui::TableSetupColumn("Value");
-            ImGui::TableNextColumn();
-            ImGui::Text("%s", label.c_str());
-            ImGui::TableNextColumn();
-            ImGui::PushItemWidth(-1);
-            ImGui::DragFloat("##Value", &value, speed, min, max);
-            ImGui::PopItemWidth();
-            ImGui::EndTable();
-        }
-        ImGui::PopID();
-    }
-
-    static void DrawCheckboxControl(const std::string& label, bool& value, float columnWidth = 100.0f)
-    {
-        ImGui::PushID(label.c_str());
-        if(ImGui::BeginTable("##CheckboxControl", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
-        {
-            ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
-            ImGui::TableSetupColumn("Value");
-            ImGui::TableNextColumn();
-            ImGui::Text("%s", label.c_str());
-            ImGui::TableNextColumn();
-            ImGui::Checkbox("##Value", &value);
-            ImGui::EndTable();
-        }
-        ImGui::PopID();
-    }
-
-    static void DrawColorControl(const std::string& label, glm::vec4& value, float columnWidth = 100.0f)
-    {
-        ImGui::PushID(label.c_str());
-        if(ImGui::BeginTable("##ColorControl", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
-        {
-            ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
-            ImGui::TableSetupColumn("Value");
-            ImGui::TableNextColumn();
-            ImGui::Text("%s", label.c_str());
-            ImGui::TableNextColumn();
-            ImGui::PushItemWidth(-1);
-            ImGui::ColorEdit4("##Value", glm::value_ptr(value));
-            ImGui::PopItemWidth();
-            ImGui::EndTable();
-        }
-        ImGui::PopID();
+                return AssignTextureFromContentBrowserPayload(payload, texture, textureHandle);
+            });
     }
 
     template<typename T, typename UIFunction>
@@ -1130,57 +977,80 @@ namespace Himii
                 [this](auto &component)
                 {
                     DrawColorControl("Color", component.Color);
-                    DrawTextureAssignControl("Texture", component.Texture, component.TextureHandle);
 
                     auto assetManager = Project::GetAssetManager();
-                    if (assetManager && component.TextureHandle != 0)
+
+                    Ref<Texture2D> previewTexture;
+                    std::string displayNameStorage = "None";
+                    const char* displayName = displayNameStorage.c_str();
+                    AssetHandle parentTextureHandle = 0;
+
+                    if (assetManager && component.SpriteAssetHandle != 0)
                     {
-                        assetManager->EnsureDefaultTextureMeta(component.TextureHandle);
-                        const std::vector<SpriteDefinition>& sprites =
-                            assetManager->GetSpritesForTexture(component.TextureHandle);
+                        const SpriteDefinition* spriteDefinition =
+                            assetManager->GetSpriteDefinition(component.SpriteAssetHandle);
+                        if (spriteDefinition)
+                            displayNameStorage = spriteDefinition->Name;
 
-                        int currentSpriteIndex = 0;
-                        for (int spriteIndex = 0; spriteIndex < static_cast<int>(sprites.size()); ++spriteIndex)
+                        parentTextureHandle =
+                            assetManager->GetTextureHandleForSprite(component.SpriteAssetHandle);
+                        if (parentTextureHandle != 0)
                         {
-                            if (sprites[spriteIndex].Handle == component.SpriteHandle)
-                            {
-                                currentSpriteIndex = spriteIndex;
-                                break;
-                            }
-                        }
+                            Ref<Asset> textureAsset = assetManager->GetAsset(parentTextureHandle);
+                            if (textureAsset)
+                                previewTexture = std::static_pointer_cast<Texture2D>(textureAsset);
 
-                        const char* previewLabel = sprites.empty()
-                            ? "No Sprites"
-                            : sprites[currentSpriteIndex].Name.c_str();
-                        if (ImGui::BeginCombo("Sprite", previewLabel))
-                        {
-                            for (int spriteIndex = 0; spriteIndex < static_cast<int>(sprites.size()); ++spriteIndex)
-                            {
-                                const bool isSelected = (spriteIndex == currentSpriteIndex);
-                                if (ImGui::Selectable(sprites[spriteIndex].Name.c_str(), isSelected))
-                                {
-                                    component.SpriteHandle = sprites[spriteIndex].Handle;
-                                    component.ResolveResources(assetManager.get());
-                                }
-                                if (isSelected)
-                                    ImGui::SetItemDefaultFocus();
-                            }
-                            ImGui::EndCombo();
+                            const std::filesystem::path texturePath =
+                                assetManager->GetAssetRegistry().at(parentTextureHandle).FilePath;
+                            displayNameStorage += " (";
+                            displayNameStorage += texturePath.filename().string();
+                            displayNameStorage += ")";
                         }
-
-                        if (ImGui::Button("Edit Texture / Slice"))
-                            m_TextureInspectorRequest = component.TextureHandle;
+                        displayName = displayNameStorage.c_str();
                     }
 
-                    if (assetManager && component.TextureHandle != 0)
-                    {
-                        if (component.SpriteHandle == 0 ||
-                            !assetManager->IsSpriteHandle(component.SpriteHandle))
+                    DrawObjectReferenceField(
+                        "Sprite", displayName, component.SpriteAssetHandle != 0, previewTexture,
+                        [&]()
                         {
-                            component.SpriteHandle =
-                                assetManager->GetDefaultSpriteHandleForTexture(component.TextureHandle);
+                            component.SpriteAssetHandle = 0;
+                        },
+                        [&](const ImGuiPayload* payload)
+                        {
+                            return AssignSpriteFromContentBrowserPayload(payload, component.SpriteAssetHandle);
+                        },
+                        [&]()
+                        {
+                            if (parentTextureHandle != 0)
+                                m_TextureInspectorRequest = parentTextureHandle;
+                        });
+
+                    if (assetManager && parentTextureHandle != 0)
+                    {
+                        const std::vector<SpriteDefinition>& sprites =
+                            assetManager->GetSpritesForTexture(parentTextureHandle);
+
+                        if (sprites.size() > 1)
+                        {
+                            int currentSpriteIndex = 0;
+                            std::vector<const char*> spriteLabels;
+                            spriteLabels.reserve(sprites.size());
+                            for (int spriteIndex = 0; spriteIndex < static_cast<int>(sprites.size()); ++spriteIndex)
+                            {
+                                spriteLabels.push_back(sprites[spriteIndex].Name.c_str());
+                                if (sprites[spriteIndex].Handle == component.SpriteAssetHandle)
+                                    currentSpriteIndex = spriteIndex;
+                            }
+
+                            DrawEnumComboControl(
+                                "Variant", currentSpriteIndex, spriteLabels.data(),
+                                static_cast<int>(spriteLabels.size()),
+                                [&](int newIndex)
+                                {
+                                    if (newIndex >= 0 && newIndex < static_cast<int>(sprites.size()))
+                                        component.SpriteAssetHandle = sprites[newIndex].Handle;
+                                });
                         }
-                        component.ResolveResources(assetManager.get());
                     }
 
                     DrawFloatControl("Tiling Factor", component.TilingFactor, 0.1f, 0.0f, 100.0f);
@@ -1325,37 +1195,51 @@ namespace Himii
                 });
         DrawComponent<SpriteAnimationComponent>(
                 "Sprite Animation", entity, m_ComponentIcons["Sprite Animation"],
-                [](auto &component)
+                [this](auto &component)
                 {
-                    ImGui::Text("Asset Handle: %llu", (uint64_t)component.AnimationHandle);
+                    auto assetManager = Project::GetAssetManager();
 
-                    ImGui::Button("Animation Asset", ImVec2(100.0f, 0.0f));
-                    if (ImGui::BeginDragDropTarget())
+                    std::string animationDisplayName = "None";
+                    if (component.AnimationHandle != 0 && assetManager
+                        && assetManager->IsAssetHandleValid(component.AnimationHandle))
                     {
-                        if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-                        {
-                            const wchar_t *path = (const wchar_t *)payload->Data;
-                            std::filesystem::path assetPath = path;
-
-                            if (assetPath.extension() == ".anim")
-                            {
-                                // 获取 AssetManager (需要 #include "Himii/Project/Project.h")
-                                auto assetManager = Project::GetAssetManager();
-                                if (assetManager)
-                                {
-                                    AssetHandle handle = assetManager->ImportAsset(assetPath);
-                                    if (handle != 0)
-                                        component.AnimationHandle = handle;
-                                }
-                            }
-                        }
-                        ImGui::EndDragDropTarget();
+                        const auto& metadata =
+                            assetManager->GetAssetRegistry().at(component.AnimationHandle);
+                        animationDisplayName = metadata.FilePath.filename().string();
                     }
 
-                    ImGui::DragFloat("Frame Rate", &component.FrameRate, 0.1f, 0.0f, 60.0f);
-                    ImGui::Checkbox("Playing", &component.Playing);
-                    ImGui::Text("Current Frame: %d", component.CurrentFrame);
-                    ImGui::Text("Timer: %.2f", component.Timer);
+                    DrawObjectReferenceField(
+                        "Animation", animationDisplayName.c_str(), component.AnimationHandle != 0, nullptr,
+                        [&]()
+                        {
+                            component.AnimationHandle = 0;
+                        },
+                        [&](const ImGuiPayload* payload)
+                        {
+                            return AssignAnimationAssetFromContentBrowserPayload(payload,
+                                                                                 component.AnimationHandle);
+                        },
+                        [&]()
+                        {
+                            if (component.AnimationHandle == 0 || !assetManager
+                                || !assetManager->IsAssetHandleValid(component.AnimationHandle))
+                                return;
+
+                            m_AnimationEditorRequest =
+                                Project::GetAssetFileSystemPath(
+                                    assetManager->GetAssetRegistry().at(component.AnimationHandle).FilePath);
+                        });
+
+                    DrawFloatControl("Frame Rate", component.FrameRate, 0.1f, 0.0f, 60.0f);
+                    DrawCheckboxControl("Playing", component.Playing);
+
+                    char currentFrameLabel[32];
+                    std::snprintf(currentFrameLabel, sizeof(currentFrameLabel), "%d", component.CurrentFrame);
+                    DrawReadOnlyTextControl("Current Frame", currentFrameLabel);
+
+                    char timerLabel[32];
+                    std::snprintf(timerLabel, sizeof(timerLabel), "%.2f", component.Timer);
+                    DrawReadOnlyTextControl("Timer", timerLabel);
                 });
 
         DrawComponent<TilemapComponent>(
@@ -1364,209 +1248,119 @@ namespace Himii
                 {
                     auto assetManager = Project::GetAssetManager();
 
-                    // ---- TileMap Asset 引用 ----
-                    ImGui::PushID("TileMapHandle");
+                    std::string tileMapDisplayName = "None";
+                    if (component.TileMapHandle != 0 && assetManager
+                        && assetManager->IsAssetHandleValid(component.TileMapHandle))
                     {
-                        std::string label = "None (drag .tilemap)";
-                        if (component.TileMapHandle != 0 && assetManager && assetManager->IsAssetHandleValid(component.TileMapHandle))
-                        {
-                            label = "TileMap: " + std::to_string((uint64_t)component.TileMapHandle);
-                        }
-
-                        ImGui::Button(label.c_str(), ImVec2(-1, 0.0f));
-
-                        // 拖拽 .tilemap 文件
-                        if (ImGui::BeginDragDropTarget())
-                        {
-                            if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
-                            {
-                                const wchar_t *path = (const wchar_t *)payload->Data;
-                                std::filesystem::path assetPath(path);
-                                if (assetPath.extension() == ".tilemap" && assetManager)
-                                {
-                                    AssetHandle handle = assetManager->ImportAsset(assetPath);
-                                    if (handle != 0)
-                                        component.TileMapHandle = handle;
-                                }
-                            }
-                            ImGui::EndDragDropTarget();
-                        }
+                        const auto &registry = assetManager->GetAssetRegistry();
+                        const auto iterator = registry.find(component.TileMapHandle);
+                        if (iterator != registry.end())
+                            tileMapDisplayName = iterator->second.FilePath.filename().string();
                     }
-                    ImGui::PopID();
 
-                    // ---- "新建 TileMap" 按钮 ----
+                    DrawObjectReferenceField(
+                        "Tile Map", tileMapDisplayName.c_str(), component.TileMapHandle != 0, nullptr,
+                        [&]()
+                        {
+                            component.TileMapHandle = 0;
+                        },
+                        [&](const ImGuiPayload *payload)
+                        {
+                            if (!payload || !assetManager)
+                                return false;
+
+                            const wchar_t *path = (const wchar_t *)payload->Data;
+                            std::filesystem::path assetPath(path);
+                            if (assetPath.extension() != ".tilemap")
+                                return false;
+
+                            AssetHandle handle = assetManager->ImportAsset(assetPath);
+                            if (handle == 0)
+                                return false;
+
+                            component.TileMapHandle = handle;
+                            return true;
+                        },
+                        [&]()
+                        {
+                            if (component.TileMapHandle != 0)
+                                m_TileMapEditorRequest = component.TileMapHandle;
+                        });
+
                     if (component.TileMapHandle == 0)
                     {
-                        ImGui::Spacing();
-                        if (ImGui::Button("Create New TileMap", ImVec2(-1, 0)))
+                        DrawActionButtonRow("Tile Map", [&]()
                         {
-                            if (assetManager)
+                            if (ImGui::Button("Create New TileMap", ImVec2(-1.0f, 0.0f)))
                             {
-                                auto assetDir = Project::GetAssetDirectory();
+                                if (!assetManager)
+                                    return;
 
-                                // 创建默认 TileSet
+                                const auto assetDirectory = Project::GetAssetDirectory();
+
                                 auto tileSetAsset = std::make_shared<TileSet>();
                                 tileSetAsset->Handle = AssetHandle();
 
-                                TileDef whiteTile;
-                                whiteTile.ID = 1;
-                                whiteTile.SourceType = TileSourceType::Atlas;
-                                whiteTile.Tint = {1.0f, 1.0f, 1.0f, 1.0f};
-                                tileSetAsset->AddTileDef(whiteTile);
+                                TileAtlasSource atlasSource;
+                                atlasSource.TileSize = 16;
+                                tileSetAsset->AddAtlasSource(atlasSource);
 
-                                std::filesystem::path tsDir = assetDir / "tilesets";
-                                std::filesystem::create_directories(tsDir);
-                                std::filesystem::path tsPath = tsDir / "default.tileset";
-                                // 避免覆盖：如果文件已存在则加序号
-                                int idx = 0;
-                                while (std::filesystem::exists(tsPath))
-                                    tsPath = tsDir / ("default_" + std::to_string(++idx) + ".tileset");
+                                std::filesystem::path tileSetDirectory = assetDirectory / "tilesets";
+                                std::filesystem::create_directories(tileSetDirectory);
+                                std::filesystem::path tileSetPath = tileSetDirectory / "default.tileset";
+                                int nameIndex = 0;
+                                while (std::filesystem::exists(tileSetPath))
+                                    tileSetPath = tileSetDirectory
+                                        / ("default_" + std::to_string(++nameIndex) + ".tileset");
 
-                                TileSetSerializer::Serialize(tsPath, tileSetAsset);
-                                auto tsRelPath = std::filesystem::relative(tsPath, assetDir);
-                                AssetHandle tsHandle = assetManager->ImportAsset(tsRelPath);
-                                tileSetAsset->Handle = tsHandle;
-                                TileSetSerializer::Serialize(tsPath, tileSetAsset);
+                                TileSetSerializer::Serialize(tileSetPath, tileSetAsset);
+                                const auto tileSetRelativePath =
+                                    std::filesystem::relative(tileSetPath, assetDirectory);
+                                const AssetHandle tileSetHandle =
+                                    assetManager->ImportAsset(tileSetRelativePath);
+                                tileSetAsset->Handle = tileSetHandle;
+                                TileSetSerializer::Serialize(tileSetPath, tileSetAsset);
 
-                                // 创建默认 TileMapData (16x16)
                                 auto mapAsset = std::make_shared<TileMapData>();
                                 mapAsset->Handle = AssetHandle();
-                                mapAsset->SetTileSetHandle(tsHandle);
+                                mapAsset->SetTileSetHandle(tileSetHandle);
                                 mapAsset->Resize(8, 8);
                                 mapAsset->SetCellSize(1.0f);
 
-                                std::filesystem::path tmDir = assetDir / "tilemaps";
-                                std::filesystem::create_directories(tmDir);
-                                std::filesystem::path tmPath = tmDir / "new_tilemap.tilemap";
-                                idx = 0;
-                                while (std::filesystem::exists(tmPath))
-                                    tmPath = tmDir / ("new_tilemap_" + std::to_string(++idx) + ".tilemap");
+                                std::filesystem::path tileMapDirectory = assetDirectory / "tilemaps";
+                                std::filesystem::create_directories(tileMapDirectory);
+                                std::filesystem::path tileMapPath = tileMapDirectory / "new_tilemap.tilemap";
+                                nameIndex = 0;
+                                while (std::filesystem::exists(tileMapPath))
+                                    tileMapPath = tileMapDirectory
+                                        / ("new_tilemap_" + std::to_string(++nameIndex) + ".tilemap");
 
-                                TileMapDataSerializer::Serialize(tmPath, mapAsset);
-                                auto tmRelPath = std::filesystem::relative(tmPath, assetDir);
-                                AssetHandle tmHandle = assetManager->ImportAsset(tmRelPath);
-                                mapAsset->Handle = tmHandle;
-                                TileMapDataSerializer::Serialize(tmPath, mapAsset);
+                                TileMapDataSerializer::Serialize(tileMapPath, mapAsset);
+                                const auto tileMapRelativePath =
+                                    std::filesystem::relative(tileMapPath, assetDirectory);
+                                const AssetHandle tileMapHandle =
+                                    assetManager->ImportAsset(tileMapRelativePath);
+                                mapAsset->Handle = tileMapHandle;
+                                TileMapDataSerializer::Serialize(tileMapPath, mapAsset);
 
                                 assetManager->SerializeAssetRegistry();
 
-                                component.TileMapHandle = tmHandle;
+                                component.TileMapHandle = tileMapHandle;
+                                m_TileMapEditorRequest = tileMapHandle;
                             }
-                        }
+                        });
                     }
-
-                    // ---- "在 TileMap 编辑器中打开" 按钮 ----
-                    if (component.TileMapHandle != 0 && assetManager && assetManager->IsAssetHandleValid(component.TileMapHandle))
+                    else if (assetManager && assetManager->IsAssetHandleValid(component.TileMapHandle))
                     {
-                        ImGui::Spacing();
-                        if (ImGui::Button("Open TileMap Setup", ImVec2(-1, 0)))
+                        DrawActionButtonRow("Tile Map", [&]()
                         {
-                            m_TileMapEditorRequest = component.TileMapHandle;
-                        }
-                    }
+                            if (ImGui::Button("Open TileMap Setup", ImVec2(-1.0f, 0.0f)))
+                                m_TileMapEditorRequest = component.TileMapHandle;
+                        });
 
-                    // ---- 如果已绑定 TileMap，显示编辑 UI ----
-                    if (component.TileMapHandle != 0 && assetManager && assetManager->IsAssetHandleValid(component.TileMapHandle))
-                    {
-                        auto asset = assetManager->GetAsset(component.TileMapHandle);
-                        if (asset)
-                        {
-                            auto mapData = std::static_pointer_cast<TileMapData>(asset);
-
-                            ImGui::Separator();
-                            ImGui::Text("TileMap Properties");
-
-                            // Half Width / Half Height（总格数 = (2*Half+1)，中心在格子中心）
-                            int halfW = (int)mapData->GetHalfWidth();
-                            int halfH = (int)mapData->GetHalfHeight();
-                            float cellSize = mapData->GetCellSize();
-
-                            bool changed = false;
-                            if (ImGui::DragInt("Half Width", &halfW, 1.0f, 0, 512))
-                            {
-                                mapData->Resize((uint32_t)(halfW > 0 ? halfW : 0), mapData->GetHalfHeight());
-                                changed = true;
-                            }
-                            if (ImGui::DragInt("Half Height", &halfH, 1.0f, 0, 512))
-                            {
-                                mapData->Resize(mapData->GetHalfWidth(), (uint32_t)(halfH > 0 ? halfH : 0));
-                                changed = true;
-                            }
-                            ImGui::TextDisabled("Grid: %u x %u", mapData->GetWidth(), mapData->GetHeight());
-                            if (ImGui::DragFloat("Cell Size", &cellSize, 0.05f, 0.1f, 10.0f))
-                            {
-                                mapData->SetCellSize(cellSize);
-                                changed = true;
-                            }
-
-                            // TileSet 引用
-                            ImGui::Separator();
-                            AssetHandle tsHandle = mapData->GetTileSetHandle();
-                            std::string tsLabel = (tsHandle != 0)
-                                ? "TileSet: " + std::to_string((uint64_t)tsHandle)
-                                : "No TileSet";
-                            ImGui::Text("%s", tsLabel.c_str());
-
-                            // 简易 Tile 编辑网格
-                            ImGui::Separator();
-                            ImGui::Text("Tile Grid (click to toggle)");
-
-                            uint32_t w = mapData->GetWidth();
-                            uint32_t h = mapData->GetHeight();
-
-                            // 限制显示大小，避免太大的地图卡 UI
-                            uint32_t displayW = (w > 32) ? 32 : w;
-                            uint32_t displayH = (h > 32) ? 32 : h;
-                            if (w > 32 || h > 32)
-                                ImGui::TextColored(ImVec4(1, 1, 0, 1), "Showing %dx%d of %dx%d", displayW, displayH, w, h);
-
-                            float btnSize = 18.0f;
-                            for (uint32_t y = 0; y < displayH; ++y)
-                            {
-                                for (uint32_t x = 0; x < displayW; ++x)
-                                {
-                                    if (x > 0) ImGui::SameLine(0, 1);
-
-                                    ImGui::PushID((int)(x + y * w));
-                                    uint16_t tileID = mapData->GetTile(x, y);
-
-                                    // 有 Tile 显示白色，空显示灰色
-                                    if (tileID > 0)
-                                        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.9f, 0.9f, 0.9f, 1.0f));
-                                    else
-                                        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
-
-                                    if (ImGui::Button("##tile", ImVec2(btnSize, btnSize)))
-                                    {
-                                        // 点击切换: 0 ↔ 1
-                                        mapData->SetTile(x, y, tileID > 0 ? 0 : 1);
-                                        changed = true;
-                                    }
-                                    ImGui::PopStyleColor();
-                                    ImGui::PopID();
-                                }
-                            }
-
-                            // 保存按钮
-                            ImGui::Spacing();
-                            if (ImGui::Button("Save TileMap", ImVec2(-1, 0)) || changed)
-                            {
-                                // 重新序列化到文件
-                                auto &registry = assetManager->GetAssetRegistry();
-                                auto it = registry.find(component.TileMapHandle);
-                                if (it != registry.end())
-                                {
-                                    auto fullPath = Project::GetAssetFileSystemPath(it->second.FilePath);
-                                    TileMapDataSerializer::Serialize(fullPath, mapData);
-                                }
-                            }
-
-                            // 解绑按钮
-                            if (ImGui::Button("Detach TileMap", ImVec2(-1, 0)))
-                            {
-                                component.TileMapHandle = 0;
-                            }
-                        }
+                        ImGui::TextDisabled(
+                            "选中实体显示 Scene 网格。在 TileMap Setup 右侧点选图块后再绘制；"
+                            "按住 Alt 或 Move Entity 可移动实体。");
                     }
                 });
 

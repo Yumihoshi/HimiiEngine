@@ -57,6 +57,8 @@ namespace Himii
         const std::vector<SpriteDefinition>& GetSpritesForTexture(AssetHandle textureHandle);
         AssetHandle GetDefaultSpriteHandleForTexture(AssetHandle textureHandle);
 
+        AssetHandle GetTextureHandleForSprite(AssetHandle spriteAssetHandle) const;
+
     private:
         void RegisterSpritesFromImportData(const TextureImportData& importData);
         void UnregisterSpritesForTexture(AssetHandle textureHandle);

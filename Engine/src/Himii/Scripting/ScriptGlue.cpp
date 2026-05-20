@@ -416,7 +416,7 @@ namespace Himii {
 
         Entity entity = scene->GetEntityByUUID(entityID);
         if (entity && entity.HasComponent<SpriteRendererComponent>())
-            return static_cast<uint64_t>(entity.GetComponent<SpriteRendererComponent>().SpriteHandle);
+            return static_cast<uint64_t>(entity.GetComponent<SpriteRendererComponent>().SpriteAssetHandle);
         return 0;
     }
 
@@ -430,16 +430,7 @@ namespace Himii {
         if (!entity || !entity.HasComponent<SpriteRendererComponent>())
             return;
 
-        auto& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
-        spriteRenderer.SpriteHandle = spriteHandle;
-        spriteRenderer.TextureHandle = 0;
-
-        if (Project::GetActive())
-        {
-            auto assetManager = Project::GetAssetManager();
-            if (assetManager)
-                spriteRenderer.ResolveResources(assetManager.get());
-        }
+        entity.GetComponent<SpriteRendererComponent>().SpriteAssetHandle = spriteHandle;
     }
 
     static uint64_t SpriteRenderer_GetTextureHandle(uint64_t entityID)
@@ -449,9 +440,20 @@ namespace Himii {
             return 0;
 
         Entity entity = scene->GetEntityByUUID(entityID);
-        if (entity && entity.HasComponent<SpriteRendererComponent>())
-            return static_cast<uint64_t>(entity.GetComponent<SpriteRendererComponent>().TextureHandle);
-        return 0;
+        if (!entity || !entity.HasComponent<SpriteRendererComponent>())
+            return 0;
+
+        const AssetHandle spriteAssetHandle =
+            entity.GetComponent<SpriteRendererComponent>().SpriteAssetHandle;
+        if (spriteAssetHandle == 0 || !Project::GetActive())
+            return 0;
+
+        auto assetManager = Project::GetAssetManager();
+        if (!assetManager)
+            return 0;
+
+        return static_cast<uint64_t>(
+            assetManager->GetTextureHandleForSprite(spriteAssetHandle));
     }
 
     static void SpriteRenderer_SetTextureHandle(uint64_t entityID, uint64_t textureHandle)
@@ -464,21 +466,18 @@ namespace Himii {
         if (!entity || !entity.HasComponent<SpriteRendererComponent>())
             return;
 
-        auto& spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
-        spriteRenderer.TextureHandle = textureHandle;
-        spriteRenderer.SpriteHandle = 0;
-        spriteRenderer.UseSpriteRegion = false;
-
-        if (Project::GetActive())
+        if (!Project::GetActive() || textureHandle == 0)
         {
-            auto assetManager = Project::GetAssetManager();
-            if (assetManager && textureHandle != 0)
-            {
-                Ref<Asset> asset = assetManager->GetAsset(textureHandle);
-                if (asset)
-                    spriteRenderer.Texture = std::static_pointer_cast<Texture2D>(asset);
-            }
+            entity.GetComponent<SpriteRendererComponent>().SpriteAssetHandle = 0;
+            return;
         }
+
+        auto assetManager = Project::GetAssetManager();
+        if (!assetManager || !assetManager->IsAssetHandleValid(textureHandle))
+            return;
+
+        entity.GetComponent<SpriteRendererComponent>().SpriteAssetHandle =
+            assetManager->GetDefaultSpriteHandleForTexture(textureHandle);
     }
 
     static void SceneManager_LoadScene(const char* scenePath)

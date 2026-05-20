@@ -2,6 +2,7 @@
 #include "Himii/Renderer/OrthographicCamera.h"
 #include "Himii/Renderer/Texture.h"
 
+#include "Himii/Asset/Sprite.h"
 #include "Himii/Scene/Components.h"
 #include "Himii/Scene/TileSet.h"
 #include "Himii/Scene/TileMapData.h"
@@ -43,7 +44,10 @@ namespace Himii
         static void DrawRect(const glm::vec3& position, const glm::vec2& size, const glm::vec4& color, int entityID = -1);
 		static void DrawRect(const glm::mat4& transform, const glm::vec4& color, int entityID = -1);
 
-        static void DrawSprite(const glm::mat4 &transform, SpriteRendererComponent& sprite,int entityID=-1);
+        static void DrawSprite(const glm::mat4 &transform,
+                               const SpriteRendererComponent& sprite,
+                               const SpriteResolved& resolved,
+                               int entityID = -1);
         
         static void DrawTilemap(const glm::mat4 &transform, const Ref<TileMapData>& mapData, const Ref<TileSet>& tileSet, int entityID = -1);
 

@@ -69,26 +69,14 @@ namespace Himii
 
     struct SpriteRendererComponent {
         glm::vec4 Color{1.0f, 1.0f, 1.0f, 1.0f};
-        Ref<Texture2D> Texture{};
-        AssetHandle TextureHandle = 0;
-        AssetHandle SpriteHandle = 0;
+        AssetHandle SpriteAssetHandle = 0;
         float TilingFactor = 1.0f;
-
-        bool UseSpriteRegion = false;
-        std::array<glm::vec2, 4> CachedUVs{};
-        glm::vec2 Pivot{0.5f, 0.5f};
-        glm::ivec2 SpritePixelSize{0, 0};
-        uint32_t PixelsPerUnit = 100;
 
         SpriteRendererComponent() = default;
         SpriteRendererComponent(const SpriteRendererComponent&) = default;
         SpriteRendererComponent(const glm::vec4 &color) : Color(color)
         {
         }
-
-        void ResolveResources(AssetManager* assetManager);
-
-        glm::mat4 GetVisualTransform(const TransformComponent& transform) const;
     };
     
     struct CircleRendererComponent {

@@ -20,6 +20,7 @@
 #include "EditorExternalFileDrop.h"
 #include "TilemapEditorUtility.h"
 #include "Himii/Asset/SpriteSheetUtility.h"
+#include "Himii/Scene/SpriteRendererUtility.h"
 #include "Himii/Scene/TileSet.h"
 #include <GLFW/glfw3.h>
 
@@ -359,10 +360,20 @@ namespace Himii
                 m_TileMapEditorPanel.Open(tmEditorRequest);
             }
             AssetHandle textureInspectorRequest = m_SceneHierarchyPanel.GetTextureInspectorRequest();
+            if (textureInspectorRequest == 0)
+                textureInspectorRequest = m_ContentBrowserPanel.GetTextureInspectorRequest();
             if (textureInspectorRequest != 0)
             {
                 m_ShowTextureInspector = true;
                 m_TextureInspectorPanel.SetTextureHandle(textureInspectorRequest);
+            }
+
+            const std::filesystem::path animationEditorRequest =
+                m_SceneHierarchyPanel.GetAnimationEditorRequest();
+            if (!animationEditorRequest.empty())
+            {
+                m_ShowAnimationPanel = true;
+                m_AnimationPanel.SetContext(animationEditorRequest);
             }
 
             AssetHandle peEditorRequest = m_SceneHierarchyPanel.GetParticleEmitterEditorRequest();
@@ -431,13 +442,23 @@ namespace Himii
             Entity selectEntity = m_SceneHierarchyPanel.GetSelectedEntity();
             const bool isTilemapEditEntity =
                     selectEntity && selectEntity.HasComponent<TilemapComponent>();
-            const bool tilemapPaintModeActive =
-                    isTilemapEditEntity && m_TileMapEditorPanel.IsPaintModeEnabled();
+            if (isTilemapEditEntity)
+            {
+                const AssetHandle tileMapHandle =
+                        selectEntity.GetComponent<TilemapComponent>().TileMapHandle;
+                if (tileMapHandle != 0
+                    && m_TileMapEditorPanel.GetTileMapHandle() != tileMapHandle)
+                {
+                    m_TileMapEditorPanel.Open(tileMapHandle);
+                }
+            }
+
+            const bool tilemapPaintModeActive = IsTilemapPaintActive();
 
             if (m_ViewportFocused || m_ViewportHovered)
             {
-                if (ImGui::IsKeyPressed(ImGuiKey_P) && isTilemapEditEntity)
-                    m_TileMapEditorPanel.TogglePaintMode();
+                if (ImGui::IsKeyPressed(ImGuiKey_H) && isTilemapEditEntity)
+                    m_TileMapEditorPanel.ToggleMoveEntityMode();
             }
 
             // gizmos（Tilemap 绘制模式关闭时才显示，避免与笔刷抢鼠标）
@@ -617,7 +638,7 @@ namespace Himii
             else
             {
                 m_TilemapViewportCapture = false;
-                if (isTilemapEditEntity)
+                if (IsTilemapEditContextActive())
                     HandleTilemapScenePaint(false);
             }
 
@@ -757,7 +778,7 @@ namespace Himii
         if (e.GetMouseButton() == Mouse::ButtonLeft)
         {
             bool blockViewportSelectionPick = false;
-            if (m_SceneState == SceneState::Edit && m_TileMapEditorPanel.IsPaintModeEnabled())
+            if (m_SceneState == SceneState::Edit && IsTilemapPaintActive())
             {
                 Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
                 if (selectedEntity && selectedEntity.HasComponent<TilemapComponent>())
@@ -773,7 +794,7 @@ namespace Himii
 
     void EditorLayer::UpdateTilemapHoverFromInput()
     {
-        if (m_SceneState != SceneState::Edit)
+        if (m_SceneState != SceneState::Edit || !IsTilemapEditContextActive())
             return;
 
         Entity selectedEntity;
@@ -887,12 +908,14 @@ namespace Himii
 
                     if (selectedEntity.HasComponent<SpriteRendererComponent>())
                     {
-                        SpriteRendererComponent &spriteRenderer =
+                        const SpriteRendererComponent &spriteRenderer =
                                 selectedEntity.GetComponent<SpriteRendererComponent>();
                         if (auto assetManager = Project::TryGetAssetManager())
                         {
-                            spriteRenderer.ResolveResources(assetManager.get());
-                            outlineTransform = spriteRenderer.GetVisualTransform(transform);
+                            const SpriteResolved resolved = ResolveSpriteRendererDrawable(
+                                selectedEntity, spriteRenderer, assetManager.get());
+                            outlineTransform =
+                                GetSpriteRendererVisualTransform(transform, resolved);
                         }
                     }
 
@@ -1423,6 +1446,16 @@ namespace Himii
             HIMII_CORE_ERROR("Failed to save project to {0}", projectFile.string());
         }
 
+        if (m_TextureInspectorPanel.SaveActiveTextureMeta())
+        {
+            HIMII_CORE_INFO("Texture import meta saved.");
+        }
+
+        if (m_TileMapEditorPanel.SaveActiveTileMapAssets())
+        {
+            HIMII_CORE_INFO("TileMap assets saved.");
+        }
+
         // Save Scene
         SaveScene();
     }
@@ -1665,6 +1698,47 @@ namespace Himii
         ImGui::End();
     }
 
+    bool EditorLayer::IsTilemapMoveEntityActive()
+    {
+        if (m_SceneState != SceneState::Edit)
+            return false;
+
+        const bool altHeld = ImGui::IsKeyDown(ImGuiKey_LeftAlt) || ImGui::IsKeyDown(ImGuiKey_RightAlt);
+
+        return m_TileMapEditorPanel.IsMoveEntityModeEnabled() || altHeld;
+    }
+
+    bool EditorLayer::IsTilemapEditContextActive()
+    {
+        if (m_SceneState != SceneState::Edit)
+            return false;
+
+        Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+        if (!selectedEntity || !selectedEntity.HasComponent<TilemapComponent>())
+            return false;
+
+        const TilemapComponent &tilemapComponent = selectedEntity.GetComponent<TilemapComponent>();
+        if (tilemapComponent.TileMapHandle == 0)
+            return false;
+
+        if (!Project::GetActive())
+            return false;
+
+        auto assetManager = Project::GetAssetManager();
+        if (!assetManager || !assetManager->IsAssetHandleValid(tilemapComponent.TileMapHandle))
+            return false;
+
+        return assetManager->GetAsset(tilemapComponent.TileMapHandle) != nullptr;
+    }
+
+    bool EditorLayer::IsTilemapPaintActive()
+    {
+        if (!IsTilemapEditContextActive() || IsTilemapMoveEntityActive())
+            return false;
+
+        return m_TileMapEditorPanel.CanPaintInScene();
+    }
+
     bool EditorLayer::TryGetTilemapPaintContext(Entity &outEntity, Ref<TileMapData> &outMapData,
                                                 TransformComponent const *&outTransform)
     {
@@ -1702,7 +1776,7 @@ namespace Himii
         if (!TryGetTilemapPaintContext(selectedEntity, mapData, transformComponent))
             return;
 
-        if (allowPainting && !m_TileMapEditorPanel.IsPaintModeEnabled())
+        if (allowPainting && !IsTilemapPaintActive())
             return;
 
         if (m_TilemapViewportCapture || m_ViewportFocused || m_ViewportHovered)
@@ -1748,8 +1822,7 @@ namespace Himii
 
     void EditorLayer::DrawTilemapGhostPreviewInViewport()
     {
-        if (m_SceneState != SceneState::Edit || m_TilemapHoveredTile.x < 0
-            || !m_TileMapEditorPanel.IsPaintModeEnabled())
+        if (m_SceneState != SceneState::Edit || m_TilemapHoveredTile.x < 0 || !IsTilemapPaintActive())
             return;
 
         Entity selectedEntity;
@@ -1830,10 +1903,10 @@ namespace Himii
                                ImVec2(screenBottomRight.x, screenBottomRight.y),
                                ImVec2(screenTopRight.x, screenTopRight.y),
                                ImVec2(screenTopLeft.x, screenTopLeft.y),
-                               ImVec2(imguiQuadUVs[0].x, imguiQuadUVs[0].y),
-                               ImVec2(imguiQuadUVs[1].x, imguiQuadUVs[1].y),
-                               ImVec2(imguiQuadUVs[2].x, imguiQuadUVs[2].y),
                                ImVec2(imguiQuadUVs[3].x, imguiQuadUVs[3].y),
+                               ImVec2(imguiQuadUVs[2].x, imguiQuadUVs[2].y),
+                               ImVec2(imguiQuadUVs[1].x, imguiQuadUVs[1].y),
+                               ImVec2(imguiQuadUVs[0].x, imguiQuadUVs[0].y),
                                IM_COL32(255, 255, 255, 180));
     }
 
@@ -1907,7 +1980,7 @@ namespace Himii
             Renderer2D::DrawRect(highlightTransform, highlightColor);
 
             const uint16_t selectedTileIdentifier = m_TileMapEditorPanel.GetSelectedTileID();
-            if (m_TileMapEditorPanel.IsPaintModeEnabled() && selectedTileIdentifier != 0
+            if (IsTilemapPaintActive() && selectedTileIdentifier != 0
                 && m_TileMapEditorPanel.GetCurrentTool() != TileMapEditorPanel::Tool::Eraser)
             {
                 Ref<TileSet> tileSet = m_TileMapEditorPanel.GetTileSet();
@@ -1929,9 +2002,10 @@ namespace Himii
                                 if (atlasTexture && atlasSource.TileSize > 0)
                                 {
                                     const std::array<glm::vec2, 4> textureCoordinates =
-                                            SpriteSheetUtility::AtlasGridCoordsToUVs(
-                                                    tileDefinition->AtlasCoords, atlasSource.TileSize,
-                                                    atlasTexture->GetWidth(), atlasTexture->GetHeight());
+                                            SpriteSheetUtility::ReorderUVsForYUpWorldQuad(
+                                                    SpriteSheetUtility::AtlasGridCoordsToUVs(
+                                                            tileDefinition->AtlasCoords, atlasSource.TileSize,
+                                                            atlasTexture->GetWidth(), atlasTexture->GetHeight()));
 
                                     glm::mat4 ghostTransform = entityTransform
                                             * glm::translate(

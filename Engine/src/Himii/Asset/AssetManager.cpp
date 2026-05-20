@@ -434,4 +434,12 @@ namespace Himii
         return sprites[0].Handle;
     }
 
+    AssetHandle AssetManager::GetTextureHandleForSprite(AssetHandle spriteAssetHandle) const
+    {
+        auto registryIterator = m_SpriteRegistry.find(spriteAssetHandle);
+        if (registryIterator == m_SpriteRegistry.end())
+            return 0;
+        return registryIterator->second.TextureHandle;
+    }
+
 } // namespace Himii

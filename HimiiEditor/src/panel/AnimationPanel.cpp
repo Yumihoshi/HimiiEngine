@@ -337,11 +337,14 @@ namespace Himii
 
             const glm::ivec4 pixelRect(atlasCoordinates.x * (int)cellSize, atlasCoordinates.y * (int)cellSize,
                                        (int)cellSize, (int)cellSize);
-            const auto uvs = SpriteSheetUtility::PixelRectToUVs(pixelRect, texture->GetWidth(), texture->GetHeight());
+            glm::vec2 uvTopLeft{};
+            glm::vec2 uvBottomRight{};
+            SpriteSheetUtility::PixelRectToImGuiImageUVCorners(
+                pixelRect, texture->GetWidth(), texture->GetHeight(), uvTopLeft, uvBottomRight);
 
             preview.Texture = texture;
-            preview.UV0 = ImVec2(uvs[0].x, uvs[0].y);
-            preview.UV1 = ImVec2(uvs[2].x, uvs[2].y);
+            preview.UV0 = ImVec2(uvTopLeft.x, uvTopLeft.y);
+            preview.UV1 = ImVec2(uvBottomRight.x, uvBottomRight.y);
             preview.Valid = true;
             return preview;
         }
@@ -354,8 +357,8 @@ namespace Himii
                 return preview;
 
             preview.Texture = resolved.Texture;
-            preview.UV0 = ImVec2(resolved.UVs[0].x, resolved.UVs[0].y);
-            preview.UV1 = ImVec2(resolved.UVs[2].x, resolved.UVs[2].y);
+            preview.UV0 = ImVec2(resolved.UVs[0].x, 1.0f - resolved.UVs[0].y);
+            preview.UV1 = ImVec2(resolved.UVs[2].x, 1.0f - resolved.UVs[2].y);
             preview.Valid = true;
             return preview;
         }

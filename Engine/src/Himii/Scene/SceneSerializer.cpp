@@ -314,14 +314,9 @@ namespace Himii
             out << YAML::BeginMap;
             auto &spriteRenderer = entity.GetComponent<SpriteRendererComponent>();
             out << YAML::Key << "Color" << YAML::Value << spriteRenderer.Color;
-            const AssetHandle textureHandle = ResolveTextureHandleForSerialize(
-                spriteRenderer.Texture, spriteRenderer.TextureHandle);
-            if (spriteRenderer.SpriteHandle != 0)
-                out << YAML::Key << "SpriteHandle" << YAML::Value << (uint64_t)spriteRenderer.SpriteHandle;
-            if (textureHandle != 0)
-                out << YAML::Key << "TextureHandle" << YAML::Value << (uint64_t)textureHandle;
-            else if (spriteRenderer.Texture)
-                out << YAML::Key << "TexturePath" << YAML::Value << spriteRenderer.Texture->GetPath();
+            if (spriteRenderer.SpriteAssetHandle != 0)
+                out << YAML::Key << "SpriteAssetHandle" << YAML::Value
+                    << (uint64_t)spriteRenderer.SpriteAssetHandle;
             out << YAML::Key << "TilingFactor" << YAML::Value << spriteRenderer.TilingFactor;
             out << YAML::EndMap;
         }
@@ -604,19 +599,39 @@ namespace Himii
         {
             auto &src = deserializedEntity.AddComponent<SpriteRendererComponent>();
             src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
-            src.Texture = LoadTextureFromSerializedNode(spriteRendererComponent);
-            if (spriteRendererComponent["SpriteHandle"])
-                src.SpriteHandle = spriteRendererComponent["SpriteHandle"].as<uint64_t>();
-            if (spriteRendererComponent["TextureHandle"])
-                src.TextureHandle = spriteRendererComponent["TextureHandle"].as<uint64_t>();
-            else if (src.Texture)
-                src.TextureHandle = FindTextureAssetHandleByPath(src.Texture->GetPath());
+
+            if (spriteRendererComponent["SpriteAssetHandle"])
+                src.SpriteAssetHandle = spriteRendererComponent["SpriteAssetHandle"].as<uint64_t>();
+            else if (spriteRendererComponent["SpriteHandle"])
+                src.SpriteAssetHandle = spriteRendererComponent["SpriteHandle"].as<uint64_t>();
+
+            if (src.SpriteAssetHandle == 0)
+            {
+                AssetHandle legacyTextureHandle = 0;
+                if (spriteRendererComponent["TextureHandle"])
+                    legacyTextureHandle = spriteRendererComponent["TextureHandle"].as<uint64_t>();
+                else
+                {
+                    Ref<Texture2D> legacyTexture = LoadTextureFromSerializedNode(spriteRendererComponent);
+                    if (legacyTexture)
+                        legacyTextureHandle = FindTextureAssetHandleByPath(legacyTexture->GetPath());
+                }
+
+                if (legacyTextureHandle != 0)
+                {
+                    if (auto assetManager = Project::TryGetAssetManager())
+                    {
+                        if (assetManager->IsAssetHandleValid(legacyTextureHandle))
+                        {
+                            src.SpriteAssetHandle =
+                                assetManager->GetDefaultSpriteHandleForTexture(legacyTextureHandle);
+                        }
+                    }
+                }
+            }
 
             if (spriteRendererComponent["TilingFactor"])
                 src.TilingFactor = spriteRendererComponent["TilingFactor"].as<float>();
-
-            if (auto assetManager = Project::TryGetAssetManager())
-                src.ResolveResources(assetManager.get());
         }
         auto circleRendererComponent = entity["CircleRendererComponent"];
         if (circleRendererComponent)

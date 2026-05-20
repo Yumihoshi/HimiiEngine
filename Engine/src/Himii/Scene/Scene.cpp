@@ -4,7 +4,7 @@
 
 #include "Components.h"
 #include "Himii/Asset/AssetManager.h"
-#include "Himii/Asset/SpriteSheetUtility.h"
+#include "Himii/Scene/SpriteRendererUtility.h"
 #include "Himii/Project/Project.h"
 #include "Himii/Renderer/Renderer2D.h"
 #include "Himii/Renderer/Renderer3D.h"
@@ -217,33 +217,7 @@ namespace Himii
                                         (animComponent.CurrentFrame + 1) % animation->GetFrameCount();
                             }
 
-                            if (animation->UsesAtlasFrames())
-                            {
-                                const glm::ivec2 atlasCoordinates =
-                                        animation->GetAtlasFrameCoordinates(animComponent.CurrentFrame);
-                                const AssetHandle atlasTextureHandle = animation->GetAtlasTextureHandle();
-                                const uint32_t gridCellSize = animation->GetAtlasGridCellSize();
-
-                                Ref<Texture2D> atlasTexture = std::static_pointer_cast<Texture2D>(
-                                        assetManager->GetAsset(atlasTextureHandle));
-                                if (atlasTexture)
-                                {
-                                    spriteComponent.SpriteHandle = 0;
-                                    spriteComponent.TextureHandle = atlasTextureHandle;
-                                    spriteComponent.Texture = atlasTexture;
-                                    spriteComponent.CachedUVs = SpriteSheetUtility::AtlasGridCoordsToUVs(
-                                            atlasCoordinates, gridCellSize,
-                                            atlasTexture->GetWidth(), atlasTexture->GetHeight());
-                                    spriteComponent.SpritePixelSize = {(int)gridCellSize, (int)gridCellSize};
-                                    spriteComponent.UseSpriteRegion = true;
-
-                                    const TextureImportData *importData =
-                                            assetManager->GetTextureImportData(atlasTextureHandle);
-                                    if (importData && importData->PixelsPerUnit > 0)
-                                        spriteComponent.PixelsPerUnit = importData->PixelsPerUnit;
-                                }
-                            }
-                            else
+                            if (!animation->UsesAtlasFrames())
                             {
                                 AssetHandle frameHandle = animation->GetFrame(animComponent.CurrentFrame);
                                 if (frameHandle == 0)
@@ -251,16 +225,13 @@ namespace Himii
 
                                 if (assetManager->IsSpriteHandle(frameHandle))
                                 {
-                                    spriteComponent.SpriteHandle = frameHandle;
-                                    spriteComponent.TextureHandle = 0;
+                                    spriteComponent.SpriteAssetHandle = frameHandle;
                                 }
                                 else if (assetManager->IsAssetHandleValid(frameHandle))
                                 {
-                                    spriteComponent.SpriteHandle = 0;
-                                    spriteComponent.TextureHandle = frameHandle;
+                                    spriteComponent.SpriteAssetHandle =
+                                        assetManager->GetDefaultSpriteHandleForTexture(frameHandle);
                                 }
-
-                                spriteComponent.ResolveResources(assetManager.get());
                             }
                         }
                     }
@@ -354,9 +325,13 @@ namespace Himii
                 auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
                 view.each([&](entt::entity entity, TransformComponent &transform, SpriteRendererComponent &sprite)
                           {
-                              if (assetManager)
-                                  sprite.ResolveResources(assetManager.get());
-                              Himii::Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+                              if (!assetManager)
+                                  return;
+
+                              Entity sceneEntity = {entity, this};
+                              const SpriteResolved resolved =
+                                  ResolveSpriteRendererDrawable(sceneEntity, sprite, assetManager.get());
+                              Himii::Renderer2D::DrawSprite(transform.GetTransform(), sprite, resolved, (int)entity);
                           });
             }
             {
@@ -862,9 +837,13 @@ namespace Himii
             auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
             view.each([&](entt::entity entity, TransformComponent &transform, SpriteRendererComponent &sprite)
                       {
-                          if (assetManager)
-                              sprite.ResolveResources(assetManager.get());
-                          Himii::Renderer2D::DrawSprite(transform.GetTransform(), sprite, (int)entity);
+                          if (!assetManager)
+                              return;
+
+                          Entity sceneEntity = {entity, this};
+                          const SpriteResolved resolved =
+                              ResolveSpriteRendererDrawable(sceneEntity, sprite, assetManager.get());
+                          Himii::Renderer2D::DrawSprite(transform.GetTransform(), sprite, resolved, (int)entity);
                       });
         }
         

@@ -818,11 +818,12 @@ namespace Himii
                                         float vSize = ts / texH;
 
                                         const std::array<glm::vec2, 4> atlasUVs =
-                                                SpriteSheetUtility::AtlasGridCoordsToUVs(
-                                                        def->AtlasCoords,
-                                                        static_cast<uint32_t>(ts),
-                                                        src.CachedTexture->GetWidth(),
-                                                        src.CachedTexture->GetHeight());
+                                                SpriteSheetUtility::ReorderUVsForYUpWorldQuad(
+                                                        SpriteSheetUtility::AtlasGridCoordsToUVs(
+                                                                def->AtlasCoords,
+                                                                static_cast<uint32_t>(ts),
+                                                                src.CachedTexture->GetWidth(),
+                                                                src.CachedTexture->GetHeight()));
                                         for (size_t vertexIndex = 0; vertexIndex < 4; ++vertexIndex)
                                             texCoords[vertexIndex] = atlasUVs[vertexIndex];
                                     }
@@ -1003,29 +1004,27 @@ namespace Himii
         }
     }
 
-    void Renderer2D::DrawSprite(const glm::mat4 &transform, SpriteRendererComponent &sprite, int entityID)
+    void Renderer2D::DrawSprite(const glm::mat4 &transform,
+                                const SpriteRendererComponent &sprite,
+                                const SpriteResolved &resolved,
+                                int entityID)
     {
-        if (!sprite.Texture)
+        if (!resolved.IsValid || !resolved.Texture)
         {
             DrawQuad(transform, sprite.Color, entityID);
             return;
         }
 
-        glm::mat4 renderTransform = transform;
-        if (sprite.SpritePixelSize.x > 0 && sprite.SpritePixelSize.y > 0)
-        {
-            renderTransform = SpriteSheetUtility::BuildSpriteRenderTransform(
-                transform, sprite.SpritePixelSize, sprite.PixelsPerUnit, sprite.Pivot);
-        }
+        const glm::mat4 renderTransform = SpriteSheetUtility::BuildSpriteRenderTransform(
+            transform, resolved.PixelSize, resolved.PixelsPerUnit, resolved.Pivot);
 
-        float tilingFactor = sprite.TilingFactor;
-        if (sprite.UseSpriteRegion)
-            tilingFactor = 1.0f;
+        const bool usesSubRegion = resolved.PixelSize.x > 0 && resolved.PixelSize.y > 0;
+        const float tilingFactor = usesSubRegion ? 1.0f : sprite.TilingFactor;
 
-        if (sprite.UseSpriteRegion)
-            DrawQuadUV(renderTransform, sprite.Texture, sprite.CachedUVs, tilingFactor, sprite.Color, entityID);
+        if (usesSubRegion)
+            DrawQuadUV(renderTransform, resolved.Texture, resolved.UVs, tilingFactor, sprite.Color, entityID);
         else
-            DrawQuad(renderTransform, sprite.Texture, tilingFactor, sprite.Color, entityID);
+            DrawQuad(renderTransform, resolved.Texture, tilingFactor, sprite.Color, entityID);
     }
 
     float Renderer2D::GetLineWidth()

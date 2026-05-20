@@ -2,6 +2,8 @@
 
 #include "Engine.h"
 #include "Himii/Renderer/Texture.h"
+
+#include <filesystem>
 #include <unordered_map>
 
 namespace Himii
@@ -48,6 +50,13 @@ namespace Himii
             return handle;
         }
 
+        std::filesystem::path GetAnimationEditorRequest()
+        {
+            std::filesystem::path path = m_AnimationEditorRequest;
+            m_AnimationEditorRequest.clear();
+            return path;
+        }
+
     private:
         template<typename T>
         void DisplayAddComponentEntry(const std::string &entryName);
@@ -62,6 +71,7 @@ namespace Himii
         AssetHandle m_TileMapEditorRequest = 0;
         AssetHandle m_ParticleEmitterEditorRequest = 0;
         AssetHandle m_TextureInspectorRequest = 0;
+        std::filesystem::path m_AnimationEditorRequest;
 
         EditorCommandHistory* m_CommandHistory = nullptr;
 

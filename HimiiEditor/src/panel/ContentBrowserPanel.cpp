@@ -7,11 +7,21 @@
 #include "Himii/Core/Log.h"
 
 #include <fstream>
+#include <algorithm>
+#include <cctype>
 #include <imgui.h>
 
 namespace Himii
 {
-    //extern const std::filesystem::path s_AssetsPath = "assets";
+
+    static bool IsImageFileExtension(const std::filesystem::path& filePath)
+    {
+        std::string extension = filePath.extension().string();
+        std::transform(extension.begin(), extension.end(), extension.begin(),
+                       [](unsigned char character) { return static_cast<char>(std::tolower(character)); });
+        return extension == ".png" || extension == ".jpg" || extension == ".jpeg" || extension == ".bmp"
+               || extension == ".tga";
+    }
 
     ContentBrowserPanel::ContentBrowserPanel() : m_CurrentDirectory("")
     {
@@ -205,7 +215,18 @@ namespace Himii
                 if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
                 {
                     if (directoryEntry.is_directory())
+                    {
                         m_CurrentDirectory /= path.filename();
+                    }
+                    else if (IsImageFileExtension(path))
+                    {
+                        if (auto assetManager = Project::GetAssetManager())
+                        {
+                            const AssetHandle textureHandle = assetManager->ImportAsset(relativePath);
+                            if (textureHandle != 0)
+                                m_TextureInspectorRequest = textureHandle;
+                        }
+                    }
                 }
                 
                 // Center Text

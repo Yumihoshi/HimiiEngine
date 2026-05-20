@@ -14,6 +14,13 @@ namespace Himii
                                                        uint32_t textureWidth,
                                                        uint32_t textureHeight);
 
+        /** ImGui::Image 与全图预览一致：左上角为原点，需相对 OpenGL 纹理坐标翻转 V。 */
+        static void PixelRectToImGuiImageUVCorners(const glm::ivec4& pixelRect,
+                                                   uint32_t textureWidth,
+                                                   uint32_t textureHeight,
+                                                   glm::vec2& uvTopLeft,
+                                                   glm::vec2& uvBottomRight);
+
         static TextureImportData CreateDefaultSingleSprite(AssetHandle textureHandle,
                                                            uint32_t textureWidth,
                                                            uint32_t textureHeight,
@@ -39,6 +46,10 @@ namespace Himii
                                                              uint32_t tilePixelSize,
                                                              uint32_t textureWidth,
                                                              uint32_t textureHeight);
+
+        /** 将 PixelRectToUVs 结果重排为 DrawQuadUV 顶点顺序：BL、BR、TR、TL（Y 轴向上世界空间）。 */
+        static std::array<glm::vec2, 4> ReorderUVsForYUpWorldQuad(
+            const std::array<glm::vec2, 4>& textureCoordinates);
     };
 
 } // namespace Himii

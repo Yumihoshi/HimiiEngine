@@ -38,6 +38,32 @@ namespace Himii
         return uvs;
     }
 
+    void SpriteSheetUtility::PixelRectToImGuiImageUVCorners(const glm::ivec4& pixelRect,
+                                                            uint32_t textureWidth,
+                                                            uint32_t textureHeight,
+                                                            glm::vec2& uvTopLeft,
+                                                            glm::vec2& uvBottomRight)
+    {
+        if (textureWidth == 0 || textureHeight == 0)
+        {
+            uvTopLeft = {0.0f, 1.0f};
+            uvBottomRight = {1.0f, 0.0f};
+            return;
+        }
+
+        const float textureWidthFloat = static_cast<float>(textureWidth);
+        const float textureHeightFloat = static_cast<float>(textureHeight);
+
+        const float left = static_cast<float>(pixelRect.x) / textureWidthFloat;
+        const float right = static_cast<float>(pixelRect.x + pixelRect.z) / textureWidthFloat;
+        const float visualTop = 1.0f - static_cast<float>(pixelRect.y) / textureHeightFloat;
+        const float visualBottom =
+            1.0f - static_cast<float>(pixelRect.y + pixelRect.w) / textureHeightFloat;
+
+        uvTopLeft = {left, visualTop};
+        uvBottomRight = {right, visualBottom};
+    }
+
     TextureImportData SpriteSheetUtility::CreateDefaultSingleSprite(AssetHandle textureHandle,
                                                                   uint32_t textureWidth,
                                                                   uint32_t textureHeight,
@@ -132,6 +158,16 @@ namespace Himii
                 static_cast<int>(tilePixelSize),
                 static_cast<int>(tilePixelSize));
         return PixelRectToUVs(pixelRect, textureWidth, textureHeight);
+    }
+
+    std::array<glm::vec2, 4> SpriteSheetUtility::ReorderUVsForYUpWorldQuad(
+            const std::array<glm::vec2, 4>& textureCoordinates)
+    {
+        return {
+            textureCoordinates[3],
+            textureCoordinates[2],
+            textureCoordinates[1],
+            textureCoordinates[0]};
     }
 
     glm::mat4 SpriteSheetUtility::ComputeSpriteVisualTransform(const glm::mat4& entityTransform,

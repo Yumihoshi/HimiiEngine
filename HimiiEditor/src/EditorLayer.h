@@ -40,6 +40,9 @@ namespace Himii
         void UpdateTilemapHoverFromInput();
         bool TryGetTilemapPaintContext(Entity &outEntity, Ref<TileMapData> &outMapData,
                                        TransformComponent const *&outTransform);
+        bool IsTilemapEditContextActive();
+        bool IsTilemapPaintActive();
+        bool IsTilemapMoveEntityActive();
 
         void CreateProject(const std::filesystem::path& projectPath, bool is2D = true);
         void OpenProject(const std::filesystem::path &path);

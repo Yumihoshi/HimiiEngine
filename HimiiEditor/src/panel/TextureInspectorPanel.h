@@ -2,7 +2,10 @@
 
 #include "Himii/Core/Core.h"
 #include "Himii/Asset/Asset.h"
+#include "Himii/Asset/Sprite.h"
 #include "Himii/Renderer/Texture.h"
+
+#include <glm/glm.hpp>
 
 namespace Himii
 {
@@ -15,18 +18,31 @@ namespace Himii
         void SetTextureHandle(AssetHandle textureHandle);
         AssetHandle GetTextureHandle() const { return m_TextureHandle; }
 
+        /// Ctrl+S 时写入当前纹理的 .meta（若面板有打开的资源）
+        bool SaveActiveTextureMeta();
+
     private:
+        void DrawLeftInspectorPanel();
+        void DrawRightPreviewPanel();
         void DrawImportSettings();
-        void DrawSpriteList();
-        void DrawTexturePreview();
+        void DrawSliceSettings();
+        void DrawSelectedSpriteThumbnail(const SpriteDefinition& sprite);
         void ReloadImportData();
         void SyncUIToImportData();
-        void SaveImportData();
+        void SyncPendingEditsToMemory();
+        void AddNewSprite();
+        void DeleteSelectedSprite();
+
+        bool UsesSliceWorkflow() const;
+
+        int FindSpriteIndexAtPixel(const glm::ivec2& pixelCoordinate) const;
+
+        static constexpr float LeftPanelWidth = 380.0f;
 
         AssetHandle m_TextureHandle = 0;
         Ref<Texture2D> m_PreviewTexture;
 
-        int m_SelectedSpriteIndex = 0;
+        int m_SelectedSpriteIndex = -1;
         bool m_IsDrawingSpriteRect = false;
         glm::ivec2 m_DrawStartPixel{0, 0};
         glm::ivec2 m_DrawEndPixel{0, 0};
@@ -36,6 +52,7 @@ namespace Himii
         glm::ivec2 m_GridPadding{0, 0};
         int m_SpriteModeSelection = 1;
         uint32_t m_PixelsPerUnit = 100;
+        char m_SpriteNameEditBuffer[128]{};
     };
 
 } // namespace Himii

@@ -1,7 +1,7 @@
-#include "Hepch.h"
-#include "Himii/Core/Log.h"
 #include "WindowsWindow.h"
+#include "Hepch.h"
 #include "Himii/Core/Input.h"
+#include "Himii/Core/Log.h"
 #include "Platform/OpenGL/OpenGLContext.h"
 
 #include "Himii/Events/ApplicationEvent.h"
@@ -9,11 +9,12 @@
 #include "Himii/Events/MouseEvent.h"
 
 // Windows 平台下，用 Win32 API 为 GLFW 创建的窗口设置图标
+#include <GLFW/glfw3.h>
+#ifdef HIMII_PLATFORM_WINDOWS
 #include <windows.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
-#include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
-
+#endif
 namespace Himii
 {
     static uint8_t s_GLFWWindwCount = 0;
@@ -48,7 +49,7 @@ namespace Himii
 
         HIMII_CORE_INFO("Creating window {0} ({1}, {2})", m_Data.Title, m_Data.Width, m_Data.Height);
 
-        if (s_GLFWWindwCount==0)
+        if (s_GLFWWindwCount == 0)
         {
             HIMII_PROFILE_SCOPE("glfwInit");
             int sucess = glfwInit();
@@ -58,7 +59,7 @@ namespace Himii
 
         HIMII_PROFILE_SCOPE("glfwCreateWindow");
         // 默认最大化窗口
-        //glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+        // glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
         glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
         m_Window = glfwCreateWindow((int)props.Width, props.Height, m_Data.Title.c_str(), nullptr, nullptr);
         ++s_GLFWWindwCount;
@@ -73,24 +74,20 @@ namespace Himii
             return;
         }
 
-        // 为当前 GLFW 窗口设置 Win32 图标（使用 HimiiEditor/resources/icon/HimiiEngine.ico）
+// 为当前 GLFW 窗口设置 Win32 图标（使用 HimiiEditor/resources/icon/HimiiEngine.ico）
+#ifdef HIMII_PLATFORM_WINDOWS
         {
             HWND hwnd = glfwGetWin32Window(m_Window);
             if (hwnd)
             {
                 // 这里使用运行目录下的资源路径：HimiiEditor CMake 已经把 resources 拷贝到可执行文件旁
-                constexpr const char* IconPath = "resources/icons/HimiiEngine.ico";
-                HICON hIcon = static_cast<HICON>(LoadImageA(
-                    nullptr,
-                    IconPath,
-                    IMAGE_ICON,
-                    0, 0,
-                    LR_LOADFROMFILE | LR_DEFAULTSIZE
-                ));
+                constexpr const char *IconPath = "resources/icons/HimiiEngine.ico";
+                HICON hIcon = static_cast<HICON>(
+                        LoadImageA(nullptr, IconPath, IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE));
 
                 if (hIcon)
                 {
-                    SendMessage(hwnd, WM_SETICON, ICON_BIG,   reinterpret_cast<LPARAM>(hIcon));
+                    SendMessage(hwnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
                     SendMessage(hwnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon));
                 }
                 else
@@ -99,6 +96,7 @@ namespace Himii
                 }
             }
         }
+#endif
 
         // 再次确保最大化（防止某些平台忽略 hint）
         glfwMaximizeWindow(m_Window);
@@ -108,97 +106,105 @@ namespace Himii
         SetVSync(true);
 
         // 设置窗口回调
-        glfwSetWindowSizeCallback(m_Window, [](GLFWwindow *window, int width, int height)
-        {
-            WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
-            data.Width = width;
-            data.Height = height;
-            WindowResizeEvent event(width, height);
-            data.EventCallback(event);
-        });
+        glfwSetWindowSizeCallback(m_Window,
+                                  [](GLFWwindow *window, int width, int height)
+                                  {
+                                      WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
+                                      data.Width = width;
+                                      data.Height = height;
+                                      WindowResizeEvent event(width, height);
+                                      data.EventCallback(event);
+                                  });
 
-        glfwSetWindowCloseCallback(m_Window, [](GLFWwindow *window)
-        {
-            WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
-            WindowCloseEvent event;
-            data.EventCallback(event);
-        });
+        glfwSetWindowCloseCallback(m_Window,
+                                   [](GLFWwindow *window)
+                                   {
+                                       WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
+                                       WindowCloseEvent event;
+                                       data.EventCallback(event);
+                                   });
 
-        glfwSetKeyCallback(m_Window, [](GLFWwindow *window, int key, int scancode, int action, int mods)
-        {
-            WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
-            switch (action)
-            {
-                case GLFW_PRESS:
-                {
-                    KeyPressedEvent event(key, 0);
-                    data.EventCallback(event);
-                    break;
-                }
-                case GLFW_RELEASE:
-                {
-                    KeyReleasedEvent event(key);
-                    data.EventCallback(event);
-                    break;
-                }
-                case GLFW_REPEAT:
-                {
-                    KeyPressedEvent event(key, 1);
-                    data.EventCallback(event);
-                    break;
-                }
-            }
-        });
-        glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int keycode)
-		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+        glfwSetKeyCallback(m_Window,
+                           [](GLFWwindow *window, int key, int scancode, int action, int mods)
+                           {
+                               WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
+                               switch (action)
+                               {
+                                   case GLFW_PRESS:
+                                   {
+                                       KeyPressedEvent event(key, 0);
+                                       data.EventCallback(event);
+                                       break;
+                                   }
+                                   case GLFW_RELEASE:
+                                   {
+                                       KeyReleasedEvent event(key);
+                                       data.EventCallback(event);
+                                       break;
+                                   }
+                                   case GLFW_REPEAT:
+                                   {
+                                       KeyPressedEvent event(key, 1);
+                                       data.EventCallback(event);
+                                       break;
+                                   }
+                               }
+                           });
+        glfwSetCharCallback(m_Window,
+                            [](GLFWwindow *window, unsigned int keycode)
+                            {
+                                WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
 
-			KeyTypedEvent event(keycode);
-			data.EventCallback(event);
-		});
+                                KeyTypedEvent event(keycode);
+                                data.EventCallback(event);
+                            });
 
-        glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
-		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+        glfwSetMouseButtonCallback(m_Window,
+                                   [](GLFWwindow *window, int button, int action, int mods)
+                                   {
+                                       WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
 
-			switch (action)
-			{
-				case GLFW_PRESS:
-				{
-					MouseButtonPressedEvent event(button);
-					data.EventCallback(event);
-					break;
-				}
-				case GLFW_RELEASE:
-				{
-					MouseButtonReleasedEvent event(button);
-					data.EventCallback(event);
-					break;
-				}
-			}
-		});
+                                       switch (action)
+                                       {
+                                           case GLFW_PRESS:
+                                           {
+                                               MouseButtonPressedEvent event(button);
+                                               data.EventCallback(event);
+                                               break;
+                                           }
+                                           case GLFW_RELEASE:
+                                           {
+                                               MouseButtonReleasedEvent event(button);
+                                               data.EventCallback(event);
+                                               break;
+                                           }
+                                       }
+                                   });
 
-        glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
-		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+        glfwSetScrollCallback(m_Window,
+                              [](GLFWwindow *window, double xOffset, double yOffset)
+                              {
+                                  WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
 
-			MouseScrolledEvent event((float)xOffset, (float)yOffset);
-			data.EventCallback(event);
-		});
+                                  MouseScrolledEvent event((float)xOffset, (float)yOffset);
+                                  data.EventCallback(event);
+                              });
 
-		glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xPos, double yPos)
-		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+        glfwSetCursorPosCallback(m_Window,
+                                 [](GLFWwindow *window, double xPos, double yPos)
+                                 {
+                                     WindowData &data = *(WindowData *)glfwGetWindowUserPointer(window);
 
-			MouseMovedEvent event((float)xPos, (float)yPos);
-			if (data.EventCallback) {
-                data.EventCallback(event);
-            } 
-            else {
-                HIMII_CORE_ERROR("Event callback is not set!");
-            }
-
-		});
+                                     MouseMovedEvent event((float)xPos, (float)yPos);
+                                     if (data.EventCallback)
+                                     {
+                                         data.EventCallback(event);
+                                     }
+                                     else
+                                     {
+                                         HIMII_CORE_ERROR("Event callback is not set!");
+                                     }
+                                 });
     }
 
     void WindowsWindow::Shutdown()

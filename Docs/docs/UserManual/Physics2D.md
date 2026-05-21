@@ -2,6 +2,8 @@
 
 HimiiEngine 内置 **Box2D v3** 作为 2D 物理引擎。
 
+平台角色与地面配置示例见 **[教程：2D 平台跳跃](Tutorial2DPlatformer.md)**；编辑器模式说明见 **[编辑器与功能](EditorFeatures.md)**。
+
 ## 启用物理
 
 为实体添加以下组件（通常同时需要 **Transform**）：

@@ -47,3 +47,12 @@ cmake --build build/x64-debug --target HimiiEditor -j 8
 1. 在 **Content Browser** 中进入项目的 `assets/scenes` 目录。
 2. 双击要编辑的 `.himii` 场景文件。
 3. 点击工具栏上的 **Play**（绿色三角形）在编辑器内运行当前场景。
+
+## 5. 下一步：跟着教程做平台跳跃
+
+推荐直接完成 **[教程：2D 平台跳跃](Tutorial2DPlatformer.md)**（从地面、动画到脚本一步走完）。
+
+之后可按需查阅：
+
+- [编辑器与功能](EditorFeatures.md) — 动画、物理、脚本等总览  
+- [脚本 API](ScriptingAPI.md) — API 参考  

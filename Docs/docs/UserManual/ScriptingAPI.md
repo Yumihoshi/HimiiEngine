@@ -1,20 +1,48 @@
 # 脚本 API (Scripting API)
 
-HimiiEngine 使用 **C#** 作为游戏脚本语言，运行时基于 **.NET 8 + CoreCLR**（非 Mono）。脚本编译为 `GameAssembly.dll`，由引擎通过可收集的 `AssemblyLoadContext` 加载。
+HimiiEngine 使用 **C#**（**.NET 8 + CoreCLR**）编写游戏逻辑。脚本编译为项目中的 **`GameAssembly.dll`**，由编辑器在 **Play** 时加载。所有公开 API 位于命名空间 **`HimiiEngine`**（引擎提供 **`ScriptCore.dll`**）。
 
-## 创建脚本
+```csharp
+using HimiiEngine;
+```
 
-1. 在 **Content Browser** 中右键 → Create → C# Script。
-2. 命名脚本（例如 `PlayerController.cs`）。
-3. 在属性面板为实体添加 **Script Component**，填写完整类名（含命名空间）。
-4. 点击 **Edit** 或菜单 **File → Open C# Project** 在外部 IDE 中编辑（Visual Studio / VS Code / Rider，见 [脚本工作流](ScriptWorkflow.md)）。
+编写与编译流程见 [脚本工作流](ScriptWorkflow.md)；首个完整示例见 [教程：2D 平台跳跃](Tutorial2DPlatformer.md)。
+
+---
+
+## API 索引
+
+| 类别 | 类型 / 成员 | 说明 |
+|------|-------------|------|
+| 基类 | `Entity` | 脚本实体基类 |
+| 生命周期 | `OnCreate` / `OnUpdate` / `OnDestroy` | 仅 Play 模式调用 |
+| 日志 | `Log.Info` / `Warning` / `Error` | 输出到 Console |
+| 输入 | `Input.IsKeyDown` / `IsMouseButtonDown` / `MousePosition` | 键盘与鼠标 |
+| 变换 | `Position` / `Transform` | 实体位置、旋转、缩放 |
+| 组件 | `GetComponent<T>()` / `HasComponent<T>()` | 访问引擎组件 |
+| 2D 物理 | `Rigidbody2D` | 速度、冲量 |
+| 渲染 | `SpriteRenderer` | 颜色、纹理、水平翻转 |
+| 动画 | `SpriteAnimation` | `Play` / `CurrentAnimation` |
+| 碰撞 | `OnCollisionEnter2D` / `OnCollisionExit2D` | Play 模式回调 |
+| 序列化 | `[SerializeField]` | Inspector 显示 private 字段 |
+
+---
+
+## 创建与挂载脚本
+
+1. **Content Browser** → `assets/scripts` → 右键 **Create → C# Script**。
+2. 类继承 **`Entity`**，例如 `public class PlayerController : Entity`。
+3. 在场景中选中实体 → **Add Component → Script** → **Class Name** 填写类名（与 `.cs` 中一致，区分大小写）。
+4. **File → Open C# Project** 在外部 IDE 编辑；保存后 **Script Console** 显示编译结果。
+
+---
 
 ## Entity 生命周期
 
-继承自 `Himii.Entity` 的类可重写以下虚方法（须使用 `public override`）：
+仅在 **Play** 模式、且实体带有有效 **Script** 组件时调用：
 
 ```csharp
-using Himii;
+using HimiiEngine;
 
 public class PlayerController : Entity
 {
@@ -23,10 +51,10 @@ public class PlayerController : Entity
         Log.Info($"Entity {ID} created.");
     }
 
-    public override void OnUpdate(float ts)
+    public override void OnUpdate(float timestep)
     {
-        // ts：上一帧时间间隔（秒），用于帧率无关逻辑
-        Position += new Vector3(1.0f, 0.0f, 0.0f) * ts;
+        // timestep：上一帧间隔（秒），用于帧率无关移动
+        Position += new Vector3(1.0f, 0.0f, 0.0f) * timestep;
     }
 
     public override void OnDestroy()
@@ -36,11 +64,15 @@ public class PlayerController : Entity
 }
 ```
 
-生命周期仅在 **Play** 模式下、且实体带有有效 `ScriptComponent` 时由引擎调用。
+| 方法 | 调用时机 |
+|------|----------|
+| `OnCreate` | 实体脚本实例化后一次 |
+| `OnUpdate(timestep)` | 每帧 |
+| `OnDestroy` | 实体销毁或 Stop 时 |
+
+---
 
 ## 日志 (Log)
-
-使用 `Himii.Log` 将消息写入引擎日志与编辑器 **Console** 面板（**Window → Console**）：
 
 ```csharp
 Log.Info("Game started.");
@@ -48,18 +80,23 @@ Log.Warning("Low health!");
 Log.Error("Something went wrong.");
 ```
 
-- 输出同时出现在控制台（spdlog）与编辑器 **Console**。
-- 进入 **Play** 时会清空 Console 缓冲，避免与上次运行混淆。
-- **Script Console**（**Window → Script Console**）仅显示 `dotnet build` 编译输出，与运行时 `Log` 不同。
+- 显示在 **Window → Console**（进入 Play 时会清空缓冲）。
+- **Script Console** 仅显示编译输出，与 `Log` 无关。
+- 请勿依赖 `Console.WriteLine` 作为游戏日志（不会进入编辑器 Console）。
 
-请勿依赖 `Console.WriteLine` 作为游戏日志手段（不会进入编辑器 Console）。
+---
 
 ## 输入 (Input)
 
 ```csharp
 if (Input.IsKeyDown(KeyCode.W))
 {
-    // 按键按住
+    // 键按住
+}
+
+if (Input.IsKeyDown(KeyCode.Space))
+{
+    // 跳跃等
 }
 
 Vector2 mouse = Input.MousePosition;
@@ -69,65 +106,172 @@ if (Input.IsMouseButtonDown(0))
 }
 ```
 
-## Transform 与组件
+常用键码定义在 **`KeyCode`** 枚举（`A`、`D`、`Left`、`Right`、`Space` 等），完整列表见 `ScriptCore` 中 `KeyCode.cs`。
 
-每个实体均有 `Transform`（通过 `entity.Transform` 或 `Position` / `Rotation` / `Scale` 访问）：
+---
+
+## Transform 与位置
+
+每个实体均有 **Transform**。可通过实体快捷属性或组件访问：
 
 ```csharp
-Position += new Vector3(1.0f, 0.0f, 0.0f) * ts;
+Position += new Vector3(1.0f, 0.0f, 0.0f) * timestep;
+
 Transform.Scale = new Vector3(2.0f, 2.0f, 1.0f);
+Transform.Rotation = new Vector3(0.0f, 0.0f, 0.0f);
 ```
 
-获取其他组件（需实体上已添加对应 C++ 组件）：
+**注意**：角色左右朝向请用 **`SpriteRenderer.FlipHorizontal`**，不要将 **`Transform.Scale.x`** 设为负数（会导致碰撞与渲染异常）。
+
+---
+
+## 组件访问
 
 ```csharp
-var rb = GetComponent<Rigidbody2D>();
-if (rb != null)
-    rb.Velocity = new Vector2(5.0f, 0.0f);
+var rigidbody = GetComponent<Rigidbody2D>();
+if (rigidbody != null)
+    rigidbody.Velocity = new Vector2(5.0f, 0.0f);
+
+bool hasAnimation = HasComponent<SpriteAnimation>();
 ```
 
-## 2D 物理碰撞
+`GetComponent<T>()` 在实体未挂载该组件时返回 `null`。
 
-在 **Play** 模式下，当带碰撞体的实体发生接触/分离时，可重写：
+### 静态工厂（可选）
+
+```csharp
+Entity player = Entity.Find("Player");
+Entity spawned = Entity.Create("Enemy");
+Entity.Destroy(spawned);
+```
+
+---
+
+## Rigidbody2D
+
+```csharp
+var rigidbody = GetComponent<Rigidbody2D>();
+if (rigidbody != null)
+{
+    rigidbody.Velocity = new Vector2(3.0f, 0.0f);
+    rigidbody.ApplyImpulse(new Vector2(0.0f, 5.0f), wake: true);
+}
+```
+
+| 成员 | 说明 |
+|------|------|
+| `Velocity` | 线速度（`Vector2`） |
+| `ApplyImpulse(impulse, wake)` | 对质心施加冲量 |
+| `ApplyImpulse(impulse, point, wake)` | 在世界坐标点施加冲量 |
+
+Inspector 中设置 **Body Type**（Static / Dynamic / Kinematic）、**Fixed Rotation** 等。详见 [2D 物理](Physics2D.md)。
+
+---
+
+## SpriteRenderer
+
+```csharp
+var spriteRenderer = GetComponent<SpriteRenderer>();
+spriteRenderer.FlipHorizontal = true;
+spriteRenderer.Color = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+spriteRenderer.TextureHandle = textureHandle;
+```
+
+| 属性 | 说明 |
+|------|------|
+| `Color` | `Vector4` 着色 |
+| `SpriteAssetHandle` / `SpriteHandle` | 子 Sprite 资产句柄 |
+| `TextureHandle` | 纹理句柄（可自动绑定默认子 Sprite） |
+| `FlipHorizontal` | 水平镜像绘制 |
+
+---
+
+## SpriteAnimation
+
+```csharp
+var animation = GetComponent<SpriteAnimation>();
+animation.Play("Run");
+animation.CurrentAnimation = "Idle";
+animation.FrameRate = 12.0f;
+animation.Playing = true;
+animation.Stop();
+```
+
+| API | 说明 |
+|-----|------|
+| `Play()` | 播放当前 `CurrentAnimation`，重置帧 |
+| `Play(string animationName)` | 切换命名动画并播放 |
+| `CurrentAnimation` | 与 `.anim` 内动画 **Name** 一致（区分大小写） |
+| `Playing` | 是否推进帧 |
+| `FrameRate` | 大于 0 时覆盖资产内默认 FPS |
+| `Stop()` | 停止播放 |
+
+资产与编辑器说明见 [2D 逐帧动画](SpriteAnimation.md)。
+
+---
+
+## 2D 碰撞回调
+
+在 **Play** 模式下，碰撞开始/结束时调用（双方若挂 Script 且已实例化，各收到一次回调）：
 
 ```csharp
 public override void OnCollisionEnter2D(Collision2DInfo collision)
 {
-    Log.Info($"Hit entity {collision.OtherEntityID}");
+    Log.Info($"Enter: {collision.OtherEntityID}");
 }
 
 public override void OnCollisionExit2D(Collision2DInfo collision)
 {
-    Log.Info($"Left entity {collision.OtherEntityID}");
+    Log.Info($"Exit: {collision.OtherEntityID}");
 }
 ```
 
-要求：双方实体均有 **Rigidbody2D** 与 **BoxCollider2D** 或 **CircleCollider2D**；仅在运行时 **Play** 模式触发（非纯 Simulate 脚本实例）。
+| 说明 | 细节 |
+|------|------|
+| 触发条件 | 双方有 **Box** 或 **Circle Collider 2D**；至少一方参与动态模拟 |
+| 不触发 | **Simulate** 模式不运行脚本实例 |
+| 用途 | 着地检测、伤害判定等 |
 
-更多物理组件说明见 [2D 物理](Physics2D.md)。
+`Collision2DInfo.OtherEntityID` 为对方实体 ID。更多组件参数见 [2D 物理](Physics2D.md)。
 
-## Inspector 脚本字段
+---
 
-在脚本类中声明 **public 实例字段**，或使用 `[SerializeField]` 标记 **private 实例字段**，可在属性面板中编辑并随场景 YAML 保存：
+## Inspector 与 [SerializeField]
+
+**public 实例字段** 或带 **`[SerializeField]`** 的 **private 实例字段** 会出现在属性面板，并随场景 YAML 的 `ScriptFields` 保存：
 
 ```csharp
-public float Speed = 5.0f;
-public Entity Target;  // 引用场景中另一实体（UUID）
+using HimiiEngine;
 
-[SerializeField]
-private float hiddenSpeed = 3.0f;  // private 字段，Inspector 可见
+public class PlayerController : Entity
+{
+    public float MoveSpeed = 5.0f;
+    public Entity Target;
+
+    [SerializeField]
+    private float jumpSpeed = 7.0f;
+}
 ```
 
-新建项目的 `GameAssembly.csproj` 已包含 `<Using Include="Himii" />`，一般可直接写 `[SerializeField]` 而无需手写 `using Himii;`。
+`[SerializeField]` 类型定义在 `assets/scripts/Himii/SerializeField.cs`（引擎同步到游戏项目）。
 
-`[SerializeField]` 定义在 `assets/scripts/Himii/SerializeField.cs`（由引擎同步到游戏项目），以便 IDE 对特性名补全；其余 API 仍来自 `ScriptCore.dll`。
+| 规则 | 说明 |
+|------|------|
+| 命名空间 | 特性在 **`HimiiEngine`**，脚本需 `using HimiiEngine;` |
+| 支持类型 | 数值、布尔、`Vector2/3/4`、`string`、`KeyCode`、`Entity` 等 |
+| 不支持 | static 字段、属性（Property） |
+| 持久化 | 修改后 **Ctrl+S** 保存场景 |
+| 不显示 | 检查类名、重新编译 ScriptCore、重启编辑器后重选实体 |
 
-- 支持类型：数值、布尔、`Vector2/3/4`、`string`、`KeyCode`、`Entity` 等（与引擎 `ReflectionBridge` 一致）。
-- 修改后保存场景即可持久化。
-- 已支持 `[SerializeField]` 标记 private 字段；不支持 static 或属性（Property）。
+> **【配图占位】** `images/inspector-script-serializefield.png`
+
+---
 
 ## 相关文档
 
-- [脚本工作流](ScriptWorkflow.md)：编译、文件监视、IDE 配置
-- [编辑器界面](EditorInterface.md)：Console、Script Console、Play 工具栏
-- [2D 物理](Physics2D.md)：刚体、碰撞体与碰撞事件
+- [教程：2D 平台跳跃](Tutorial2DPlatformer.md)
+- [编辑器与功能](EditorFeatures.md)
+- [脚本工作流](ScriptWorkflow.md)
+- [编辑器界面](EditorInterface.md)
+- [2D 逐帧动画](SpriteAnimation.md)
+- [2D 物理](Physics2D.md)

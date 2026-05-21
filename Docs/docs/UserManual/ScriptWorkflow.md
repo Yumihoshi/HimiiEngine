@@ -60,13 +60,18 @@
 | 现象 | 处理 |
 |------|------|
 | Play 后脚本不执行 | 检查类名是否与 `ScriptComponent` 中一致（含命名空间）；Script Console 是否编译成功 |
-| Inspector 无字段 | 字段须为 **public 实例** 字段，或 **private + `[SerializeField]`**；保存场景后重开验证 |
-| `[SerializeField]` 无智能提示 | 用 IDE 打开 **`.sln`**；确认存在 `assets/scripts/Himii/SerializeField.cs`（打开项目或编译脚本时会自动同步）；项目根目录还需 `ScriptCore.dll` / `ScriptCore.xml`；重载 C# 语言服务 |
+| Inspector 无字段 | 字段须为 **public 实例** 或 **private + `[SerializeField]`**（`HimiiEngine` 命名空间）；脚本类名与组件一致；**重新编译 ScriptCore 并重启编辑器** 后重选实体 |
+| `[SerializeField]` 无智能提示 | 用 IDE 打开 **`.sln`**；确认 `assets/scripts/Himii/SerializeField.cs` 存在；`using HimiiEngine;`；重载 C# 语言服务 |
+| Ctrl+S 弹出保存 Animation | 仅在 Animation Editor 内对**未 Save As 的新动画**点 Save 会弹窗；全局 Ctrl+S 已忽略未落盘动画 |
 | Log 无输出 | 使用 `Himii.Log`，非 `Console.WriteLine`；确认 Console 面板已打开 |
 | IDE 打不开 | Preferences / Project Settings 中检查 IDE 路径；VS Code 需 `code` 在 PATH |
 
 ## 相关文档
 
 - [脚本 API](ScriptingAPI.md)
+- [教程：2D 平台跳跃](Tutorial2DPlatformer.md)
+- [编辑器与功能](EditorFeatures.md)
 - [编辑器界面](EditorInterface.md)
+- [2D 逐帧动画](SpriteAnimation.md)
+- [脚本 API](ScriptingAPI.md)
 - [源码构建](../DevManual/BuildingFromSource.md)

@@ -2,6 +2,8 @@
 
 HimiiEditor 采用 DockSpace 停靠布局，提供场景编辑、资源管理与脚本开发能力。
 
+各功能模块（动画、物理、脚本等）的总览见 **[编辑器与功能](EditorFeatures.md)**。建议新手按 **[2D 平台跳跃教程](Tutorial2DPlatformer.md)** 边做边熟悉本页面板。
+
 ## 主要面板
 
 ### 1. 视口 (Viewport)
@@ -70,7 +72,30 @@ HimiiEditor 采用 DockSpace 停靠布局，提供场景编辑、资源管理与
 | **File** | Project Settings | 项目级脚本 IDE 覆盖（`.hproj`） |
 | **Edit** | Preferences | 全局默认脚本 IDE（`editor_settings.yaml`） |
 | **Window** | Console / Script Console | 见上文 |
-| **Window** | Animation / TileMap / Particle 等 | 专项资源编辑器 |
+| **Window** | Animation Editor | 编辑 `.anim` 逐帧动画资产 |
+| **Window** | TileMap / Particle 等 | 其他专项资源编辑器 |
+
+## Animation Editor（2D 逐帧动画）
+
+通过 **Window → Animation Editor** 或双击内容浏览器中的 `.anim` 打开。
+
+- **左栏**：命名动画列表（Add / Rename / Delete）、FPS、Loop、图集 Cell Size。
+- **右栏**：**Atlas Picker**（点格子组成时间轴）、**Timeline**（帧顺序与重排）。
+- **保存**：面板内 **Save**；全局 **Ctrl+S** 仅在已打开且已修改的 `.anim` 时写入，不会为空白新动画弹另存为。
+
+完整说明与配图见 [2D 逐帧动画](SpriteAnimation.md)。
+
+## 保存工程（Ctrl+S）
+
+**Ctrl+S** 会保存：
+
+- 项目 `.hproj`
+- 当前场景 `.himii`
+- 已修改且已落盘的纹理 `.meta`、TileMap、**已打开的 `.anim`** 等
+
+不会在未保存的新动画上强制弹出 **Save As**（除非你在 Animation Editor 内主动 Save 且无路径）。
+
+> 按 Ctrl+S 后仅状态栏/日志提示保存，无文件对话框。
 
 ## 脚本 IDE 配置
 

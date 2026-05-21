@@ -55,7 +55,8 @@ Entities:
 | **TransformComponent** | Position / Rotation / Scale |
 | **CameraComponent** | 投影、裁剪、背景色、Primary 等 |
 | **ScriptComponent** | `ClassName` + `ScriptFields`（含 Entity 引用 UUID） |
-| **SpriteRendererComponent** | Color、TextureHandle（优先）、TexturePath（兼容旧场景）、TilingFactor |
+| **SpriteRendererComponent** | Color、SpriteAssetHandle、TilingFactor、FlipHorizontal |
+| **SpriteAnimationComponent** | AnimationHandle、CurrentAnimationName、FrameRate、Playing、PreviewInScene |
 | **CircleRendererComponent** | Color、Thickness、Fade |
 | **MeshComponent** | Type、Color |
 | **Rigidbody2DComponent** | BodyType、FixedRotation |
@@ -69,7 +70,16 @@ Entities:
 
 - 与编辑器 Inspector 中 `ScriptComponent::Fields` 一致。
 - `Type` 为 `ScriptFieldType` 整型；`Data` 类型随字段变化（标量、向量、UUID、字符串等）。
-- 游戏脚本仅 **public 实例字段** 参与反射与保存。
+- 游戏脚本 **public 实例字段** 与 **`[SerializeField]` private 字段**（`HimiiEngine.SerializeField`）参与反射与保存。
+
+## 动画资产（`.anim`）
+
+由 `AssetSerializer` / `SpriteAnimationSerializer` 读写，非场景 YAML 内嵌。
+
+- 新格式：`AssetType: SpriteFrames`，`Animations[]` 每条含 `Name`、`FrameRate`、`LoopMode`、`AtlasFrameCoordinates`。
+- 旧格式：`AssetType: SpriteAnimation` 加载时迁移为单条 `default` 动画。
+
+用户说明见 [2D 逐帧动画](../../UserManual/SpriteAnimation.md)。
 
 ## 实现要点
 

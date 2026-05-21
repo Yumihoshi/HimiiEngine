@@ -5,8 +5,9 @@
 ## 手册导航
 
 * **[用户手册 (User Manual)](UserManual/README.md)**
-  * 面向使用 HimiiEngine 制作游戏的用户。
-  * 包含编辑器使用、脚本编写、物理与组件介绍等。
+  * **教程**：[2D 平台跳跃](UserManual/Tutorial2DPlatformer.md)
+  * **编辑器与功能**：[总览](UserManual/EditorFeatures.md)、动画、物理
+  * **脚本 API**：[ScriptingAPI](UserManual/ScriptingAPI.md)
 
 * **[开发者手册 (Developer Manual)](DevManual/README.md)**
   * 面向参与引擎开发的贡献者。

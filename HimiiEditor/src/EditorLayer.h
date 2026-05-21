@@ -15,6 +15,7 @@
 #include "Himii/Scene/TileMapCoordinateUtility.h"
 #include "Himii/Renderer/EditorCamera.h"
 #include "commands/EditorCommandHistory.h"
+#include "EditorStartupIcon.h"
 
 namespace Himii
 {
@@ -74,7 +75,6 @@ namespace Himii
         void UI_Toolbar();
         void DrawMainMenuBar();
         void UpdateMainWindowTitle();
-        void DrawStartupSplash();
         void FinishEditorStartup();
 
     private:
@@ -149,7 +149,8 @@ namespace Himii
         Ref<TextureCube> m_SkyboxTexture;
 
         bool m_EditorStartupFinished = false;
-        uint32_t m_EditorStartupSplashFrameCount = 0;
+        uint32_t m_StartupFramesShown = 0;
+        bool m_StartupHeavyInitStarted = false;
 
         SceneState m_SceneState = SceneState::Edit;
         std::string m_Clipboard;

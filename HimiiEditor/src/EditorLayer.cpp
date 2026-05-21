@@ -26,50 +26,11 @@
 #include "Himii/Scene/TileSet.h"
 #include "Himii/Scene/TileMapCoordinateUtility.h"
 #include "Himii/Scene/TilemapColliderBuilder.h"
+#include "EditorStartupIcon.h"
 #include <GLFW/glfw3.h>
-
-#include <array>
-#include <filesystem>
-
-#include "stb_image.h"
 
 namespace Himii
 {
-    namespace
-    {
-        Ref<Texture2D> LoadEngineSplashTexture()
-        {
-            const std::array<const char *, 3> candidate_paths = {
-                "resources/icons/HimiiEngine.png",
-                "resources/icons/HimiiEngine.ico",
-                "resources/icons/Component_Script.png",
-            };
-
-            for (const char *candidate_path : candidate_paths)
-            {
-                if (!std::filesystem::exists(candidate_path))
-                    continue;
-
-                int width = 0;
-                int height = 0;
-                int channels = 0;
-                stbi_set_flip_vertically_on_load(1);
-                stbi_uc *image_data = stbi_load(candidate_path, &width, &height, &channels, 4);
-                if (!image_data || width <= 0 || height <= 0)
-                    continue;
-
-                Ref<Texture2D> texture = Texture2D::Create((uint32_t)width, (uint32_t)height);
-                texture->SetData(image_data, (uint32_t)(width * height * 4));
-                stbi_image_free(image_data);
-                HIMII_CORE_INFO("Startup splash texture loaded from: {0}", candidate_path);
-                return texture;
-            }
-
-            HIMII_CORE_WARNING("Startup splash texture not found; using text-only splash.");
-            return nullptr;
-        }
-    }
-
     EditorLayer::EditorLayer() :
         Layer("Example2D"), m_CameraController(1280.0f / 720.0f)
     {
@@ -79,9 +40,32 @@ namespace Himii
     {
         HIMII_PROFILE_FUNCTION();
 
-        m_EngineSplashTexture = LoadEngineSplashTexture();
         m_EditorStartupFinished = false;
-        m_EditorStartupSplashFrameCount = 0;
+        m_StartupFramesShown = 0;
+        m_StartupHeavyInitStarted = false;
+
+        if (Application::Get().IsInStartupPhase())
+        {
+            StartupIconImage startup_icon_image = {};
+            if (EditorStartupIcon::LoadEngineIcon(startup_icon_image))
+            {
+                EditorStartupIcon::CropTransparentPixels(startup_icon_image);
+                m_EngineSplashTexture = EditorStartupIcon::CreateTexture(startup_icon_image);
+
+                const uint32_t window_width = EditorStartupIcon::GetStartupWindowWidth(startup_icon_image);
+                const uint32_t window_height = EditorStartupIcon::GetStartupWindowHeight(startup_icon_image);
+                Application::Get().GetWindow().SetClientSize(window_width, window_height);
+                Application::Get().GetWindow().CenterOnScreen();
+            }
+            else
+            {
+                HIMII_CORE_WARNING("Engine startup icon could not be loaded.");
+            }
+        }
+        else
+        {
+            FinishEditorStartup();
+        }
     }
 
     void EditorLayer::FinishEditorStartup()
@@ -145,8 +129,20 @@ namespace Himii
 
         if (!m_EditorStartupFinished)
         {
-            if (m_EditorStartupSplashFrameCount > 0)
+            Application &application = Application::Get();
+            const uint32_t window_width = application.GetWindow().GetWidth();
+            const uint32_t window_height = application.GetWindow().GetHeight();
+
+            EditorStartupIcon::DrawStartupFrame(m_EngineSplashTexture, window_width, window_height);
+            ++m_StartupFramesShown;
+
+            if (!m_StartupHeavyInitStarted && m_StartupFramesShown >= 2)
+            {
+                m_StartupHeavyInitStarted = true;
                 FinishEditorStartup();
+                application.EndStartupPhase();
+            }
+
             return;
         }
 
@@ -268,16 +264,8 @@ namespace Himii
     {
         HIMII_PROFILE_FUNCTION();
 
-        // 如果没有 Active Project，先显示启动闪屏，再显示 Project Hub
         if (!Project::GetActive())
         {
-            if (!m_EditorStartupFinished)
-            {
-                DrawStartupSplash();
-                ++m_EditorStartupSplashFrameCount;
-                return;
-            }
-
             DrawProjectHub();
             return;
         }
@@ -1399,63 +1387,6 @@ namespace Himii
 
         std::ofstream fout("recent_projects.yaml");
         fout << out.c_str();
-    }
-
-    void EditorLayer::DrawStartupSplash()
-    {
-        ImGuiViewport *viewport = ImGui::GetMainViewport();
-        ImGui::SetNextWindowPos(viewport->Pos);
-        ImGui::SetNextWindowSize(viewport->Size);
-        ImGui::SetNextWindowViewport(viewport->ID);
-
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
-                                        ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
-                                        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
-                                        ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoScrollbar |
-                                        ImGuiWindowFlags_NoScrollWithMouse;
-
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4{0.23f, 0.23f, 0.23f, 1.0f});
-
-        ImGui::Begin("Startup Splash", nullptr, window_flags);
-        ImGui::PopStyleVar(2);
-
-        const ImVec2 content_region_available = ImGui::GetContentRegionAvail();
-        const char *splash_label = "Himii Engine";
-
-        if (m_EngineSplashTexture && m_EngineSplashTexture->GetRendererID() != 0)
-        {
-            const float maximum_icon_size =
-                std::min(content_region_available.x, content_region_available.y) * 0.32f;
-            const float texture_aspect_ratio =
-                (float)m_EngineSplashTexture->GetWidth() / (float)m_EngineSplashTexture->GetHeight();
-            ImVec2 icon_display_size = ImVec2{maximum_icon_size, maximum_icon_size};
-            if (texture_aspect_ratio > 1.0f)
-                icon_display_size.y = maximum_icon_size / texture_aspect_ratio;
-            else
-                icon_display_size.x = maximum_icon_size * texture_aspect_ratio;
-
-            const ImVec2 cursor_position = {
-                (content_region_available.x - icon_display_size.x) * 0.5f,
-                (content_region_available.y - icon_display_size.y) * 0.5f,
-            };
-            ImGui::SetCursorPos(cursor_position);
-            ImGui::Image((ImTextureID)(uintptr_t)m_EngineSplashTexture->GetRendererID(), icon_display_size,
-                         ImVec2{0.0f, 1.0f}, ImVec2{1.0f, 0.0f});
-        }
-        else
-        {
-            const ImVec2 label_size = ImGui::CalcTextSize(splash_label);
-            ImGui::SetCursorPos({
-                (content_region_available.x - label_size.x) * 0.5f,
-                (content_region_available.y - label_size.y) * 0.5f,
-            });
-            ImGui::TextUnformatted(splash_label);
-        }
-
-        ImGui::End();
-        ImGui::PopStyleColor();
     }
 
     void EditorLayer::DrawProjectHub()

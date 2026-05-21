@@ -1,7 +1,6 @@
 #include "EditorLayer.h"
 #include "Engine.h"
 #include "Himii/Core/EntryPoint.h"
-#include "Himii/Renderer/RenderCommand.h"
 
 #include <iostream>
 
@@ -9,18 +8,25 @@ namespace Himii
 {
     class HimiiApp : public Application {
     public:
-        HimiiApp(ApplicationCommandLineArgs args) : Application("Himii Editor", args)
+        HimiiApp(ApplicationCommandLineArgs args)
+            : Application("Himii Editor", args, CreateStartupWindowProps(), true)
         {
             PushOverlay(new EditorLayer());
-
-            RenderCommand::SetClearColor(glm::vec4{0.23f, 0.23f, 0.23f, 1.0f});
-            RenderCommand::Clear();
-            GetWindow().Update();
         }
 
         virtual ~HimiiApp()
         {
-            // 清理代码
+        }
+
+    private:
+        static WindowProps CreateStartupWindowProps()
+        {
+            WindowProps startup_window_props("Himii Editor", 128, 128);
+            startup_window_props.Decorated = false;
+            startup_window_props.TransparentFramebuffer = true;
+            startup_window_props.Maximized = false;
+            startup_window_props.CenterOnScreen = true;
+            return startup_window_props;
         }
     };
 

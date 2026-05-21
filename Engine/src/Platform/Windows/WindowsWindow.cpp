@@ -22,6 +22,25 @@ namespace Himii
     static uint8_t s_GLFWWindwCount = 0;
 
 #ifdef HIMII_PLATFORM_WINDOWS
+    static void ApplyStartupTransparentWindow(HWND windowHandle)
+    {
+        if (!windowHandle)
+            return;
+
+        LONG_PTR window_style = GetWindowLongPtr(windowHandle, GWL_EXSTYLE);
+        SetWindowLongPtr(windowHandle, GWL_EXSTYLE, window_style | WS_EX_LAYERED);
+        SetLayeredWindowAttributes(windowHandle, RGB(0, 0, 0), 0, LWA_COLORKEY);
+    }
+
+    static void RemoveStartupTransparentWindow(HWND windowHandle)
+    {
+        if (!windowHandle)
+            return;
+
+        LONG_PTR window_style = GetWindowLongPtr(windowHandle, GWL_EXSTYLE);
+        SetWindowLongPtr(windowHandle, GWL_EXSTYLE, window_style & ~WS_EX_LAYERED);
+    }
+
     static void ApplyDarkNativeTitleBar(HWND windowHandle)
     {
         if (!windowHandle)
@@ -79,14 +98,19 @@ namespace Himii
         }
 
         HIMII_PROFILE_SCOPE("glfwCreateWindow");
-        // 默认最大化窗口
-        // glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
-        glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+
+        glfwDefaultWindowHints();
+        glfwWindowHint(GLFW_DECORATED, props.Decorated ? GLFW_TRUE : GLFW_FALSE);
+        glfwWindowHint(GLFW_MAXIMIZED, props.Maximized ? GLFW_TRUE : GLFW_FALSE);
+        glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
+#if defined(GLFW_TRANSPARENT_FRAMEBUFFER)
+        if (props.TransparentFramebuffer)
+            glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
+#endif
+
+        m_Data.TransparentFramebuffer = props.TransparentFramebuffer;
         m_Window = glfwCreateWindow((int)props.Width, props.Height, m_Data.Title.c_str(), nullptr, nullptr);
         ++s_GLFWWindwCount;
-
-        m_Context = CreateScope<OpenGLContext>(m_Window);
-        m_Context->Init();
 
         if (!m_Window)
         {
@@ -95,34 +119,41 @@ namespace Himii
             return;
         }
 
-// 为当前 GLFW 窗口设置 Win32 图标（使用 HimiiEditor/resources/icon/HimiiEngine.ico）
+        m_Context = CreateScope<OpenGLContext>(m_Window);
+        m_Context->Init();
+
 #ifdef HIMII_PLATFORM_WINDOWS
         {
-            HWND hwnd = glfwGetWin32Window(m_Window);
-            if (hwnd)
+            HWND window_handle = glfwGetWin32Window(m_Window);
+            if (window_handle)
             {
-                // 这里使用运行目录下的资源路径：HimiiEditor CMake 已经把 resources 拷贝到可执行文件旁
-                constexpr const char *IconPath = "resources/icons/HimiiEngine.ico";
-                HICON hIcon = static_cast<HICON>(
-                        LoadImageA(nullptr, IconPath, IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE));
+                constexpr const char *icon_path = "resources/icons/HimiiEngine.ico";
+                HICON window_icon = static_cast<HICON>(
+                        LoadImageA(nullptr, icon_path, IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE));
 
-                if (hIcon)
+                if (window_icon)
                 {
-                    SendMessage(hwnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon));
-                    SendMessage(hwnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon));
+                    SendMessage(window_handle, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(window_icon));
+                    SendMessage(window_handle, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(window_icon));
                 }
                 else
                 {
-                    HIMII_CORE_WARNING("Failed to load window icon from path: {0}", IconPath);
+                    HIMII_CORE_WARNING("Failed to load window icon from path: {0}", icon_path);
                 }
 
-                ApplyDarkNativeTitleBar(hwnd);
+                if (props.TransparentFramebuffer)
+                    ApplyStartupTransparentWindow(window_handle);
+                else
+                    ApplyDarkNativeTitleBar(window_handle);
             }
         }
 #endif
 
-        // 再次确保最大化（防止某些平台忽略 hint）
-        glfwMaximizeWindow(m_Window);
+        if (props.Maximized)
+            glfwMaximizeWindow(m_Window);
+
+        if (props.CenterOnScreen)
+            CenterOnScreen();
 
         glfwSetWindowUserPointer(m_Window, &m_Data);
 
@@ -272,13 +303,69 @@ namespace Himii
 
     void WindowsWindow::SetTitle(const std::string &title)
     {
+        m_Data.Title = title;
         if (m_Window)
             glfwSetWindowTitle(m_Window, title.c_str());
+    }
+
+    void WindowsWindow::SetClientSize(uint32_t width, uint32_t height)
+    {
+        m_Data.Width = width;
+        m_Data.Height = height;
+        if (m_Window)
+            glfwSetWindowSize(m_Window, (int)width, (int)height);
+    }
+
+    void WindowsWindow::CenterOnScreen()
+    {
+        if (!m_Window)
+            return;
+
+        GLFWmonitor *primary_monitor = glfwGetPrimaryMonitor();
+        if (!primary_monitor)
+            return;
+
+        const GLFWvidmode *video_mode = glfwGetVideoMode(primary_monitor);
+        if (!video_mode)
+            return;
+
+        int position_x = (video_mode->width - (int)m_Data.Width) / 2;
+        int position_y = (video_mode->height - (int)m_Data.Height) / 2;
+        glfwSetWindowPos(m_Window, position_x, position_y);
+    }
+
+    void WindowsWindow::ApplyEditorPresentation()
+    {
+        if (!m_Window)
+            return;
+
+        m_Data.TransparentFramebuffer = false;
+#if defined(GLFW_TRANSPARENT_FRAMEBUFFER)
+        glfwSetWindowAttrib(m_Window, GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_FALSE);
+#endif
+        glfwSetWindowAttrib(m_Window, GLFW_DECORATED, GLFW_TRUE);
 
 #ifdef HIMII_PLATFORM_WINDOWS
-        HWND windowHandle = glfwGetWin32Window(m_Window);
-        ApplyDarkNativeTitleBar(windowHandle);
+        HWND window_handle = glfwGetWin32Window(m_Window);
+        RemoveStartupTransparentWindow(window_handle);
+        ApplyDarkNativeTitleBar(window_handle);
 #endif
+
+        glfwSetWindowSize(m_Window, 1280, 720);
+        m_Data.Width = 1280;
+        m_Data.Height = 720;
+        glfwMaximizeWindow(m_Window);
+
+        GLFWmonitor *primary_monitor = glfwGetPrimaryMonitor();
+        if (primary_monitor)
+        {
+            const GLFWvidmode *video_mode = glfwGetVideoMode(primary_monitor);
+            if (video_mode)
+            {
+                m_Data.Width = (uint32_t)video_mode->width;
+                m_Data.Height = (uint32_t)video_mode->height;
+            }
+        }
     }
 
 } // namespace Himii

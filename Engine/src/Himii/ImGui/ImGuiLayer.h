@@ -25,6 +25,7 @@ namespace Himii
              m_BlockEvents = block;
          }
          void ApplyEditorTheme();
+         void LoadEditorFonts();
          uint32_t GetActiveWidgetID() const;
 
     private:

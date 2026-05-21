@@ -35,6 +35,12 @@ namespace Himii
 
         void SetTitle(const std::string &title) override;
 
+        void SetClientSize(uint32_t width, uint32_t height) override;
+
+        void CenterOnScreen() override;
+
+        void ApplyEditorPresentation() override;
+
     private:
         virtual void Init(const WindowProps &props);
         virtual void Shutdown();
@@ -47,6 +53,7 @@ namespace Himii
             std::string Title;
             uint32_t Width, Height;
             bool VSync;
+            bool TransparentFramebuffer;
 
             EventCallbackFn EventCallback;
         };

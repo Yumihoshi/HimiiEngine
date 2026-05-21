@@ -12,14 +12,19 @@ namespace Himii
 {
     Application *Application::s_Instance = nullptr;
 
-    Application::Application(const std::string &name, ApplicationCommandLineArgs args) : m_CommandLineArgs(args)
+    Application::Application(const std::string &name, ApplicationCommandLineArgs args,
+                             const WindowProps &window_props, bool use_startup_phase)
+        : m_CommandLineArgs(args), m_InStartupPhase(use_startup_phase)
     {
         HIMII_PROFILE_FUNCTION();
 
 
         SetEnvironmentVariables();
         s_Instance = this;
-        m_Window = Window::Create(WindowProps(name));
+        WindowProps initial_props = window_props;
+        if (initial_props.Title.empty())
+            initial_props.Title = name;
+        m_Window = Window::Create(initial_props);
         m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
         Renderer::Init();
@@ -56,6 +61,17 @@ namespace Himii
     void Application::Close()
     {
         m_Running = false;
+    }
+
+    void Application::EndStartupPhase()
+    {
+        if (!m_InStartupPhase)
+            return;
+
+        m_InStartupPhase = false;
+        m_Window->ApplyEditorPresentation();
+        Renderer::OnWindowResize(m_Window->GetWidth(), m_Window->GetHeight());
+        m_ImGuiLayer->LoadEditorFonts();
     }
 
     void Application::OnEvent(Event &e)
@@ -176,24 +192,26 @@ namespace Himii
             {
                 {
                     HIMII_PROFILE_SCOPE("LayerStack OnUpdate")
-                    // Layer Update
                     for (Layer *layer: m_LayerStack)
                     {
                         layer->OnUpdate(timestep);
                     }
                 }
-                m_ImGuiLayer->Begin();
+
+                if (!m_InStartupPhase)
                 {
-                    HIMII_PROFILE_SCOPE("Layerstack OnImGuiRender")
-                    for (Layer *layer: m_LayerStack)
+                    m_ImGuiLayer->Begin();
                     {
-                        layer->OnImGuiRender();
+                        HIMII_PROFILE_SCOPE("Layerstack OnImGuiRender")
+                        for (Layer *layer: m_LayerStack)
+                        {
+                            layer->OnImGuiRender();
+                        }
                     }
+                    m_ImGuiLayer->End();
                 }
-                m_ImGuiLayer->End();
             }
 
-            //Window Update
             m_Window->Update();
         }
     }

@@ -13,6 +13,10 @@ namespace Himii
         std::string Title;
         uint32_t Width;
         uint32_t Height;
+        bool Decorated = true;
+        bool TransparentFramebuffer = false;
+        bool Maximized = true;
+        bool CenterOnScreen = false;
 
         WindowProps(const std::string &title = "Himii Engine", uint32_t width = 1280, uint32_t height = 720) :
             Title(title), Width(width), Height(height)
@@ -40,6 +44,12 @@ namespace Himii
         virtual void *GetNativeWindow() const = 0;
 
         virtual void SetTitle(const std::string &title) {}
+
+        virtual void SetClientSize(uint32_t width, uint32_t height) {}
+
+        virtual void CenterOnScreen() {}
+
+        virtual void ApplyEditorPresentation() {}
 
         static Scope<Window> Create(const WindowProps &props = WindowProps());
 

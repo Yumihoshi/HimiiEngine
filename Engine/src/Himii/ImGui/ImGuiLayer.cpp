@@ -67,18 +67,6 @@ namespace Himii
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-        float x_scale, y_scale;
-        glfwGetWindowContentScale(window, &x_scale, &y_scale);
-        float ui_scale = x_scale;
-        HIMII_CORE_INFO("Window Content Scale: {0}, {1}", x_scale, y_scale);
-
-        const char *font_path = "assets/fonts/msyh.ttc";
-        float font_size = 15.0f * ui_scale;
-
-        io.Fonts->AddFontFromFileTTF(font_path, font_size);
-        io.FontDefault =
-                io.Fonts->AddFontFromFileTTF(font_path, font_size, nullptr, io.Fonts->GetGlyphRangesChineseFull());
-
         ImGuiStyle &style = ImGui::GetStyle();
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {
@@ -86,10 +74,39 @@ namespace Himii
             style.Colors[ImGuiCol_WindowBg].w = 1.0f;
         }
         ApplyEditorTheme();
-        style.ScaleAllSizes(ui_scale);
 
         ImGui_ImplGlfw_InitForOpenGL(window, true);
         ImGui_ImplOpenGL3_Init("#version 410");
+
+        if (!Application::Get().IsInStartupPhase())
+            LoadEditorFonts();
+    }
+
+    void ImGuiLayer::LoadEditorFonts()
+    {
+        ImGuiIO &io = ImGui::GetIO();
+        Application &application = Application::Get();
+        GLFWwindow *window = static_cast<GLFWwindow *>(application.GetWindow().GetNativeWindow());
+
+        float x_scale = 1.0f;
+        float y_scale = 1.0f;
+        glfwGetWindowContentScale(window, &x_scale, &y_scale);
+        const float user_interface_scale = x_scale;
+        HIMII_CORE_INFO("Window Content Scale: {0}, {1}", x_scale, y_scale);
+
+        io.Fonts->Clear();
+        const char *font_path = "assets/fonts/msyh.ttc";
+        const float font_size = 15.0f * user_interface_scale;
+        io.Fonts->AddFontFromFileTTF(font_path, font_size);
+        io.FontDefault =
+                io.Fonts->AddFontFromFileTTF(font_path, font_size, nullptr, io.Fonts->GetGlyphRangesChineseFull());
+        io.Fonts->Build();
+
+        ImGuiStyle &style = ImGui::GetStyle();
+        style.ScaleAllSizes(user_interface_scale);
+
+        ImGui_ImplOpenGL3_DestroyDeviceObjects();
+        ImGui_ImplOpenGL3_CreateDeviceObjects();
     }
 
     void ImGuiLayer::OnDetach()

@@ -43,6 +43,17 @@ namespace HimiiEngine
         internal delegate void SpriteRendererSetColorDelegate(ulong entityID, ref Vector4 color);
         internal delegate ulong SpriteRendererGetHandleDelegate(ulong entityID);
         internal delegate void SpriteRendererSetHandleDelegate(ulong entityID, ulong handle);
+        internal delegate byte SpriteRendererGetFlipHorizontalDelegate(ulong entityID);
+        internal delegate void SpriteRendererSetFlipHorizontalDelegate(ulong entityID, byte flipHorizontal);
+
+        internal delegate byte SpriteAnimationGetPlayingDelegate(ulong entityID);
+        internal delegate void SpriteAnimationSetPlayingDelegate(ulong entityID, byte playing);
+        internal delegate float SpriteAnimationGetFrameRateDelegate(ulong entityID);
+        internal delegate void SpriteAnimationSetFrameRateDelegate(ulong entityID, float frameRate);
+        internal delegate void SpriteAnimationResetPlaybackDelegate(ulong entityID);
+        internal delegate void SpriteAnimationPlayDelegate(ulong entityID, IntPtr animationName);
+        internal delegate IntPtr SpriteAnimationGetCurrentAnimationNameDelegate(ulong entityID);
+        internal delegate void SpriteAnimationSetCurrentAnimationNameDelegate(ulong entityID, IntPtr animationName);
 
         // static fields to hold the delegates
         internal static LogFuncDelegate NativeLog;
@@ -85,6 +96,17 @@ namespace HimiiEngine
         internal static SpriteRendererSetHandleDelegate SpriteRenderer_SetSpriteHandle;
         internal static SpriteRendererGetHandleDelegate SpriteRenderer_GetTextureHandle;
         internal static SpriteRendererSetHandleDelegate SpriteRenderer_SetTextureHandle;
+        internal static SpriteRendererGetFlipHorizontalDelegate SpriteRenderer_GetFlipHorizontal;
+        internal static SpriteRendererSetFlipHorizontalDelegate SpriteRenderer_SetFlipHorizontal;
+
+        internal static SpriteAnimationGetPlayingDelegate SpriteAnimation_GetPlaying;
+        internal static SpriteAnimationSetPlayingDelegate SpriteAnimation_SetPlaying;
+        internal static SpriteAnimationGetFrameRateDelegate SpriteAnimation_GetFrameRate;
+        internal static SpriteAnimationSetFrameRateDelegate SpriteAnimation_SetFrameRate;
+        internal static SpriteAnimationResetPlaybackDelegate SpriteAnimation_ResetPlayback;
+        internal static SpriteAnimationPlayDelegate SpriteAnimation_Play;
+        internal static SpriteAnimationGetCurrentAnimationNameDelegate SpriteAnimation_GetCurrentAnimationName;
+        internal static SpriteAnimationSetCurrentAnimationNameDelegate SpriteAnimation_SetCurrentAnimationName;
 
         [UnmanagedCallersOnly]
         public static void Initialize(IntPtr functionTablePtr)
@@ -139,6 +161,31 @@ namespace HimiiEngine
                 Marshal.GetDelegateForFunctionPointer<SpriteRendererGetHandleDelegate>(funcs.SpriteRenderer_GetTextureHandle);
             SpriteRenderer_SetTextureHandle =
                 Marshal.GetDelegateForFunctionPointer<SpriteRendererSetHandleDelegate>(funcs.SpriteRenderer_SetTextureHandle);
+            SpriteRenderer_GetFlipHorizontal =
+                Marshal.GetDelegateForFunctionPointer<SpriteRendererGetFlipHorizontalDelegate>(
+                    funcs.SpriteRenderer_GetFlipHorizontal);
+            SpriteRenderer_SetFlipHorizontal =
+                Marshal.GetDelegateForFunctionPointer<SpriteRendererSetFlipHorizontalDelegate>(
+                    funcs.SpriteRenderer_SetFlipHorizontal);
+
+            SpriteAnimation_GetPlaying =
+                Marshal.GetDelegateForFunctionPointer<SpriteAnimationGetPlayingDelegate>(funcs.SpriteAnimation_GetPlaying);
+            SpriteAnimation_SetPlaying =
+                Marshal.GetDelegateForFunctionPointer<SpriteAnimationSetPlayingDelegate>(funcs.SpriteAnimation_SetPlaying);
+            SpriteAnimation_GetFrameRate =
+                Marshal.GetDelegateForFunctionPointer<SpriteAnimationGetFrameRateDelegate>(funcs.SpriteAnimation_GetFrameRate);
+            SpriteAnimation_SetFrameRate =
+                Marshal.GetDelegateForFunctionPointer<SpriteAnimationSetFrameRateDelegate>(funcs.SpriteAnimation_SetFrameRate);
+            SpriteAnimation_ResetPlayback =
+                Marshal.GetDelegateForFunctionPointer<SpriteAnimationResetPlaybackDelegate>(funcs.SpriteAnimation_ResetPlayback);
+            SpriteAnimation_Play =
+                Marshal.GetDelegateForFunctionPointer<SpriteAnimationPlayDelegate>(funcs.SpriteAnimation_Play);
+            SpriteAnimation_GetCurrentAnimationName =
+                Marshal.GetDelegateForFunctionPointer<SpriteAnimationGetCurrentAnimationNameDelegate>(
+                    funcs.SpriteAnimation_GetCurrentAnimationName);
+            SpriteAnimation_SetCurrentAnimationName =
+                Marshal.GetDelegateForFunctionPointer<SpriteAnimationSetCurrentAnimationNameDelegate>(
+                    funcs.SpriteAnimation_SetCurrentAnimationName);
 
             Console.WriteLine("[C#] InternalCalls initialized.");
         }

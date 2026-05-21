@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cfloat>
 #include <cstdio>
 #include <filesystem>
 #include <queue>
@@ -138,9 +139,8 @@ namespace Himii
 
         if (m_TileMapHandle == 0 || !m_MapData)
         {
-            ImGui::TextDisabled("No TileMap loaded.");
             ImGui::TextWrapped(
-                "Select an entity with TilemapComponent, or use Open TileMap Setup from the Inspector.");
+                "未加载 TileMap。请选中带 TilemapComponent 的实体，或在 Inspector 中打开 TileMap Setup。");
             ImGui::End();
             return;
         }
@@ -149,8 +149,8 @@ namespace Himii
                               ImGuiTableFlags_Resizable | ImGuiTableFlags_BordersInnerV
                                   | ImGuiTableFlags_SizingFixedFit))
         {
-            ImGui::TableSetupColumn("Tools", ImGuiTableColumnFlags_WidthFixed, LeftPanelWidth);
-            ImGui::TableSetupColumn("AtlasPreview", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableSetupColumn("Inspector", ImGuiTableColumnFlags_WidthFixed, LeftPanelWidth);
+            ImGui::TableSetupColumn("Preview", ImGuiTableColumnFlags_WidthStretch);
 
             ImGui::TableNextColumn();
             {
@@ -182,88 +182,89 @@ namespace Himii
 
     void TileMapEditorPanel::DrawLeftPanel()
     {
+        UI_Overview();
+        UI_ScenePaint();
+        UI_Toolbar();
+        UI_Collision();
+        UI_AtlasSetup();
+        UI_BrushTile();
+        UI_Properties();
+    }
+
+    void TileMapEditorPanel::UI_Overview()
+    {
+        DrawInspectorSectionHeader(
+                "TileMap",
+                "在右侧图集点选图块，再在 Scene 中绘制。Ctrl+S 保存 TileMap 与 TileSet。");
+
+        std::string tileMapFileName = "Unknown";
         if (auto assetManager = Project::GetAssetManager())
         {
             const auto& registry = assetManager->GetAssetRegistry();
             const auto iterator = registry.find(m_TileMapHandle);
             if (iterator != registry.end())
-                ImGui::Text("TileMap: %s", iterator->second.FilePath.filename().string().c_str());
+                tileMapFileName = iterator->second.FilePath.filename().string();
         }
 
-        ImGui::Text("%ux%u  |  Cell: %.2f", m_MapData->GetWidth(), m_MapData->GetHeight(),
-                    m_MapData->GetCellSize());
-        ImGui::TextDisabled("在右侧图集点选图块后再于 Scene 绘制。Ctrl+S 保存。");
-        if (!m_BrushTileSelected && m_CurrentTool != Tool::Eraser)
-            ImGui::TextColored(ImVec4(1.0f, 0.85f, 0.3f, 1.0f), "未选择笔刷图块。");
+        DrawReadOnlyTextControl("Asset", tileMapFileName.c_str(),
+                                "当前编辑的 TileMap 资产文件。");
 
-        const bool moveEntityHighlight = m_MoveEntityModeEnabled;
-        if (moveEntityHighlight)
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.55f, 0.45f, 0.2f, 1.0f));
-        if (ImGui::Button(m_MoveEntityModeEnabled ? "Move Entity: ON [H]" : "Move Entity: OFF [H]",
-                          ImVec2(-1.0f, 0.0f)))
+        char extentBuffer[64] = {};
+        std::snprintf(extentBuffer, sizeof(extentBuffer), "%u x %u tiles",
+                      m_MapData->GetWidth(), m_MapData->GetHeight());
+        DrawReadOnlyTextControl("Extent", extentBuffer,
+                                "已绘制区域在瓦片坐标下的宽高（格数）。");
+
+        char cellSizeBuffer[32] = {};
+        std::snprintf(cellSizeBuffer, sizeof(cellSizeBuffer), "%.2f", m_MapData->GetCellSize());
+        DrawReadOnlyTextControl("Cell Size", cellSizeBuffer,
+                                "每个瓦片在世界空间中的边长（与 Transform 缩放相乘）。");
+    }
+
+    void TileMapEditorPanel::UI_ScenePaint()
+    {
+        DrawInspectorSectionHeader("Scene Paint",
+                                 "在 Scene 中绘制瓦片；开启 Move Entity 后可用变换 Gizmo 移动实体。");
+
+        if (DrawEditorToggleButton(
+                m_MoveEntityModeEnabled ? "Move Entity: ON [H]" : "Move Entity: OFF [H]",
+                m_MoveEntityModeEnabled,
+                ImVec2(-1.0f, 0.0f),
+                "切换后可在 Scene 中移动带 Tilemap 的实体。快捷键 H。"))
         {
             ToggleMoveEntityMode();
         }
-        if (moveEntityHighlight)
-            ImGui::PopStyleColor();
-        ImGui::TextDisabled("Hold Alt in Scene to move entity temporarily.");
-
-        ImGui::Separator();
-        UI_Toolbar();
-        ImGui::Separator();
-        UI_Collision();
-        ImGui::Separator();
-        UI_AtlasSetup();
-        ImGui::Separator();
-        DrawSelectedTileThumbnail();
-        ImGui::Separator();
-        UI_Properties();
     }
 
     void TileMapEditorPanel::UI_Toolbar()
     {
+        DrawInspectorSectionHeader(
+                "Paint Tools",
+                "先在右侧图集点选笔刷图块（橡皮擦除外），再在 Scene 中点击或拖动绘制。");
+
         const bool isBrush = (m_CurrentTool == Tool::Brush);
         const bool isEraser = (m_CurrentTool == Tool::Eraser);
         const bool isFill = (m_CurrentTool == Tool::Fill);
 
-        if (isBrush)
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.6f, 0.9f, 1.0f));
-        if (ImGui::Button("Brush [B]"))
-            m_CurrentTool = Tool::Brush;
-        if (isBrush)
-            ImGui::PopStyleColor();
-
-        ImGui::SameLine();
-
-        if (isEraser)
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.9f, 0.3f, 0.3f, 1.0f));
-        if (ImGui::Button("Eraser [E]"))
-            m_CurrentTool = Tool::Eraser;
-        if (isEraser)
-            ImGui::PopStyleColor();
-
-        ImGui::SameLine();
-
-        if (isFill)
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.3f, 0.9f, 0.3f, 1.0f));
-        if (ImGui::Button("Fill [G]"))
-            m_CurrentTool = Tool::Fill;
-        if (isFill)
-            ImGui::PopStyleColor();
-
-        ImGui::Text("Tile ID: %d", (int)m_SelectedTileID);
-
-        if (TileMapCoordinateUtility::IsValidTileCoordinate(m_HoveredTileCoordinates))
-            ImGui::TextDisabled("Scene hover: (%d, %d)", m_HoveredTileCoordinates.x,
-                                m_HoveredTileCoordinates.y);
-
-        const TileDef* selectedTileDefinition = GetSelectedTileDefinition();
-        if (selectedTileDefinition && selectedTileDefinition->SourceType == TileSourceType::Atlas)
+        if (ImGui::BeginTable("##PaintTools", 3, ImGuiTableFlags_SizingStretchSame))
         {
-            ImGui::TextDisabled("Atlas cell: (%d, %d)", selectedTileDefinition->AtlasCoords.x,
-                                selectedTileDefinition->AtlasCoords.y);
-        }
+            ImGui::TableNextColumn();
+            if (DrawEditorToggleButton("Brush [B]", isBrush, ImVec2(-FLT_MIN, 0.0f),
+                                       "绘制当前选中的图块。快捷键 B。"))
+                m_CurrentTool = Tool::Brush;
 
+            ImGui::TableNextColumn();
+            if (DrawEditorToggleButton("Eraser [E]", isEraser, ImVec2(-FLT_MIN, 0.0f),
+                                       "擦除瓦片（设为 Empty）。快捷键 E。"))
+                m_CurrentTool = Tool::Eraser;
+
+            ImGui::TableNextColumn();
+            if (DrawEditorToggleButton("Fill [G]", isFill, ImVec2(-FLT_MIN, 0.0f),
+                                       "用当前笔刷填充相连区域。快捷键 G。"))
+                m_CurrentTool = Tool::Fill;
+
+            ImGui::EndTable();
+        }
     }
 
     void TileMapEditorPanel::UI_Collision()
@@ -284,25 +285,31 @@ namespace Himii
                 collidableDefinitionCount++;
         }
 
-        ImGui::TextDisabled(
-                "Collidable is per tile TYPE (not per painted cell). Save TileSet before Play.");
-        ImGui::Text("Tile definitions: %u / %u Collidable",
-                    collidableDefinitionCount,
-                    totalDefinitionCount);
+        char collidableStatsBuffer[48] = {};
+        std::snprintf(collidableStatsBuffer, sizeof(collidableStatsBuffer), "%u / %u",
+                      collidableDefinitionCount, totalDefinitionCount);
+        DrawReadOnlyTextControl(
+                "Collidable Types",
+                collidableStatsBuffer,
+                "Collidable 按图块类型生效（非单格绘制）。Play 前请保存 TileSet。");
 
-        if (ImGui::Button("Set All Collidable", ImVec2(-1.0f, 0.0f)))
+        DrawHorizontalButtonPair("CollisionBatch", [&]()
         {
-            for (auto& [tileIdentifier, tileDefinition] : m_TileSet->GetTileDefs())
-                tileDefinition.Collidable = true;
-            SaveTileSet();
-        }
-
-        if (ImGui::Button("Clear All Collidable", ImVec2(-1.0f, 0.0f)))
+            if (DrawTableFillButton("Set All", "将全部图块类型标记为可碰撞。"))
+            {
+                for (auto& [tileIdentifier, tileDefinition] : m_TileSet->GetTileDefs())
+                    tileDefinition.Collidable = true;
+                SaveTileSet();
+            }
+        }, [&]()
         {
-            for (auto& [tileIdentifier, tileDefinition] : m_TileSet->GetTileDefs())
-                tileDefinition.Collidable = false;
-            SaveTileSet();
-        }
+            if (DrawTableFillButton("Clear All", "清除全部图块类型的碰撞标记。"))
+            {
+                for (auto& [tileIdentifier, tileDefinition] : m_TileSet->GetTileDefs())
+                    tileDefinition.Collidable = false;
+                SaveTileSet();
+            }
+        });
 
         if (m_SelectedTileID != 0)
         {
@@ -310,8 +317,10 @@ namespace Himii
             const auto iterator = tileDefinitions.find(m_SelectedTileID);
             if (iterator != tileDefinitions.end())
             {
-                ImGui::Separator();
-                DrawCheckboxControl("Selected Tile Collidable", iterator->second.Collidable);
+                DrawPropertyRow("Selected Tile Collidable", [&]()
+                {
+                    ImGui::Checkbox("##Value", &iterator->second.Collidable);
+                }, "仅影响当前在图集中选中的图块类型。");
                 if (ImGui::IsItemDeactivatedAfterEdit())
                     SaveTileSet();
             }
@@ -320,7 +329,9 @@ namespace Himii
 
     void TileMapEditorPanel::UI_AtlasSetup()
     {
-        DrawInspectorSectionHeader("Atlas Grid");
+        DrawInspectorSectionHeader(
+                "Atlas Grid",
+                "可将纹理从内容浏览器拖入本区或右侧预览区。Slice Grid 按像素网格生成图块定义。");
 
         if (!m_TileSet)
         {
@@ -332,15 +343,18 @@ namespace Himii
         if (!assetManager)
             return;
 
-        if (ImGui::DragInt("Tile Size (px)", (int *)&m_AtlasTileSize, 1.0f, 1, 512))
+        DrawPropertyRow("Tile Size (px)", [&]()
         {
-            if (!m_TileSet->GetAtlasSources().empty())
-                m_TileSet->GetAtlasSources()[0].TileSize = m_AtlasTileSize;
-        }
+            ImGui::PushItemWidth(-1.0f);
+            ImGui::DragScalar("##Value", ImGuiDataType_U32, &m_AtlasTileSize, 1.0f, nullptr, nullptr, "%u");
+            ImGui::PopItemWidth();
+        }, "图集中每个瓦片在纹理上的像素边长。");
+        if (!m_TileSet->GetAtlasSources().empty())
+            m_TileSet->GetAtlasSources()[0].TileSize = m_AtlasTileSize;
 
         DrawActionButtonRow("Atlas", [&]()
         {
-            if (ImGui::Button("Slice Grid", ImVec2(-1.0f, 0.0f)))
+            if (DrawTableFillButton("Slice Grid", "按当前 Tile Size 切分图集并生成/更新图块 ID。"))
                 SliceAtlasGrid();
         });
 
@@ -372,17 +386,25 @@ namespace Himii
             }
             ImGui::EndDragDropTarget();
         }
-        ImGui::TextDisabled("Drag texture onto Atlas Grid section or preview.");
+    }
+
+    void TileMapEditorPanel::UI_BrushTile()
+    {
+        DrawInspectorSectionHeader("Brush",
+                                 "在右侧图集预览中点击单元格以选择笔刷图块。");
+
+        const TileDef* selectedTileDefinition = GetSelectedTileDefinition();
+        if (!selectedTileDefinition || !m_TileSet)
+            return;
+
+        DrawSelectedTileThumbnail();
     }
 
     void TileMapEditorPanel::DrawSelectedTileThumbnail()
     {
         const TileDef* selectedTileDefinition = GetSelectedTileDefinition();
         if (!selectedTileDefinition || !m_TileSet)
-        {
-            ImGui::TextDisabled("Click a cell in the atlas preview to select a brush tile.");
             return;
-        }
 
         auto assetManager = Project::GetAssetManager();
         if (!assetManager || m_AtlasTextureHandle == 0)
@@ -403,16 +425,17 @@ namespace Himii
             DrawEditorTextureImageSubRect(
                 atlasTexture->GetRendererID(), ImVec2(thumbnailSize, thumbnailSize),
                 pixelRect, atlasTexture->GetWidth(), atlasTexture->GetHeight());
-        });
+        }, "当前笔刷图块在图集中的外观预览。");
     }
 
     void TileMapEditorPanel::DrawAtlasPreviewPanel()
     {
+        DrawInspectorSectionHeader(
+                "Atlas Preview",
+                "点击单元格选择笔刷；可拖入 PNG/JPG 纹理。未 Slice 时显示提示叠加。");
+
         if (!m_TileSet)
-        {
-            ImGui::TextDisabled("Assign a TileSet to this TileMap.");
             return;
-        }
 
         auto assetManager = Project::GetAssetManager();
         if (!assetManager)
@@ -424,7 +447,10 @@ namespace Himii
 
         if (!atlasTexture)
         {
-            ImGui::TextDisabled("Drag a texture into the left Atlas Grid area.");
+            const ImVec2 dropZoneSize = ImGui::GetContentRegionAvail();
+            ImGui::InvisibleButton("##AtlasPreviewDropZone", dropZoneSize);
+            DrawInspectorTooltipIfHovered("将纹理从内容浏览器拖入此区域。");
+
             if (ImGui::BeginDragDropTarget())
             {
                 if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
@@ -594,11 +620,10 @@ namespace Himii
 
     void TileMapEditorPanel::UI_Properties()
     {
-        DrawInspectorSectionHeader("Map Properties");
+        DrawInspectorSectionHeader("Map Properties",
+                                 "编辑地图数据与保存。Ctrl+S 会保存工程、TileMap 与 TileSet。");
         if (!m_MapData)
             return;
-
-        float cellSize = m_MapData->GetCellSize();
 
         if (m_MapData->HasBounds())
         {
@@ -607,26 +632,37 @@ namespace Himii
             int32_t maxTileX = 0;
             int32_t maxTileY = 0;
             m_MapData->GetBounds(minTileX, minTileY, maxTileX, maxTileY);
-            ImGui::TextDisabled("Bounds: (%d,%d) .. (%d,%d)", minTileX, minTileY, maxTileX, maxTileY);
-            ImGui::TextDisabled("Extent: %u x %u tiles", m_MapData->GetWidth(), m_MapData->GetHeight());
+
+            char boundsBuffer[64] = {};
+            std::snprintf(boundsBuffer, sizeof(boundsBuffer), "(%d,%d) .. (%d,%d)",
+                          minTileX, minTileY, maxTileX, maxTileY);
+            DrawReadOnlyTextControl("Bounds", boundsBuffer,
+                                    "已绘制瓦片在网格坐标下的最小/最大范围（含端点）。");
         }
         else
         {
-            ImGui::TextDisabled("Bounds: empty (paint in Scene to expand)");
+            DrawReadOnlyTextControl("Bounds", "Empty",
+                                    "尚无瓦片；在 Scene 中绘制后会自动扩展范围。");
         }
 
-        if (ImGui::DragFloat("Cell Size", &cellSize, 0.05f, 0.1f, 10.0f))
-            m_MapData->SetCellSize(cellSize);
-
-        DrawActionButtonRow("Save", [&]()
+        float cellSize = m_MapData->GetCellSize();
+        DrawPropertyRow("Cell Size", [&]()
         {
-            if (ImGui::Button("Save TileMap", ImVec2(-1.0f, 0.0f)))
+            ImGui::PushItemWidth(-1.0f);
+            ImGui::DragFloat("##Value", &cellSize, 0.05f, 0.1f, 10.0f);
+            ImGui::PopItemWidth();
+        }, "每个瓦片在世界空间中的边长（与实体 Transform 缩放相乘）。");
+        m_MapData->SetCellSize(cellSize);
+
+        DrawHorizontalButtonPair("SaveAssets", [&]()
+        {
+            if (DrawTableFillButton("Save TileMap", "将当前地图瓦片数据写入 .tilemap 文件。"))
                 SaveTileMap();
-            ImGui::SameLine();
-            if (ImGui::Button("Save TileSet", ImVec2(-1.0f, 0.0f)))
+        }, [&]()
+        {
+            if (DrawTableFillButton("Save TileSet", "将图集与图块定义（含 Collidable）写入 .tileset 文件。"))
                 SaveTileSet();
         });
-        ImGui::TextDisabled("Ctrl+S saves project, TileMap and TileSet.");
     }
 
     void TileMapEditorPanel::ApplyToolAtTile(int tileX, int tileY)

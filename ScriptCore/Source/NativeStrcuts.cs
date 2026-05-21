@@ -55,6 +55,17 @@ namespace HimiiEngine
         public IntPtr SpriteRenderer_SetSpriteHandle;
         public IntPtr SpriteRenderer_GetTextureHandle;
         public IntPtr SpriteRenderer_SetTextureHandle;
+        public IntPtr SpriteRenderer_GetFlipHorizontal;
+        public IntPtr SpriteRenderer_SetFlipHorizontal;
+
+        public IntPtr SpriteAnimation_GetPlaying;
+        public IntPtr SpriteAnimation_SetPlaying;
+        public IntPtr SpriteAnimation_GetFrameRate;
+        public IntPtr SpriteAnimation_SetFrameRate;
+        public IntPtr SpriteAnimation_ResetPlayback;
+        public IntPtr SpriteAnimation_Play;
+        public IntPtr SpriteAnimation_GetCurrentAnimationName;
+        public IntPtr SpriteAnimation_SetCurrentAnimationName;
 
         public IntPtr Tilemap_GetBounds;
     }

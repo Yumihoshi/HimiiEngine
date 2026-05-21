@@ -314,7 +314,7 @@ namespace Himii
                 }
                 if (ImGui::BeginMenu("Window"))
                 {
-                    ImGui::MenuItem("Animation Editor", nullptr, &m_ShowAnimationPanel);
+                    ImGui::MenuItem("Animation Editor", nullptr, &m_ShowAnimationEditorPanel);
                     ImGui::MenuItem("Texture Inspector", nullptr, &m_ShowTextureInspector);
                     ImGui::MenuItem("TileMap Setup", nullptr, &m_ShowTileMapEditor);
                     ImGui::MenuItem("Particle Emitter Editor", nullptr, &m_ShowParticleEmitterEditor);
@@ -350,7 +350,7 @@ namespace Himii
                 m_EditorPreferencesPanel.OnImGuiRender(&m_ShowEditorPreferences);
             if (m_ShowProjectSettings)
                 m_ProjectSettingsPanel.OnImGuiRender(&m_ShowProjectSettings);
-            m_AnimationPanel.OnImGuiRender(m_ShowAnimationPanel);
+            m_AnimationEditorPanel.OnImGuiRender(m_ShowAnimationEditorPanel);
             m_TextureInspectorPanel.OnImGuiRender(m_ShowTextureInspector);
             m_TileMapEditorPanel.OnImGuiRender(m_ShowTileMapEditor);
             UpdateTilemapPaintSession();
@@ -371,12 +371,14 @@ namespace Himii
                 m_TextureInspectorPanel.SetTextureHandle(textureInspectorRequest);
             }
 
-            const std::filesystem::path animationEditorRequest =
+            std::filesystem::path animationEditorRequest =
                 m_SceneHierarchyPanel.GetAnimationEditorRequest();
+            if (animationEditorRequest.empty())
+                animationEditorRequest = m_ContentBrowserPanel.GetAnimationEditorRequest();
             if (!animationEditorRequest.empty())
             {
-                m_ShowAnimationPanel = true;
-                m_AnimationPanel.SetContext(animationEditorRequest);
+                m_ShowAnimationEditorPanel = true;
+                m_AnimationEditorPanel.SetContext(animationEditorRequest);
             }
 
             AssetHandle peEditorRequest = m_SceneHierarchyPanel.GetParticleEmitterEditorRequest();
@@ -1507,6 +1509,11 @@ namespace Himii
             HIMII_CORE_INFO("TileMap assets saved.");
         }
 
+        if (m_AnimationEditorPanel.SaveActiveAnimationAsset())
+        {
+            HIMII_CORE_INFO("Animation asset saved.");
+        }
+
         // Save Scene
         SaveScene();
     }
@@ -1764,9 +1771,7 @@ namespace Himii
         if (m_SceneState != SceneState::Edit)
             return false;
 
-        const bool altHeld = ImGui::IsKeyDown(ImGuiKey_LeftAlt) || ImGui::IsKeyDown(ImGuiKey_RightAlt);
-
-        return m_TileMapEditorPanel.IsMoveEntityModeEnabled() || altHeld;
+        return m_TileMapEditorPanel.IsMoveEntityModeEnabled();
     }
 
     void EditorLayer::UpdateTilemapPaintSession()

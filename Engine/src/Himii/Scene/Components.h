@@ -5,8 +5,10 @@
 #include "Himii/Scripting/ScriptEngine.h"
 #include "Himii/Renderer/Font.h"
 #include "Himii/Asset/Sprite.h"
+#include "Himii/Scene/SpriteAnimation.h"
 
 #include <array>
+#include <string>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -71,6 +73,7 @@ namespace Himii
         glm::vec4 Color{1.0f, 1.0f, 1.0f, 1.0f};
         AssetHandle SpriteAssetHandle = 0;
         float TilingFactor = 1.0f;
+        bool FlipHorizontal = false;
 
         SpriteRendererComponent() = default;
         SpriteRendererComponent(const SpriteRendererComponent&) = default;
@@ -182,12 +185,15 @@ namespace Himii
     };
 
     struct SpriteAnimationComponent {
-        AssetHandle AnimationHandle = 0; // 引用 SpriteAnimation 资产
+        AssetHandle AnimationHandle = 0;
+        std::string CurrentAnimationName = SpriteAnimationDefaultClipName;
 
         float Timer = 0.0f;
         int CurrentFrame = 0;
-        float FrameRate = 10.0f; // 默认 10 帧/秒
+        int PlaybackDirection = 1;
+        float FrameRate = 10.0f;
         bool Playing = true;
+        bool PreviewInScene = false;
 
         SpriteAnimationComponent() = default;
         SpriteAnimationComponent(const SpriteAnimationComponent &) = default;

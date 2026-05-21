@@ -227,6 +227,10 @@ namespace Himii
                                 m_TextureInspectorRequest = textureHandle;
                         }
                     }
+                    else if (path.extension() == ".anim")
+                    {
+                        m_AnimationEditorRequest = Project::GetAssetFileSystemPath(relativePath);
+                    }
                 }
                 
                 // Center Text

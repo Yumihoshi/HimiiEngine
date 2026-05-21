@@ -957,16 +957,38 @@ namespace Himii
             return;
         }
 
+        SpriteSheetUtility::SpriteFacingCorrection facingCorrection =
+                SpriteSheetUtility::CorrectTransformNegativeScaleForSprite(transform);
+        if (sprite.FlipHorizontal)
+            facingCorrection.FlipUVHorizontal = !facingCorrection.FlipUVHorizontal;
+
         const glm::mat4 renderTransform = SpriteSheetUtility::BuildSpriteRenderTransform(
-            transform, resolved.PixelSize, resolved.PixelsPerUnit, resolved.Pivot);
+                facingCorrection.RenderTransform, resolved.PixelSize, resolved.PixelsPerUnit,
+                resolved.Pivot);
 
         const bool usesSubRegion = resolved.PixelSize.x > 0 && resolved.PixelSize.y > 0;
         const float tilingFactor = usesSubRegion ? 1.0f : sprite.TilingFactor;
 
         if (usesSubRegion)
-            DrawQuadUV(renderTransform, resolved.Texture, resolved.UVs, tilingFactor, sprite.Color, entityID);
+        {
+            const std::array<glm::vec2, 4> correctedUVs =
+                    SpriteSheetUtility::ApplySpriteUvFacing(resolved.UVs, facingCorrection);
+            DrawQuadUV(renderTransform, resolved.Texture, correctedUVs, tilingFactor, sprite.Color,
+                       entityID);
+        }
         else
-            DrawQuad(renderTransform, resolved.Texture, tilingFactor, sprite.Color, entityID);
+        {
+            const glm::ivec4 fullTextureRect{
+                0, 0,
+                static_cast<int>(resolved.Texture->GetWidth()),
+                static_cast<int>(resolved.Texture->GetHeight())};
+            std::array<glm::vec2, 4> fullTextureUVs = SpriteSheetUtility::PixelRectToWorldQuadUVs(
+                    fullTextureRect, resolved.Texture->GetWidth(), resolved.Texture->GetHeight());
+            fullTextureUVs =
+                    SpriteSheetUtility::ApplySpriteUvFacing(fullTextureUVs, facingCorrection);
+            DrawQuadUV(renderTransform, resolved.Texture, fullTextureUVs, tilingFactor, sprite.Color,
+                       entityID);
+        }
     }
 
     float Renderer2D::GetLineWidth()

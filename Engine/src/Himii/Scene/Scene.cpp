@@ -5,6 +5,7 @@
 #include "Components.h"
 #include "Himii/Asset/AssetManager.h"
 #include "Himii/Scene/SpriteRendererUtility.h"
+#include "Himii/Scene/SpriteAnimationUtility.h"
 #include "Himii/Project/Project.h"
 #include "Himii/Renderer/Renderer2D.h"
 #include "Himii/Renderer/Renderer3D.h"
@@ -62,8 +63,10 @@ namespace Himii
         shapeDef.material.restitution = boxCollider.Restitution;
         shapeDef.material.rollingResistance = boxCollider.RestitutionThreshold;
 
-        const float halfWidth = boxCollider.Size.x * transform.Scale.x * 0.5f;
-        const float halfHeight = boxCollider.Size.y * transform.Scale.y * 0.5f;
+        const float absoluteScaleX = std::abs(transform.Scale.x);
+        const float absoluteScaleY = std::abs(transform.Scale.y);
+        const float halfWidth = boxCollider.Size.x * absoluteScaleX * 0.5f;
+        const float halfHeight = boxCollider.Size.y * absoluteScaleY * 0.5f;
         const b2Polygon polygon = b2MakeOffsetBox(
                 halfWidth, halfHeight,
                 {boxCollider.Offset.x * transform.Scale.x, boxCollider.Offset.y * transform.Scale.y},
@@ -90,7 +93,9 @@ namespace Himii
         circle.center = {
             circleCollider.Offset.x * transform.Scale.x,
             circleCollider.Offset.y * transform.Scale.y};
-        const float maxScale = std::max(transform.Scale.x, transform.Scale.y);
+        const float absoluteScaleX = std::abs(transform.Scale.x);
+        const float absoluteScaleY = std::abs(transform.Scale.y);
+        const float maxScale = std::max(absoluteScaleX, absoluteScaleY);
         circle.radius = circleCollider.Radius * maxScale;
 
         b2CreateCircleShape(bodyId, &shapeDef, &circle);
@@ -189,6 +194,15 @@ namespace Himii
     {
         ScriptEngine::OnRuntimeStart(this);
         OnPhysics2DStart();
+
+        {
+            auto animationView = m_Registry.view<SpriteAnimationComponent>();
+            for (auto entityHandle : animationView)
+            {
+                Entity entity = {entityHandle, this};
+                ResetSpriteAnimationPlayback(entity.GetComponent<SpriteAnimationComponent>());
+            }
+        }
         // 3. 实例化所有拥有 ScriptComponent 的实体
         {
             auto view = m_Registry.view<ScriptComponent>();
@@ -218,8 +232,51 @@ namespace Himii
 
     void Scene::OnUpdateEditor(Timestep ts, EditorCamera &camera)
     {
+        UpdateSpriteAnimations(ts, true);
         RenderScene(camera);
         RenderUI((float)m_ViewportWidth, (float)m_ViewportHeight);
+    }
+
+    void Scene::UpdateSpriteAnimations(Timestep timestep, bool allowEditorPreview)
+    {
+        auto view = m_Registry.view<SpriteAnimationComponent, SpriteRendererComponent>();
+        auto assetManager = Project::TryGetAssetManager();
+        if (!assetManager)
+            return;
+
+        const float deltaTimeSeconds = timestep.GetSeconds();
+
+        for (auto entityHandle : view)
+        {
+            auto [animationComponent, spriteRendererComponent] =
+                    view.get<SpriteAnimationComponent, SpriteRendererComponent>(entityHandle);
+
+            if (animationComponent.AnimationHandle == 0
+                || !assetManager->IsAssetHandleValid(animationComponent.AnimationHandle))
+                continue;
+
+            Ref<SpriteAnimation> animation = std::static_pointer_cast<SpriteAnimation>(
+                    assetManager->GetAsset(animationComponent.AnimationHandle));
+            if (!animation)
+                continue;
+
+            if (animationComponent.CurrentAnimationName.empty()
+                || !animation->HasAnimation(animationComponent.CurrentAnimationName))
+            {
+                if (const SpriteAnimationClip* primaryClip = animation->GetPrimaryClip())
+                    animationComponent.CurrentAnimationName = primaryClip->Name;
+            }
+
+            if (animation->GetFrameCount(animationComponent.CurrentAnimationName) == 0)
+                continue;
+
+            const bool shouldAdvance =
+                    animationComponent.Playing
+                    || (allowEditorPreview && animationComponent.PreviewInScene);
+
+            if (shouldAdvance)
+                AdvanceSpriteAnimation(animationComponent, *animation, deltaTimeSeconds);
+        }
     }
 
     void Scene::OnUpdateRuntime(Timestep ts)
@@ -247,60 +304,7 @@ namespace Himii
                     });
         }
 
-        // Animation Update
-        {
-            auto view = m_Registry.group<SpriteAnimationComponent, SpriteRendererComponent>();
-
-            if (auto assetManager = Project::TryGetAssetManager())
-            {
-            for (auto e: view)
-            {
-                auto [animComponent, spriteComponent] = view.get<SpriteAnimationComponent, SpriteRendererComponent>(e);
-
-                // 确保有有效的动画资产句柄
-                if (animComponent.AnimationHandle != 0 && animComponent.Playing)
-                {
-                    // 从 AssetManager 获取动画数据
-                    if (assetManager->IsAssetHandleValid(animComponent.AnimationHandle))
-                    {
-                        Ref<SpriteAnimation> animation = std::static_pointer_cast<SpriteAnimation>(
-                                assetManager->GetAsset(animComponent.AnimationHandle));
-
-                        if (animation && animation->GetFrameCount() > 0)
-                        {
-                            // 计时器逻辑
-                            animComponent.Timer += ts;
-                            float frameDuration = 1.0f / animComponent.FrameRate;
-
-                            if (animComponent.Timer >= frameDuration)
-                            {
-                                animComponent.Timer -= frameDuration;
-                                animComponent.CurrentFrame =
-                                        (animComponent.CurrentFrame + 1) % animation->GetFrameCount();
-                            }
-
-                            if (!animation->UsesAtlasFrames())
-                            {
-                                AssetHandle frameHandle = animation->GetFrame(animComponent.CurrentFrame);
-                                if (frameHandle == 0)
-                                    continue;
-
-                                if (assetManager->IsSpriteHandle(frameHandle))
-                                {
-                                    spriteComponent.SpriteAssetHandle = frameHandle;
-                                }
-                                else if (assetManager->IsAssetHandleValid(frameHandle))
-                                {
-                                    spriteComponent.SpriteAssetHandle =
-                                        assetManager->GetDefaultSpriteHandleForTexture(frameHandle);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            }
-        }
+        UpdateSpriteAnimations(ts, false);
 
         // Box2D 物理更新
         {
@@ -572,6 +576,7 @@ namespace Himii
             }
         }
 
+        UpdateSpriteAnimations(ts, false);
         RenderScene(camera);
     }
 
@@ -1136,6 +1141,9 @@ namespace Himii
     template<>
     void Scene::OnComponentAdded<SpriteAnimationComponent>(Entity entity, SpriteAnimationComponent &component)
     {
+        if (!entity.HasComponent<SpriteRendererComponent>())
+            HIMII_CORE_WARNING("Entity '{0}' has Sprite Animation but no Sprite Renderer.",
+                            entity.GetName());
     }
 
     template<>

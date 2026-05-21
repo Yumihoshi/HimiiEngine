@@ -9,12 +9,23 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <algorithm>
+#include <cfloat>
 #include <filesystem>
 
 namespace Himii
 {
 
-    void DrawPropertyRow(const char* label, const std::function<void()>& drawValueColumn)
+    void DrawInspectorTooltipIfHovered(const char* tooltipText)
+    {
+        if (!tooltipText || tooltipText[0] == '\0')
+            return;
+
+        if (ImGui::IsItemHovered(ImGuiHoveredFlags_ForTooltip | ImGuiHoveredFlags_AllowWhenDisabled))
+            ImGui::SetTooltip("%s", tooltipText);
+    }
+
+    void DrawPropertyRow(const char* label, const std::function<void()>& drawValueColumn,
+                         const char* tooltipText)
     {
         ImGui::PushID(label);
         if (ImGui::BeginTable("##PropertyRow", 2,
@@ -28,6 +39,7 @@ namespace Himii
             drawValueColumn();
             ImGui::EndTable();
         }
+        DrawInspectorTooltipIfHovered(tooltipText);
         ImGui::PopID();
     }
 
@@ -150,7 +162,7 @@ namespace Himii
         });
     }
 
-    void DrawReadOnlyTextControl(const char* label, const char* text)
+    void DrawReadOnlyTextControl(const char* label, const char* text, const char* tooltipText)
     {
         DrawPropertyRow(label, [&]()
         {
@@ -158,18 +170,68 @@ namespace Himii
                 ImGui::TextUnformatted(text);
             else
                 ImGui::TextDisabled("None");
-        });
+        }, tooltipText);
     }
 
-    void DrawInspectorSectionHeader(const char* title)
+    void DrawInspectorSectionHeader(const char* title, const char* tooltipText)
     {
         ImGui::Spacing();
         ImGui::SeparatorText(title);
+        DrawInspectorTooltipIfHovered(tooltipText);
     }
 
     void DrawActionButtonRow(const char* label, const std::function<void()>& drawButtons)
     {
         DrawPropertyRow(label, drawButtons);
+    }
+
+    bool DrawEditorToggleButton(const char* label, bool isActive, const char* tooltipText)
+    {
+        return DrawEditorToggleButton(label, isActive, ImVec2(0.0f, 0.0f), tooltipText);
+    }
+
+    bool DrawEditorToggleButton(const char* label, bool isActive, const ImVec2& buttonSize,
+                                const char* tooltipText)
+    {
+        constexpr int styleColorCount = 3;
+        if (isActive)
+        {
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.2f, 0.2f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.28f, 0.28f, 0.28f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.15f, 0.15f, 0.15f, 1.0f));
+        }
+
+        const bool clicked = ImGui::Button(label, buttonSize);
+
+        if (isActive)
+            ImGui::PopStyleColor(styleColorCount);
+
+        DrawInspectorTooltipIfHovered(tooltipText);
+        return clicked;
+    }
+
+    bool DrawTableFillButton(const char* label, const char* tooltipText)
+    {
+        const bool clicked = ImGui::Button(label, ImVec2(-FLT_MIN, 0.0f));
+        DrawInspectorTooltipIfHovered(tooltipText);
+        return clicked;
+    }
+
+    void DrawHorizontalButtonPair(const char* pairIdentifier,
+                                  const std::function<void()>& drawLeftColumn,
+                                  const std::function<void()>& drawRightColumn)
+    {
+        ImGui::PushID(pairIdentifier);
+        if (ImGui::BeginTable("##HorizontalButtonPair", 2, ImGuiTableFlags_SizingStretchSame))
+        {
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            drawLeftColumn();
+            ImGui::TableNextColumn();
+            drawRightColumn();
+            ImGui::EndTable();
+        }
+        ImGui::PopID();
     }
 
     static bool IsImageFileExtension(const std::filesystem::path& filePath)

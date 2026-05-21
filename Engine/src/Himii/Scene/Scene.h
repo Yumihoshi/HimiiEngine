@@ -55,6 +55,8 @@ namespace Himii
         void OnUpdateRuntime(Timestep ts);
         void OnUpdateSimulation(Timestep ts,EditorCamera &camera);
 
+        void UpdateSpriteAnimations(Timestep timestep, bool allowEditorPreview);
+
         void SetExternalViewProjection(const glm::mat4 *vp)
         {
             if (vp)

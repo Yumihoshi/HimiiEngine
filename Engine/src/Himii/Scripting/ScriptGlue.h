@@ -56,6 +56,17 @@ namespace Himii
         void *SpriteRenderer_SetSpriteHandle;
         void *SpriteRenderer_GetTextureHandle;
         void *SpriteRenderer_SetTextureHandle;
+        void *SpriteRenderer_GetFlipHorizontal;
+        void *SpriteRenderer_SetFlipHorizontal;
+
+        void *SpriteAnimation_GetPlaying;
+        void *SpriteAnimation_SetPlaying;
+        void *SpriteAnimation_GetFrameRate;
+        void *SpriteAnimation_SetFrameRate;
+        void *SpriteAnimation_ResetPlayback;
+        void *SpriteAnimation_Play;
+        void *SpriteAnimation_GetCurrentAnimationName;
+        void *SpriteAnimation_SetCurrentAnimationName;
 
         void *Tilemap_GetBounds;
     };

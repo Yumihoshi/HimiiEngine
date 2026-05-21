@@ -18,7 +18,11 @@ namespace Himii
 
     constexpr float InspectorLabelColumnWidth = 140.0f;
 
-    void DrawPropertyRow(const char* label, const std::function<void()>& drawValueColumn);
+    void DrawPropertyRow(const char* label, const std::function<void()>& drawValueColumn,
+                         const char* tooltipText = nullptr);
+
+    /** 对上一项控件在鼠标悬浮时显示提示（通常紧接在 DrawPropertyRow 等之后调用）。 */
+    void DrawInspectorTooltipIfHovered(const char* tooltipText);
 
     void DrawFloatControl(const std::string& label, float& value, float speed = 0.1f,
                           float minimum = 0.0f, float maximum = 0.0f);
@@ -46,11 +50,27 @@ namespace Himii
                          float minimum = 0.0f, float maximum = 1.0f,
                          const std::function<void()>& onEdited = nullptr);
 
-    void DrawReadOnlyTextControl(const char* label, const char* text);
+    void DrawReadOnlyTextControl(const char* label, const char* text,
+                                 const char* tooltipText = nullptr);
 
-    void DrawInspectorSectionHeader(const char* title);
+    void DrawInspectorSectionHeader(const char* title, const char* tooltipText = nullptr);
 
     void DrawActionButtonRow(const char* label, const std::function<void()>& drawButtons);
+
+    /** 与编辑器主工具栏一致：未选中透明，选中时深色底。返回是否在本帧被点击。 */
+    bool DrawEditorToggleButton(const char* label, bool isActive, const char* tooltipText = nullptr);
+    bool DrawEditorToggleButton(const char* label, bool isActive, const ImVec2& buttonSize,
+                                const char* tooltipText = nullptr);
+
+    /** 两列等宽按钮行（用于 Save、批量操作等）。 */
+    void DrawHorizontalButtonPair(const char* pairIdentifier,
+                                  const std::function<void()>& drawLeftColumn,
+                                  const std::function<void()>& drawRightColumn);
+
+    /**
+     * 在 Table 单元格内铺满宽度的按钮。勿使用 ImVec2(-1,0)，否则列宽会每帧被错误回传并逐渐变窄。
+     */
+    bool DrawTableFillButton(const char* label, const char* tooltipText = nullptr);
 
     bool AssignTextureFromContentBrowserPayload(const ImGuiPayload* payload, Ref<Texture2D>& texture,
                                                 AssetHandle& textureHandle);

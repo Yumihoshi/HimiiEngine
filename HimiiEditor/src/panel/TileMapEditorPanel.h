@@ -45,7 +45,7 @@ namespace Himii
         void ClearScenePaintSession();
 
     private:
-        static constexpr float LeftPanelWidth = 320.0f;
+        static constexpr float LeftPanelWidth = 380.0f;
 
         void LoadAssets();
         void SaveTileMap();
@@ -56,9 +56,12 @@ namespace Himii
         void DrawAtlasPreviewPanel();
         void DrawSelectedTileThumbnail();
 
+        void UI_Overview();
+        void UI_ScenePaint();
         void UI_Toolbar();
         void UI_Collision();
         void UI_AtlasSetup();
+        void UI_BrushTile();
         void UI_Properties();
 
         uint16_t FindTileIDAtAtlasCell(int column, int row) const;

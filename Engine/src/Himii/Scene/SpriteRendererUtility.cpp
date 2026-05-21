@@ -9,6 +9,61 @@
 namespace Himii
 {
 
+    static SpriteResolved ResolveAnimationFrameDrawable(const SpriteAnimation& animation,
+                                                        const std::string& animationName,
+                                                        int frameIndex,
+                                                        AssetManager* assetManager)
+    {
+        if (!assetManager || animation.GetFrameCount(animationName) == 0)
+            return {};
+
+        if (animation.UsesAtlasFrames(animationName))
+        {
+            const glm::ivec2 atlasCoordinates =
+                    animation.GetAtlasFrameCoordinates(animationName, frameIndex);
+            const AssetHandle atlasTextureHandle = animation.GetAtlasTextureHandle();
+            const uint32_t gridCellSize = animation.GetAtlasGridCellSize();
+
+            Ref<Asset> atlasAsset = assetManager->GetAsset(atlasTextureHandle);
+            if (!atlasAsset)
+                return {};
+
+            Ref<Texture2D> atlasTexture = std::static_pointer_cast<Texture2D>(atlasAsset);
+
+            SpriteResolved resolved;
+            resolved.Texture = atlasTexture;
+            resolved.UVs = SpriteSheetUtility::AtlasGridCoordsToUVs(
+                    atlasCoordinates, gridCellSize,
+                    atlasTexture->GetWidth(), atlasTexture->GetHeight());
+            resolved.Pivot = {0.5f, 0.5f};
+            resolved.PixelSize = {static_cast<int>(gridCellSize), static_cast<int>(gridCellSize)};
+
+            const TextureImportData* importData =
+                    assetManager->GetTextureImportData(atlasTextureHandle);
+            resolved.PixelsPerUnit =
+                    importData && importData->PixelsPerUnit > 0 ? importData->PixelsPerUnit : 100;
+            resolved.IsValid = true;
+            return resolved;
+        }
+
+        const AssetHandle frameHandle = animation.GetFrame(animationName, frameIndex);
+        if (frameHandle == 0)
+            return {};
+
+        if (assetManager->IsSpriteHandle(frameHandle))
+            return assetManager->ResolveSprite(frameHandle);
+
+        if (assetManager->IsAssetHandleValid(frameHandle))
+        {
+            const AssetHandle defaultSpriteHandle =
+                    assetManager->GetDefaultSpriteHandleForTexture(frameHandle);
+            if (defaultSpriteHandle != 0)
+                return assetManager->ResolveSprite(defaultSpriteHandle);
+        }
+
+        return {};
+    }
+
     SpriteResolved ResolveSpriteRendererDrawable(Entity entity,
                                                  const SpriteRendererComponent& spriteRenderer,
                                                  AssetManager* assetManager)
@@ -19,41 +74,37 @@ namespace Himii
         if (entity && entity.HasComponent<SpriteAnimationComponent>())
         {
             const SpriteAnimationComponent& animationComponent =
-                entity.GetComponent<SpriteAnimationComponent>();
+                    entity.GetComponent<SpriteAnimationComponent>();
 
-            if (animationComponent.Playing && animationComponent.AnimationHandle != 0
+            if (animationComponent.AnimationHandle != 0
                 && assetManager->IsAssetHandleValid(animationComponent.AnimationHandle))
             {
                 Ref<SpriteAnimation> animation = std::static_pointer_cast<SpriteAnimation>(
-                    assetManager->GetAsset(animationComponent.AnimationHandle));
+                        assetManager->GetAsset(animationComponent.AnimationHandle));
 
-                if (animation && animation->GetFrameCount() > 0 && animation->UsesAtlasFrames())
+                if (animation)
                 {
-                    const glm::ivec2 atlasCoordinates =
-                        animation->GetAtlasFrameCoordinates(animationComponent.CurrentFrame);
-                    const AssetHandle atlasTextureHandle = animation->GetAtlasTextureHandle();
-                    const uint32_t gridCellSize = animation->GetAtlasGridCellSize();
+                    std::string activeAnimationName = animationComponent.CurrentAnimationName;
+                    if (activeAnimationName.empty()
+                        || !animation->HasAnimation(activeAnimationName))
+                    {
+                        if (const SpriteAnimationClip* primaryClip = animation->GetPrimaryClip())
+                            activeAnimationName = primaryClip->Name;
+                    }
 
-                    Ref<Asset> atlasAsset = assetManager->GetAsset(atlasTextureHandle);
-                    if (!atlasAsset)
-                        return {};
+                    if (animation->GetFrameCount(activeAnimationName) > 0)
+                    {
+                        const int frameIndex = animationComponent.CurrentFrame >= 0
+                            ? animationComponent.CurrentFrame
+                            : 0;
+                        const int clampedFrameIndex = frameIndex % static_cast<int>(
+                                animation->GetFrameCount(activeAnimationName));
 
-                    Ref<Texture2D> atlasTexture = std::static_pointer_cast<Texture2D>(atlasAsset);
-
-                    SpriteResolved resolved;
-                    resolved.Texture = atlasTexture;
-                    resolved.UVs = SpriteSheetUtility::AtlasGridCoordsToUVs(
-                        atlasCoordinates, gridCellSize,
-                        atlasTexture->GetWidth(), atlasTexture->GetHeight());
-                    resolved.Pivot = {0.5f, 0.5f};
-                    resolved.PixelSize = {static_cast<int>(gridCellSize), static_cast<int>(gridCellSize)};
-
-                    const TextureImportData* importData =
-                        assetManager->GetTextureImportData(atlasTextureHandle);
-                    resolved.PixelsPerUnit =
-                        importData && importData->PixelsPerUnit > 0 ? importData->PixelsPerUnit : 100;
-                    resolved.IsValid = true;
-                    return resolved;
+                        SpriteResolved animationResolved = ResolveAnimationFrameDrawable(
+                                *animation, activeAnimationName, clampedFrameIndex, assetManager);
+                        if (animationResolved.IsValid)
+                            return animationResolved;
+                    }
                 }
             }
         }
@@ -71,7 +122,7 @@ namespace Himii
             return transform.GetTransform();
 
         return SpriteSheetUtility::BuildSpriteRenderTransform(
-            transform.GetTransform(), resolved.PixelSize, resolved.PixelsPerUnit, resolved.Pivot);
+                transform.GetTransform(), resolved.PixelSize, resolved.PixelsPerUnit, resolved.Pivot);
     }
 
 } // namespace Himii

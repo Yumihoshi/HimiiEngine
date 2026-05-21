@@ -229,4 +229,83 @@ namespace Himii
         return entityTransform;
     }
 
+    SpriteSheetUtility::SpriteFacingCorrection SpriteSheetUtility::CorrectTransformNegativeScaleForSprite(
+        const glm::mat4& entityTransform)
+    {
+        SpriteFacingCorrection correction;
+        correction.RenderTransform = entityTransform;
+
+        const glm::vec3 translation = glm::vec3(entityTransform[3]);
+        constexpr float epsilon = 1e-4f;
+
+        const float shearMix =
+            std::abs(entityTransform[0][1]) + std::abs(entityTransform[1][0]);
+
+        if (shearMix < epsilon)
+        {
+            const float scaleX = entityTransform[0][0];
+            const float scaleY = entityTransform[1][1];
+            const float scaleZ = entityTransform[2][2];
+
+            correction.FlipUVHorizontal = scaleX < 0.0f;
+            correction.FlipUVVertical = scaleY < 0.0f;
+
+            const float absoluteScaleX =
+                std::abs(scaleX) > epsilon ? std::abs(scaleX) : 1.0f;
+            const float absoluteScaleY =
+                std::abs(scaleY) > epsilon ? std::abs(scaleY) : 1.0f;
+            const float absoluteScaleZ =
+                std::abs(scaleZ) > epsilon ? std::abs(scaleZ) : 1.0f;
+
+            correction.RenderTransform =
+                glm::translate(glm::mat4(1.0f), translation)
+                * glm::scale(glm::mat4(1.0f),
+                             glm::vec3(absoluteScaleX, absoluteScaleY, absoluteScaleZ));
+            return correction;
+        }
+
+        const float rotationZ =
+            std::atan2(entityTransform[0][1], entityTransform[0][0]);
+        const float magnitudeScaleX =
+            glm::length(glm::vec2(entityTransform[0][0], entityTransform[0][1]));
+        const float magnitudeScaleY =
+            glm::length(glm::vec2(entityTransform[1][0], entityTransform[1][1]));
+        const float magnitudeScaleZ =
+            glm::length(glm::vec3(entityTransform[2][0], entityTransform[2][1], entityTransform[2][2]));
+
+        const float determinant2x2 =
+            entityTransform[0][0] * entityTransform[1][1]
+            - entityTransform[0][1] * entityTransform[1][0];
+        correction.FlipUVHorizontal = determinant2x2 < 0.0f;
+
+        correction.RenderTransform =
+            glm::translate(glm::mat4(1.0f), translation)
+            * glm::rotate(glm::mat4(1.0f), rotationZ, glm::vec3(0.0f, 0.0f, 1.0f))
+            * glm::scale(glm::mat4(1.0f),
+                         glm::vec3(
+                             magnitudeScaleX > epsilon ? magnitudeScaleX : 1.0f,
+                             magnitudeScaleY > epsilon ? magnitudeScaleY : 1.0f,
+                             magnitudeScaleZ > epsilon ? magnitudeScaleZ : 1.0f));
+
+        return correction;
+    }
+
+    std::array<glm::vec2, 4> SpriteSheetUtility::ApplySpriteUvFacing(
+        const std::array<glm::vec2, 4>& uvs,
+        const SpriteFacingCorrection& correction)
+    {
+        std::array<glm::vec2, 4> result = uvs;
+        if (correction.FlipUVHorizontal)
+        {
+            std::swap(result[0], result[1]);
+            std::swap(result[3], result[2]);
+        }
+        if (correction.FlipUVVertical)
+        {
+            std::swap(result[0], result[3]);
+            std::swap(result[1], result[2]);
+        }
+        return result;
+    }
+
 } // namespace Himii

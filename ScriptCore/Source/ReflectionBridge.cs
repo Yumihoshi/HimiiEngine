@@ -18,11 +18,12 @@ namespace HimiiEngine
             foreach (object attribute in field.GetCustomAttributes(inherit: true))
             {
                 Type attributeType = attribute.GetType();
-                if (attributeType.Namespace != "Himii")
+                string attributeName = attributeType.Name;
+                if (attributeName != "SerializeField" && attributeName != "SerializeFieldAttribute")
                     continue;
 
-                string attributeName = attributeType.Name;
-                if (attributeName == "SerializeField" || attributeName == "SerializeFieldAttribute")
+                string namespaceName = attributeType.Namespace ?? string.Empty;
+                if (namespaceName == "HimiiEngine" || namespaceName == "Himii")
                     return true;
             }
 
@@ -219,11 +220,9 @@ namespace HimiiEngine
                 if (instance == null) return IntPtr.Zero;
 
                 Type type = instance.GetType();
-                var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
-                
                 Dictionary<string, object> data = new Dictionary<string, object>();
 
-                foreach (var field in fields)
+                foreach (FieldInfo field in GetSerializedFields(type))
                 {
                     // Filter: Only serialize ScriptFields that we support in Editor (or are serializable)
                     // For simplicity, we serialize all public fields, assuming they are data.
@@ -262,7 +261,7 @@ namespace HimiiEngine
                 if (instance == null) return IntPtr.Zero;
 
                 string fieldName = Marshal.PtrToStringUTF8(fieldNamePtr);
-                FieldInfo field = instance.GetType().GetField(fieldName);
+                FieldInfo field = GetInstanceField(instance.GetType(), fieldName);
                 if (field == null || field.FieldType != typeof(string))
                     return IntPtr.Zero;
 
@@ -373,9 +372,8 @@ namespace HimiiEngine
                 if (data == null) return;
 
                 Type type = instance.GetType();
-                var fields = type.GetFields(BindingFlags.Public | BindingFlags.Instance);
 
-                foreach (var field in fields)
+                foreach (FieldInfo field in GetSerializedFields(type))
                 {
                     if (data.TryGetValue(field.Name, out System.Text.Json.JsonElement element))
                     {

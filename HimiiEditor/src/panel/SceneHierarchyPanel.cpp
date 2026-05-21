@@ -10,6 +10,8 @@
 #include "Himii/Scene/TileMapData.h"
 #include "Himii/Scene/TilemapColliderBuilder.h"
 #include "Himii/Scene/ParticleEmitterAsset.h"
+#include "Himii/Scene/SpriteAnimation.h"
+#include "Himii/Scene/SpriteAnimationUtility.h"
 #include "Himii/Asset/AssetSerializer.h"
 #include "Himii/Asset/AssetManager.h"
 #include "Himii/Asset/Sprite.h"
@@ -1199,8 +1201,12 @@ namespace Himii
                 });
         DrawComponent<SpriteAnimationComponent>(
                 "Sprite Animation", entity, m_ComponentIcons["Sprite Animation"],
-                [this](auto &component)
+                [this, entity](auto &component)
                 {
+                    if (!entity.HasComponent<SpriteRendererComponent>())
+                        ImGui::TextColored(ImVec4(1.0f, 0.7f, 0.2f, 1.0f),
+                                           "需要 Sprite Renderer 组件才能显示动画。");
+
                     auto assetManager = Project::GetAssetManager();
 
                     std::string animationDisplayName = "None";
@@ -1220,8 +1226,28 @@ namespace Himii
                         },
                         [&](const ImGuiPayload* payload)
                         {
-                            return AssignAnimationAssetFromContentBrowserPayload(payload,
-                                                                                 component.AnimationHandle);
+                            const bool assigned = AssignAnimationAssetFromContentBrowserPayload(
+                                    payload, component.AnimationHandle);
+                            if (assigned && assetManager
+                                && assetManager->IsAssetHandleValid(component.AnimationHandle))
+                            {
+                                Ref<SpriteAnimation> animation = std::static_pointer_cast<SpriteAnimation>(
+                                        assetManager->GetAsset(component.AnimationHandle));
+                                if (animation)
+                                {
+                                    if (component.CurrentAnimationName.empty()
+                                        || !animation->HasAnimation(component.CurrentAnimationName))
+                                    {
+                                        if (const SpriteAnimationClip* primaryClip =
+                                                animation->GetPrimaryClip())
+                                            component.CurrentAnimationName = primaryClip->Name;
+                                    }
+                                    if (component.FrameRate <= 0.0f)
+                                        component.FrameRate = animation->GetClipFrameRate(
+                                                component.CurrentAnimationName);
+                                }
+                            }
+                            return assigned;
                         },
                         [&]()
                         {
@@ -1234,16 +1260,96 @@ namespace Himii
                                     assetManager->GetAssetRegistry().at(component.AnimationHandle).FilePath);
                         });
 
-                    DrawFloatControl("Frame Rate", component.FrameRate, 0.1f, 0.0f, 60.0f);
+                    const std::vector<std::string> animationNames = [&]() -> std::vector<std::string>
+                    {
+                        if (!assetManager || component.AnimationHandle == 0
+                            || !assetManager->IsAssetHandleValid(component.AnimationHandle))
+                            return {};
+                        Ref<SpriteAnimation> animation = std::static_pointer_cast<SpriteAnimation>(
+                                assetManager->GetAsset(component.AnimationHandle));
+                        return animation ? animation->GetAnimationNames() : std::vector<std::string>{};
+                    }();
+
+                    if (!animationNames.empty())
+                    {
+                        int selectedAnimationIndex = 0;
+                        for (size_t nameIndex = 0; nameIndex < animationNames.size(); ++nameIndex)
+                        {
+                            if (animationNames[nameIndex] == component.CurrentAnimationName)
+                            {
+                                selectedAnimationIndex = static_cast<int>(nameIndex);
+                                break;
+                            }
+                        }
+
+                        std::vector<const char*> animationNameLabels;
+                        animationNameLabels.reserve(animationNames.size());
+                        for (const std::string& animationName : animationNames)
+                            animationNameLabels.push_back(animationName.c_str());
+
+                        DrawEnumComboControl(
+                                "Current Animation", selectedAnimationIndex,
+                                animationNameLabels.data(),
+                                static_cast<int>(animationNameLabels.size()),
+                                [&](int newIndex)
+                                {
+                                    if (newIndex >= 0
+                                        && newIndex < static_cast<int>(animationNames.size()))
+                                    {
+                                        component.CurrentAnimationName = animationNames[
+                                                static_cast<size_t>(newIndex)];
+                                        ResetSpriteAnimationPlayback(component);
+                                    }
+                                });
+                    }
+                    else
+                    {
+                        DrawReadOnlyTextControl("Current Animation",
+                                                component.CurrentAnimationName.c_str());
+                    }
+
+                    DrawFloatControl("Frame Rate", component.FrameRate, 0.1f, 0.0f, 120.0f);
                     DrawCheckboxControl("Playing", component.Playing);
+                    DrawCheckboxControl("Preview In Scene", component.PreviewInScene);
 
-                    char currentFrameLabel[32];
-                    std::snprintf(currentFrameLabel, sizeof(currentFrameLabel), "%d", component.CurrentFrame);
-                    DrawReadOnlyTextControl("Current Frame", currentFrameLabel);
+                    const int frameCount = [&]() -> int
+                    {
+                        if (!assetManager || component.AnimationHandle == 0
+                            || !assetManager->IsAssetHandleValid(component.AnimationHandle))
+                            return 0;
+                        Ref<SpriteAnimation> animation = std::static_pointer_cast<SpriteAnimation>(
+                                assetManager->GetAsset(component.AnimationHandle));
+                        return animation
+                            ? static_cast<int>(animation->GetFrameCount(
+                                    component.CurrentAnimationName))
+                            : 0;
+                    }();
 
-                    char timerLabel[32];
-                    std::snprintf(timerLabel, sizeof(timerLabel), "%.2f", component.Timer);
-                    DrawReadOnlyTextControl("Timer", timerLabel);
+                    if (frameCount > 0)
+                    {
+                        int currentFrame = component.CurrentFrame;
+                        DrawPropertyRow("Current Frame", [&]()
+                        {
+                            ImGui::PushItemWidth(-1.0f);
+                            ImGui::SliderInt("##Value", &currentFrame, 0, frameCount - 1);
+                            ImGui::PopItemWidth();
+                        }, "编辑模式下 scrub 预览帧（需勾选 Preview In Scene）。");
+                        component.CurrentFrame = currentFrame;
+                    }
+                    else
+                    {
+                        DrawReadOnlyTextControl("Current Frame", "0");
+                    }
+
+                    DrawHorizontalButtonPair("AnimationPlayback", [&]()
+                    {
+                        if (DrawTableFillButton("Reset Playback", "重置 Timer 与帧索引。"))
+                            ResetSpriteAnimationPlayback(component);
+                    }, [&]()
+                    {
+                        if (DrawTableFillButton("Stop", "停止播放。"))
+                            component.Playing = false;
+                    });
                 });
 
         DrawComponent<TilemapComponent>(
@@ -1363,7 +1469,7 @@ namespace Himii
 
                         ImGui::TextDisabled(
                             "选中实体显示 Scene 网格。在 TileMap Setup 右侧点选图块后再绘制；"
-                            "按住 Alt 或 Move Entity 可移动实体。");
+                            "Move Entity [H] 可移动实体。");
                     }
                 });
 

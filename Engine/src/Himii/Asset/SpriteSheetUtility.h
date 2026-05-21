@@ -95,6 +95,21 @@ namespace Himii
                                                       uint32_t pixelsPerUnit,
                                                       const glm::vec2& pivot,
                                                       bool useSpriteRegion);
+
+        /** 将 Transform 中的负缩放转为正向缩放 + UV 镜像，避免精灵不可见。 */
+        struct SpriteFacingCorrection
+        {
+            glm::mat4 RenderTransform{1.0f};
+            bool FlipUVHorizontal = false;
+            bool FlipUVVertical = false;
+        };
+
+        static SpriteFacingCorrection CorrectTransformNegativeScaleForSprite(
+            const glm::mat4& entityTransform);
+
+        static std::array<glm::vec2, 4> ApplySpriteUvFacing(
+            const std::array<glm::vec2, 4>& uvs,
+            const SpriteFacingCorrection& correction);
     };
 
 } // namespace Himii

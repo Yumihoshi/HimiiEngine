@@ -26,6 +26,13 @@ namespace Himii
             return handle;
         }
 
+        std::filesystem::path GetAnimationEditorRequest()
+        {
+            std::filesystem::path path = m_AnimationEditorRequest;
+            m_AnimationEditorRequest.clear();
+            return path;
+        }
+
     private:
         bool CreateCSharpScript(const std::filesystem::path& directory, const std::string& className);
         void ImportSingleFile(const std::filesystem::path& sourcePath,const std::filesystem::path& assetsDirectory);
@@ -42,5 +49,6 @@ namespace Himii
 
         std::function<void()> m_OnScriptChanged;
         AssetHandle m_TextureInspectorRequest = 0;
+        std::filesystem::path m_AnimationEditorRequest;
     };
 }

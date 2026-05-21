@@ -2,7 +2,7 @@
 #include "Engine.h"
 #include "panel/SceneHierarchyPanel.h"
 #include "panel/ContentBrowserPanel.h"
-#include "panel/AnimationPanel.h"
+#include "panel/AnimationEditorPanel.h"
 #include "panel/TileMapEditorPanel.h"
 #include "panel/ParticleEmitterEditorPanel.h"
 #include "panel/ScriptConsolePanel.h"
@@ -108,8 +108,8 @@ namespace Himii
         SceneHierarchyPanel m_SceneHierarchyPanel;
         ContentBrowserPanel m_ContentBrowserPanel;
 
-        AnimationPanel m_AnimationPanel;
-        bool m_ShowAnimationPanel = false;
+        AnimationEditorPanel m_AnimationEditorPanel;
+        bool m_ShowAnimationEditorPanel = false;
 
         TextureInspectorPanel m_TextureInspectorPanel;
         bool m_ShowTextureInspector = false;

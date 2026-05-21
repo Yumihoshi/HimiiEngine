@@ -7,6 +7,7 @@
 #include "Himii/Scene/Components.h"
 #include "Himii/Scene/TileMapData.h"
 #include "Himii/Scene/SceneSerializer.h"
+#include "Himii/Scene/SpriteAnimationUtility.h"
 #include "Himii/Project/Project.h"
 #include "Himii/Asset/AssetManager.h"
 #include "Himii/Core/Input.h"
@@ -101,6 +102,7 @@ namespace Himii {
         static const uint32_t Rigidbody2DId = Fnv1A32("HimiiEngine.Rigidbody2D");
         static const uint32_t TransformId = Fnv1A32("HimiiEngine.Transform");
         static const uint32_t SpriteRendererId = Fnv1A32("HimiiEngine.SpriteRenderer");
+        static const uint32_t SpriteAnimationId = Fnv1A32("HimiiEngine.SpriteAnimation");
 
         if (typeId == TilemapId)
             return entity.HasComponent<TilemapComponent>() ? 1 : 0;
@@ -110,6 +112,8 @@ namespace Himii {
             return entity.HasComponent<TransformComponent>() ? 1 : 0;
         if (typeId == SpriteRendererId)
             return entity.HasComponent<SpriteRendererComponent>() ? 1 : 0;
+        if (typeId == SpriteAnimationId)
+            return entity.HasComponent<SpriteAnimationComponent>() ? 1 : 0;
 
         // 未注册的组件类型：默认认为不存在
         return 0;
@@ -470,6 +474,32 @@ namespace Himii {
             assetManager->GetTextureHandleForSprite(spriteAssetHandle));
     }
 
+    static uint8_t SpriteRenderer_GetFlipHorizontal(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SpriteRendererComponent>())
+            return 0;
+
+        return entity.GetComponent<SpriteRendererComponent>().FlipHorizontal ? 1 : 0;
+    }
+
+    static void SpriteRenderer_SetFlipHorizontal(uint64_t entityID, uint8_t flipHorizontal)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SpriteRendererComponent>())
+            return;
+
+        entity.GetComponent<SpriteRendererComponent>().FlipHorizontal = flipHorizontal != 0;
+    }
+
     static void SpriteRenderer_SetTextureHandle(uint64_t entityID, uint64_t textureHandle)
     {
         Scene* scene = ScriptEngine::GetSceneContext();
@@ -492,6 +522,154 @@ namespace Himii {
 
         entity.GetComponent<SpriteRendererComponent>().SpriteAssetHandle =
             assetManager->GetDefaultSpriteHandleForTexture(textureHandle);
+    }
+
+    static uint8_t SpriteAnimation_GetPlaying(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SpriteAnimationComponent>())
+            return 0;
+
+        return entity.GetComponent<SpriteAnimationComponent>().Playing ? 1 : 0;
+    }
+
+    static void SpriteAnimation_SetPlaying(uint64_t entityID, uint8_t playing)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SpriteAnimationComponent>())
+            return;
+
+        entity.GetComponent<SpriteAnimationComponent>().Playing = playing != 0;
+    }
+
+    static float SpriteAnimation_GetFrameRate(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0.0f;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SpriteAnimationComponent>())
+            return 0.0f;
+
+        return entity.GetComponent<SpriteAnimationComponent>().FrameRate;
+    }
+
+    static void SpriteAnimation_SetFrameRate(uint64_t entityID, float frameRate)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SpriteAnimationComponent>())
+            return;
+
+        entity.GetComponent<SpriteAnimationComponent>().FrameRate = frameRate;
+    }
+
+    static void SpriteAnimation_ResetPlayback(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SpriteAnimationComponent>())
+            return;
+
+        ResetSpriteAnimationPlayback(entity.GetComponent<SpriteAnimationComponent>());
+    }
+
+    static void SpriteAnimation_Play(uint64_t entityID, const char* animationName)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SpriteAnimationComponent>())
+            return;
+
+        SpriteAnimationComponent& animationComponent = entity.GetComponent<SpriteAnimationComponent>();
+        auto assetManager = Project::TryGetAssetManager();
+        if (!assetManager || animationComponent.AnimationHandle == 0
+            || !assetManager->IsAssetHandleValid(animationComponent.AnimationHandle))
+        {
+            ResetSpriteAnimationPlayback(animationComponent);
+            animationComponent.Playing = true;
+            return;
+        }
+
+        Ref<SpriteAnimation> animation = std::static_pointer_cast<SpriteAnimation>(
+                assetManager->GetAsset(animationComponent.AnimationHandle));
+
+        if (animation && animationName && animationName[0] != '\0'
+            && animation->HasAnimation(animationName))
+        {
+            animationComponent.CurrentAnimationName = animationName;
+        }
+        else if (animation)
+        {
+            if (const SpriteAnimationClip* primaryClip = animation->GetPrimaryClip())
+                animationComponent.CurrentAnimationName = primaryClip->Name;
+        }
+
+        ResetSpriteAnimationPlayback(animationComponent);
+        animationComponent.Playing = true;
+    }
+
+    static const char* SpriteAnimation_GetCurrentAnimationName(uint64_t entityID)
+    {
+        static thread_local char animationNameBuffer[256] = {};
+
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return "";
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SpriteAnimationComponent>())
+            return "";
+
+        const std::string& currentName = entity.GetComponent<SpriteAnimationComponent>().CurrentAnimationName;
+        std::snprintf(animationNameBuffer, sizeof(animationNameBuffer), "%s", currentName.c_str());
+        return animationNameBuffer;
+    }
+
+    static void SpriteAnimation_SetCurrentAnimationName(uint64_t entityID, const char* animationName)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SpriteAnimationComponent>())
+            return;
+
+        if (!animationName || animationName[0] == '\0')
+            return;
+
+        SpriteAnimationComponent& animationComponent = entity.GetComponent<SpriteAnimationComponent>();
+        auto assetManager = Project::TryGetAssetManager();
+        if (assetManager && animationComponent.AnimationHandle != 0
+            && assetManager->IsAssetHandleValid(animationComponent.AnimationHandle))
+        {
+            Ref<SpriteAnimation> animation = std::static_pointer_cast<SpriteAnimation>(
+                    assetManager->GetAsset(animationComponent.AnimationHandle));
+            if (animation && !animation->HasAnimation(animationName))
+                return;
+        }
+
+        animationComponent.CurrentAnimationName = animationName;
+        ResetSpriteAnimationPlayback(animationComponent);
     }
 
     static void SceneManager_LoadScene(const char* scenePath)
@@ -575,6 +753,17 @@ namespace Himii {
         data.SpriteRenderer_SetSpriteHandle = (void *)&SpriteRenderer_SetSpriteHandle;
         data.SpriteRenderer_GetTextureHandle = (void *)&SpriteRenderer_GetTextureHandle;
         data.SpriteRenderer_SetTextureHandle = (void *)&SpriteRenderer_SetTextureHandle;
+        data.SpriteRenderer_GetFlipHorizontal = (void *)&SpriteRenderer_GetFlipHorizontal;
+        data.SpriteRenderer_SetFlipHorizontal = (void *)&SpriteRenderer_SetFlipHorizontal;
+
+        data.SpriteAnimation_GetPlaying = (void *)&SpriteAnimation_GetPlaying;
+        data.SpriteAnimation_SetPlaying = (void *)&SpriteAnimation_SetPlaying;
+        data.SpriteAnimation_GetFrameRate = (void *)&SpriteAnimation_GetFrameRate;
+        data.SpriteAnimation_SetFrameRate = (void *)&SpriteAnimation_SetFrameRate;
+        data.SpriteAnimation_ResetPlayback = (void *)&SpriteAnimation_ResetPlayback;
+        data.SpriteAnimation_Play = (void *)&SpriteAnimation_Play;
+        data.SpriteAnimation_GetCurrentAnimationName = (void *)&SpriteAnimation_GetCurrentAnimationName;
+        data.SpriteAnimation_SetCurrentAnimationName = (void *)&SpriteAnimation_SetCurrentAnimationName;
 
         data.Tilemap_GetBounds = (void *)&Tilemap_GetBounds;
 

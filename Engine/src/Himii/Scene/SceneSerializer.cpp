@@ -318,6 +318,7 @@ namespace Himii
                 out << YAML::Key << "SpriteAssetHandle" << YAML::Value
                     << (uint64_t)spriteRenderer.SpriteAssetHandle;
             out << YAML::Key << "TilingFactor" << YAML::Value << spriteRenderer.TilingFactor;
+            out << YAML::Key << "FlipHorizontal" << YAML::Value << spriteRenderer.FlipHorizontal;
             out << YAML::EndMap;
         }
         if (entity.HasComponent<CircleRendererComponent>())
@@ -380,8 +381,10 @@ namespace Himii
             out << YAML::BeginMap;
             auto &anim = entity.GetComponent<SpriteAnimationComponent>();
             out << YAML::Key << "AnimationHandle" << YAML::Value << (uint64_t)anim.AnimationHandle;
+            out << YAML::Key << "CurrentAnimationName" << YAML::Value << anim.CurrentAnimationName;
             out << YAML::Key << "FrameRate" << YAML::Value << anim.FrameRate;
             out << YAML::Key << "Playing" << YAML::Value << anim.Playing;
+            out << YAML::Key << "PreviewInScene" << YAML::Value << anim.PreviewInScene;
             out << YAML::EndMap;
         }
         if (entity.HasComponent<TilemapComponent>())
@@ -641,6 +644,8 @@ namespace Himii
 
             if (spriteRendererComponent["TilingFactor"])
                 src.TilingFactor = spriteRendererComponent["TilingFactor"].as<float>();
+            if (spriteRendererComponent["FlipHorizontal"])
+                src.FlipHorizontal = spriteRendererComponent["FlipHorizontal"].as<bool>();
         }
         auto circleRendererComponent = entity["CircleRendererComponent"];
         if (circleRendererComponent)
@@ -694,10 +699,15 @@ namespace Himii
         {
             auto &sac = deserializedEntity.AddComponent<SpriteAnimationComponent>();
             sac.AnimationHandle = spriteAnimationComponent["AnimationHandle"].as<uint64_t>();
+            if (spriteAnimationComponent["CurrentAnimationName"])
+                sac.CurrentAnimationName =
+                        spriteAnimationComponent["CurrentAnimationName"].as<std::string>();
             if (spriteAnimationComponent["FrameRate"])
                 sac.FrameRate = spriteAnimationComponent["FrameRate"].as<float>();
             if (spriteAnimationComponent["Playing"])
                 sac.Playing = spriteAnimationComponent["Playing"].as<bool>();
+            if (spriteAnimationComponent["PreviewInScene"])
+                sac.PreviewInScene = spriteAnimationComponent["PreviewInScene"].as<bool>();
         }
 
         auto tilemapComponent = entity["TilemapComponent"];

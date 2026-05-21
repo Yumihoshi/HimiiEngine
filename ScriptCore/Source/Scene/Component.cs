@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace HimiiEngine
 {
     public abstract class Component
@@ -69,6 +71,75 @@ namespace HimiiEngine
         {
             get => InternalCalls.SpriteRenderer_GetTextureHandle(Entity.ID);
             set => InternalCalls.SpriteRenderer_SetTextureHandle(Entity.ID, value);
+        }
+
+        /// <summary>水平镜像绘制，无需将 Transform.Scale.X 设为负数。</summary>
+        public bool FlipHorizontal
+        {
+            get => InternalCalls.SpriteRenderer_GetFlipHorizontal(Entity.ID) != 0;
+            set => InternalCalls.SpriteRenderer_SetFlipHorizontal(Entity.ID, value ? (byte)1 : (byte)0);
+        }
+    }
+
+    public class SpriteAnimation : Component
+    {
+        public bool Playing
+        {
+            get => InternalCalls.SpriteAnimation_GetPlaying(Entity.ID) != 0;
+            set => InternalCalls.SpriteAnimation_SetPlaying(Entity.ID, value ? (byte)1 : (byte)0);
+        }
+
+        public float FrameRate
+        {
+            get => InternalCalls.SpriteAnimation_GetFrameRate(Entity.ID);
+            set => InternalCalls.SpriteAnimation_SetFrameRate(Entity.ID, value);
+        }
+
+        public string CurrentAnimation
+        {
+            get
+            {
+                if (InternalCalls.SpriteAnimation_GetCurrentAnimationName == null)
+                    return string.Empty;
+                IntPtr namePointer = InternalCalls.SpriteAnimation_GetCurrentAnimationName(Entity.ID);
+                return namePointer == IntPtr.Zero
+                    ? string.Empty
+                    : Marshal.PtrToStringUTF8(namePointer) ?? string.Empty;
+            }
+            set
+            {
+                if (InternalCalls.SpriteAnimation_SetCurrentAnimationName == null
+                    || string.IsNullOrEmpty(value))
+                    return;
+                IntPtr namePointer = Marshal.StringToCoTaskMemUTF8(value);
+                InternalCalls.SpriteAnimation_SetCurrentAnimationName(Entity.ID, namePointer);
+                Marshal.FreeCoTaskMem(namePointer);
+            }
+        }
+
+        public void Play()
+        {
+            InternalCalls.SpriteAnimation_Play?.Invoke(Entity.ID, IntPtr.Zero);
+        }
+
+        public void Play(string animationName)
+        {
+            if (InternalCalls.SpriteAnimation_Play == null)
+                return;
+            if (string.IsNullOrEmpty(animationName))
+            {
+                Play();
+                return;
+            }
+
+            IntPtr namePointer = Marshal.StringToCoTaskMemUTF8(animationName);
+            InternalCalls.SpriteAnimation_Play(Entity.ID, namePointer);
+            Marshal.FreeCoTaskMem(namePointer);
+        }
+
+        public void Stop()
+        {
+            InternalCalls.SpriteAnimation_SetPlaying(Entity.ID, 0);
         }
     }
 

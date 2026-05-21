@@ -100,8 +100,27 @@ namespace Himii
             m_TileDefs.clear();
         }
 
-        void GenerateGridTileDefs(uint32_t atlasSourceIndex, uint32_t columnCount, uint32_t rowCount)
+        void GenerateGridTileDefs(uint32_t atlasSourceIndex,
+                                  uint32_t columnCount,
+                                  uint32_t rowCount,
+                                  const std::unordered_map<uint16_t, TileDef>* previousDefinitions = nullptr)
         {
+            std::unordered_map<uint64_t, const TileDef*> collidableByAtlasCell;
+            if (previousDefinitions)
+            {
+                for (const auto& [previousIdentifier, previousDefinition] : *previousDefinitions)
+                {
+                    if (previousDefinition.SourceType != TileSourceType::Atlas)
+                        continue;
+
+                    const uint64_t atlasKey =
+                            (static_cast<uint64_t>(previousDefinition.AtlasSourceIndex) << 32)
+                            | (static_cast<uint32_t>(previousDefinition.AtlasCoords.x) << 16)
+                            | static_cast<uint32_t>(previousDefinition.AtlasCoords.y);
+                    collidableByAtlasCell[atlasKey] = &previousDefinition;
+                }
+            }
+
             ClearTileDefs();
             uint16_t tileIdentifier = 1;
             for (uint32_t row = 0; row < rowCount; ++row)
@@ -113,6 +132,18 @@ namespace Himii
                     tileDefinition.SourceType = TileSourceType::Atlas;
                     tileDefinition.AtlasSourceIndex = atlasSourceIndex;
                     tileDefinition.AtlasCoords = {static_cast<int>(column), static_cast<int>(row)};
+
+                    const uint64_t atlasKey =
+                            (static_cast<uint64_t>(atlasSourceIndex) << 32)
+                            | (static_cast<uint32_t>(column) << 16)
+                            | static_cast<uint32_t>(row);
+                    const auto preservedIterator = collidableByAtlasCell.find(atlasKey);
+                    if (preservedIterator != collidableByAtlasCell.end())
+                    {
+                        tileDefinition.Collidable = preservedIterator->second->Collidable;
+                        tileDefinition.Tint = preservedIterator->second->Tint;
+                    }
+
                     AddTileDef(tileDefinition);
                 }
             }

@@ -29,8 +29,10 @@ namespace HimiiEngine
 
         internal delegate void TilemapGetSizeDelegate(ulong entityID, out uint width, out uint height);
         internal delegate void TilemapSetSizeDelegate(ulong entityID, uint width, uint height);
-        internal delegate ushort TilemapGetTileDelegate(ulong entityID, uint x, uint y);
-        internal delegate void TilemapSetTileDelegate(ulong entityID, uint x, uint y, ushort tileID);
+        internal delegate ushort TilemapGetTileDelegate(ulong entityID, int x, int y);
+        internal delegate void TilemapSetTileDelegate(ulong entityID, int x, int y, ushort tileID);
+        internal delegate void TilemapGetBoundsDelegate(ulong entityID, out int minX, out int minY,
+                                                        out int maxX, out int maxY);
 
         internal delegate void Physics2DRaycastDelegate(ref Vector2 start, ref Vector2 end, out RaycastHit2D hit);
 
@@ -70,6 +72,7 @@ namespace HimiiEngine
         internal static TilemapSetSizeDelegate Tilemap_SetSize;
         internal static TilemapGetTileDelegate Tilemap_GetTile;
         internal static TilemapSetTileDelegate Tilemap_SetTile;
+        internal static TilemapGetBoundsDelegate Tilemap_GetBounds;
 
         internal static Physics2DRaycastDelegate Physics2D_Raycast;
 
@@ -115,6 +118,8 @@ namespace HimiiEngine
             Tilemap_SetSize = Marshal.GetDelegateForFunctionPointer<TilemapSetSizeDelegate>(funcs.Tilemap_SetSize);
             Tilemap_GetTile = Marshal.GetDelegateForFunctionPointer<TilemapGetTileDelegate>(funcs.Tilemap_GetTile);
             Tilemap_SetTile = Marshal.GetDelegateForFunctionPointer<TilemapSetTileDelegate>(funcs.Tilemap_SetTile);
+            Tilemap_GetBounds =
+                Marshal.GetDelegateForFunctionPointer<TilemapGetBoundsDelegate>(funcs.Tilemap_GetBounds);
 
             Physics2D_Raycast = Marshal.GetDelegateForFunctionPointer<Physics2DRaycastDelegate>(funcs.Physics2D_Raycast);
 

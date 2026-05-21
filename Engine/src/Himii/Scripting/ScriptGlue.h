@@ -56,6 +56,8 @@ namespace Himii
         void *SpriteRenderer_SetSpriteHandle;
         void *SpriteRenderer_GetTextureHandle;
         void *SpriteRenderer_SetTextureHandle;
+
+        void *Tilemap_GetBounds;
     };
 
     class ScriptGlue {

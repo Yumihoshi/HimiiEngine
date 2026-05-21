@@ -1,4 +1,5 @@
 #include "AnimationPanel.h"
+#include "InspectorControls.h"
 
 #include "Himii/Asset/AssetSerializer.h"
 #include "Himii/Asset/Sprite.h"
@@ -335,16 +336,15 @@ namespace Himii
             if (!texture)
                 return preview;
 
-            const glm::ivec4 pixelRect(atlasCoordinates.x * (int)cellSize, atlasCoordinates.y * (int)cellSize,
-                                       (int)cellSize, (int)cellSize);
-            glm::vec2 uvTopLeft{};
-            glm::vec2 uvBottomRight{};
-            SpriteSheetUtility::PixelRectToImGuiImageUVCorners(
-                pixelRect, texture->GetWidth(), texture->GetHeight(), uvTopLeft, uvBottomRight);
+            const glm::ivec4 pixelRect =
+                    SpriteSheetUtility::AtlasGridCoordsToPixelRect(atlasCoordinates, cellSize);
+            const auto corners =
+                    SpriteSheetUtility::PixelRectToImGuiImageUv(pixelRect, texture->GetWidth(),
+                                                              texture->GetHeight());
 
             preview.Texture = texture;
-            preview.UV0 = ImVec2(uvTopLeft.x, uvTopLeft.y);
-            preview.UV1 = ImVec2(uvBottomRight.x, uvBottomRight.y);
+            preview.UV0 = ImVec2(corners.TopLeft.x, corners.TopLeft.y);
+            preview.UV1 = ImVec2(corners.BottomRight.x, corners.BottomRight.y);
             preview.Valid = true;
             return preview;
         }
@@ -356,15 +356,30 @@ namespace Himii
             if (!resolved.IsValid || !resolved.Texture)
                 return preview;
 
-            preview.Texture = resolved.Texture;
-            preview.UV0 = ImVec2(resolved.UVs[0].x, 1.0f - resolved.UVs[0].y);
-            preview.UV1 = ImVec2(resolved.UVs[2].x, 1.0f - resolved.UVs[2].y);
-            preview.Valid = true;
+            const SpriteDefinition* spriteDefinition =
+                    assetManager->GetSpriteDefinition(frameHandle);
+            if (spriteDefinition)
+            {
+                const auto corners = SpriteSheetUtility::PixelRectToImGuiImageUv(
+                        spriteDefinition->PixelRect, resolved.Texture->GetWidth(),
+                        resolved.Texture->GetHeight());
+                preview.Texture = resolved.Texture;
+                preview.UV0 = ImVec2(corners.TopLeft.x, corners.TopLeft.y);
+                preview.UV1 = ImVec2(corners.BottomRight.x, corners.BottomRight.y);
+                preview.Valid = true;
+                return preview;
+            }
             return preview;
         }
 
         preview.Texture = GetTextureFromHandle(frameHandle);
-        preview.Valid = preview.Texture != nullptr;
+        if (preview.Texture)
+        {
+            const auto corners = SpriteSheetUtility::FullTextureImGuiUvCorners;
+            preview.UV0 = ImVec2(corners.TopLeft.x, corners.TopLeft.y);
+            preview.UV1 = ImVec2(corners.BottomRight.x, corners.BottomRight.y);
+            preview.Valid = true;
+        }
         return preview;
     }
 

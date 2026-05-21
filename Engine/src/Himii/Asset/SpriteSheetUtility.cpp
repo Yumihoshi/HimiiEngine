@@ -6,9 +6,66 @@
 namespace Himii
 {
 
-    std::array<glm::vec2, 4> SpriteSheetUtility::PixelRectToUVs(const glm::ivec4& pixelRect,
-                                                                uint32_t textureWidth,
-                                                                uint32_t textureHeight)
+    namespace
+    {
+        void ComputeGpuUvEdgesFromPixelRect(const glm::ivec4& pixelRect,
+                                            uint32_t textureWidth,
+                                            uint32_t textureHeight,
+                                            float& left,
+                                            float& right,
+                                            float& gpuCoordinateTop,
+                                            float& gpuCoordinateBottom)
+        {
+            const float textureWidthFloat = static_cast<float>(textureWidth);
+            const float textureHeightFloat = static_cast<float>(textureHeight);
+
+            left = static_cast<float>(pixelRect.x) / textureWidthFloat;
+            right = static_cast<float>(pixelRect.x + pixelRect.z) / textureWidthFloat;
+
+            // PixelRect：文件左上原点。OpenGL 纹理 v=0 在底边（stbi flip on load 后文件顶在 v=1）。
+            gpuCoordinateTop = 1.0f - static_cast<float>(pixelRect.y) / textureHeightFloat;
+            gpuCoordinateBottom =
+                1.0f - static_cast<float>(pixelRect.y + pixelRect.w) / textureHeightFloat;
+        }
+    }
+
+    glm::ivec4 SpriteSheetUtility::AtlasGridCoordsToPixelRect(const glm::ivec2& atlasCoordinates,
+                                                             uint32_t tilePixelSize)
+    {
+        const int cellSize = static_cast<int>(tilePixelSize > 0 ? tilePixelSize : 16);
+        return {
+            atlasCoordinates.x * cellSize,
+            atlasCoordinates.y * cellSize,
+            cellSize,
+            cellSize};
+    }
+
+    ImGuiImageUvCorners SpriteSheetUtility::PixelRectToImGuiImageUv(const glm::ivec4& pixelRect,
+                                                                  uint32_t textureWidth,
+                                                                  uint32_t textureHeight)
+    {
+        ImGuiImageUvCorners corners{};
+        PixelRectToImGuiImageUVCorners(pixelRect, textureWidth, textureHeight,
+                                       corners.TopLeft, corners.BottomRight);
+        return corners;
+    }
+
+    std::array<glm::vec2, 4> SpriteSheetUtility::PixelRectToImGuiQuadUVsForScreenCorners(
+            const glm::ivec4& pixelRect,
+            uint32_t textureWidth,
+            uint32_t textureHeight)
+    {
+        const ImGuiImageUvCorners corners = PixelRectToImGuiImageUv(pixelRect, textureWidth, textureHeight);
+        return {
+            glm::vec2(corners.TopLeft.x, corners.BottomRight.y),
+            glm::vec2(corners.BottomRight.x, corners.BottomRight.y),
+            glm::vec2(corners.BottomRight.x, corners.TopLeft.y),
+            glm::vec2(corners.TopLeft.x, corners.TopLeft.y)};
+    }
+
+    std::array<glm::vec2, 4> SpriteSheetUtility::PixelRectToWorldQuadUVs(const glm::ivec4& pixelRect,
+                                                                         uint32_t textureWidth,
+                                                                         uint32_t textureHeight)
     {
         std::array<glm::vec2, 4> uvs{};
         if (textureWidth == 0 || textureHeight == 0)
@@ -20,22 +77,37 @@ namespace Himii
             return uvs;
         }
 
-        const float textureWidthFloat = static_cast<float>(textureWidth);
-        const float textureHeightFloat = static_cast<float>(textureHeight);
+        float left = 0.0f;
+        float right = 1.0f;
+        float gpuCoordinateTop = 1.0f;
+        float gpuCoordinateBottom = 0.0f;
+        ComputeGpuUvEdgesFromPixelRect(pixelRect, textureWidth, textureHeight,
+                                       left, right, gpuCoordinateTop, gpuCoordinateBottom);
 
-        const float left = static_cast<float>(pixelRect.x) / textureWidthFloat;
-        const float right = static_cast<float>(pixelRect.x + pixelRect.z) / textureWidthFloat;
-
-        // PixelRect 使用左上角原点；与默认 DrawQuad 一致，世界空间下方顶点对应纹理 v 较小的一侧
-        const float textureCoordinateTop = static_cast<float>(pixelRect.y) / textureHeightFloat;
-        const float textureCoordinateBottom =
-            static_cast<float>(pixelRect.y + pixelRect.w) / textureHeightFloat;
-
-        uvs[0] = {left, textureCoordinateTop};
-        uvs[1] = {right, textureCoordinateTop};
-        uvs[2] = {right, textureCoordinateBottom};
-        uvs[3] = {left, textureCoordinateBottom};
+        // DrawQuadUV 顶点顺序：0=BL, 1=BR, 2=TR, 3=TL（世界 Y 向上）
+        uvs[0] = {left, gpuCoordinateBottom};
+        uvs[1] = {right, gpuCoordinateBottom};
+        uvs[2] = {right, gpuCoordinateTop};
+        uvs[3] = {left, gpuCoordinateTop};
         return uvs;
+    }
+
+    std::array<glm::vec2, 4> SpriteSheetUtility::AtlasGridCoordsToWorldQuadUVs(
+            const glm::ivec2& atlasCoordinates,
+            uint32_t tilePixelSize,
+            uint32_t textureWidth,
+            uint32_t textureHeight)
+    {
+        return PixelRectToWorldQuadUVs(
+                AtlasGridCoordsToPixelRect(atlasCoordinates, tilePixelSize),
+                textureWidth, textureHeight);
+    }
+
+    std::array<glm::vec2, 4> SpriteSheetUtility::PixelRectToUVs(const glm::ivec4& pixelRect,
+                                                                uint32_t textureWidth,
+                                                                uint32_t textureHeight)
+    {
+        return PixelRectToWorldQuadUVs(pixelRect, textureWidth, textureHeight);
     }
 
     void SpriteSheetUtility::PixelRectToImGuiImageUVCorners(const glm::ivec4& pixelRect,
@@ -51,17 +123,15 @@ namespace Himii
             return;
         }
 
-        const float textureWidthFloat = static_cast<float>(textureWidth);
-        const float textureHeightFloat = static_cast<float>(textureHeight);
+        float left = 0.0f;
+        float right = 1.0f;
+        float gpuCoordinateTop = 1.0f;
+        float gpuCoordinateBottom = 0.0f;
+        ComputeGpuUvEdgesFromPixelRect(pixelRect, textureWidth, textureHeight,
+                                       left, right, gpuCoordinateTop, gpuCoordinateBottom);
 
-        const float left = static_cast<float>(pixelRect.x) / textureWidthFloat;
-        const float right = static_cast<float>(pixelRect.x + pixelRect.z) / textureWidthFloat;
-        const float visualTop = 1.0f - static_cast<float>(pixelRect.y) / textureHeightFloat;
-        const float visualBottom =
-            1.0f - static_cast<float>(pixelRect.y + pixelRect.w) / textureHeightFloat;
-
-        uvTopLeft = {left, visualTop};
-        uvBottomRight = {right, visualBottom};
+        uvTopLeft = {left, gpuCoordinateTop};
+        uvBottomRight = {right, gpuCoordinateBottom};
     }
 
     TextureImportData SpriteSheetUtility::CreateDefaultSingleSprite(AssetHandle textureHandle,
@@ -145,29 +215,6 @@ namespace Himii
         const glm::mat4 pivotMatrix = glm::translate(glm::mat4(1.0f), pivotOffset);
         const glm::mat4 localScaleMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(worldWidth, worldHeight, 1.0f));
         return entityTransform * pivotMatrix * localScaleMatrix;
-    }
-
-    std::array<glm::vec2, 4> SpriteSheetUtility::AtlasGridCoordsToUVs(const glm::ivec2& atlasCoordinates,
-                                                                      uint32_t tilePixelSize,
-                                                                      uint32_t textureWidth,
-                                                                      uint32_t textureHeight)
-    {
-        const glm::ivec4 pixelRect(
-                atlasCoordinates.x * static_cast<int>(tilePixelSize),
-                atlasCoordinates.y * static_cast<int>(tilePixelSize),
-                static_cast<int>(tilePixelSize),
-                static_cast<int>(tilePixelSize));
-        return PixelRectToUVs(pixelRect, textureWidth, textureHeight);
-    }
-
-    std::array<glm::vec2, 4> SpriteSheetUtility::ReorderUVsForYUpWorldQuad(
-            const std::array<glm::vec2, 4>& textureCoordinates)
-    {
-        return {
-            textureCoordinates[3],
-            textureCoordinates[2],
-            textureCoordinates[1],
-            textureCoordinates[0]};
     }
 
     glm::mat4 SpriteSheetUtility::ComputeSpriteVisualTransform(const glm::mat4& entityTransform,

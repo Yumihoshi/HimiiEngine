@@ -8,6 +8,7 @@
 #include "Himii/Scripting/ScriptIDELauncher.h"
 #include "Himii/Scene/TileSet.h"
 #include "Himii/Scene/TileMapData.h"
+#include "Himii/Scene/TilemapColliderBuilder.h"
 #include "Himii/Scene/ParticleEmitterAsset.h"
 #include "Himii/Asset/AssetSerializer.h"
 #include "Himii/Asset/AssetManager.h"
@@ -175,6 +176,7 @@ namespace Himii
                 DisplayAddComponentEntry<CircleCollider2DComponent>("Circle Collider2D");
                 DisplayAddComponentEntry<MeshComponent>("Mesh Renderer");
                 DisplayAddComponentEntry<TilemapComponent>("Tilemap");
+                DisplayAddComponentEntry<TilemapCollider2DComponent>("Tilemap Collider 2D");
                 DisplayAddComponentEntry<ParticleEmitterComponent>("Particle Emitter");
                 DisplayAddComponentEntry<UITransformComponent>("Rect Transform");
                 DisplayAddComponentEntry<UIImageComponent>("Image");
@@ -500,6 +502,7 @@ namespace Himii
             DisplayAddComponentEntry<SpriteAnimationComponent>("Sprite Animation");
             DisplayAddComponentEntry<MeshComponent>("Mesh Renderer");
             DisplayAddComponentEntry<TilemapComponent>("Tilemap");
+            DisplayAddComponentEntry<TilemapCollider2DComponent>("Tilemap Collider 2D");
             DisplayAddComponentEntry<ParticleEmitterComponent>("Particle Emitter");
 
             //UI
@@ -1325,7 +1328,6 @@ namespace Himii
                                 auto mapAsset = std::make_shared<TileMapData>();
                                 mapAsset->Handle = AssetHandle();
                                 mapAsset->SetTileSetHandle(tileSetHandle);
-                                mapAsset->Resize(8, 8);
                                 mapAsset->SetCellSize(1.0f);
 
                                 std::filesystem::path tileMapDirectory = assetDirectory / "tilemaps";
@@ -1362,6 +1364,66 @@ namespace Himii
                         ImGui::TextDisabled(
                             "选中实体显示 Scene 网格。在 TileMap Setup 右侧点选图块后再绘制；"
                             "按住 Alt 或 Move Entity 可移动实体。");
+                    }
+                });
+
+        DrawComponent<TilemapCollider2DComponent>(
+                "Tilemap Collider 2D", entity, nullptr,
+                [this, entity](auto& component) mutable
+                {
+                    DrawCheckboxControl("Enabled", component.Enabled);
+                    DrawCheckboxControl("Merge Adjacent Cells", component.MergeAdjacentCells);
+
+                    if (!entity.HasComponent<TilemapComponent>())
+                        return;
+
+                    const TilemapComponent& tilemapComponent =
+                            entity.GetComponent<TilemapComponent>();
+                    if (tilemapComponent.TileMapHandle == 0 || !m_Context || !Project::GetActive())
+                        return;
+
+                    auto assetManager = Project::GetAssetManager();
+                    if (!assetManager)
+                        return;
+
+                    Ref<TileMapData> mapData = std::static_pointer_cast<TileMapData>(
+                            assetManager->GetAsset(tilemapComponent.TileMapHandle));
+                    if (!mapData || mapData->GetTileSetHandle() == 0)
+                    {
+                        ImGui::TextColored(ImVec4(1.0f, 0.85f, 0.3f, 1.0f),
+                                            "TileMap has no TileSet assigned.");
+                        return;
+                    }
+
+                    Ref<TileSet> tileSet = std::static_pointer_cast<TileSet>(
+                            assetManager->GetAsset(mapData->GetTileSetHandle()));
+                    if (!tileSet)
+                    {
+                        ImGui::TextColored(ImVec4(1.0f, 0.85f, 0.3f, 1.0f),
+                                            "TileSet asset could not be loaded.");
+                        return;
+                    }
+
+                    const TilemapColliderBuildReport report =
+                            TilemapColliderBuilder::AnalyzeCollidableCells(*mapData, *tileSet);
+
+                    ImGui::Separator();
+                    ImGui::Text("Painted cells: %u", report.paintedCellCount);
+                    ImGui::Text("Collidable cells (Play): %u", report.collidableCellCount);
+                    ImGui::Text("Unknown tile IDs: %u", report.orphanTileIdentifierCount);
+
+                    if (report.collidableCellCount == 0)
+                    {
+                        ImGui::TextColored(
+                                ImVec4(1.0f, 0.85f, 0.3f, 1.0f),
+                                "No collidable cells. Open TileMap Setup, enable Collidable on"
+                                " tile types, Save TileSet, then Play.");
+                    }
+                    else if (report.orphanTileIdentifierCount > 0)
+                    {
+                        ImGui::TextColored(
+                                ImVec4(1.0f, 0.85f, 0.3f, 1.0f),
+                                "Some painted cells use missing tile IDs. Re-slice or repaint.");
                     }
                 });
 

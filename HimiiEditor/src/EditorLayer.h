@@ -12,6 +12,7 @@
 #include "panel/TextureInspectorPanel.h"
 
 #include "Himii/Core/FileWatcher.h"
+#include "Himii/Scene/TileMapCoordinateUtility.h"
 #include "Himii/Renderer/EditorCamera.h"
 #include "commands/EditorCommandHistory.h"
 
@@ -35,6 +36,7 @@ namespace Himii
 
         void OnOverlayRender();
         void HandleTilemapScenePaint(bool allowPainting);
+        void UpdateTilemapPaintSession();
         void DrawTilemapEditOverlay();
         void DrawTilemapGhostPreviewInViewport();
         void UpdateTilemapHoverFromInput();
@@ -152,8 +154,11 @@ namespace Himii
         TransformComponent m_GizmoStartTransform;
         UITransformComponent m_GizmoStartUITransform;
 
-        glm::ivec2 m_TilemapHoveredTile{-1, -1};
+        glm::ivec2 m_TilemapHoveredTile{TileMapCoordinateUtility::InvalidTileCoordinate,
+                                        TileMapCoordinateUtility::InvalidTileCoordinate};
         bool m_TilemapViewportCapture = false;
+        UUID m_TilemapPaintSessionEntityUUID = 0;
+        bool m_TileMapEditorWasVisible = false;
 
     private:
         struct RecentProject

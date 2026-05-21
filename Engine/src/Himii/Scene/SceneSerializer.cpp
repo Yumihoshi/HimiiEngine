@@ -392,6 +392,15 @@ namespace Himii
             out << YAML::Key << "TileMapHandle" << YAML::Value << (uint64_t)tm.TileMapHandle;
             out << YAML::EndMap;
         }
+        if (entity.HasComponent<TilemapCollider2DComponent>())
+        {
+            out << YAML::Key << "TilemapCollider2DComponent";
+            out << YAML::BeginMap;
+            auto& tilemapCollider = entity.GetComponent<TilemapCollider2DComponent>();
+            out << YAML::Key << "Enabled" << YAML::Value << tilemapCollider.Enabled;
+            out << YAML::Key << "MergeAdjacentCells" << YAML::Value << tilemapCollider.MergeAdjacentCells;
+            out << YAML::EndMap;
+        }
         if (entity.HasComponent<ParticleEmitterComponent>())
         {
             out << YAML::Key << "ParticleEmitterComponent";
@@ -697,6 +706,17 @@ namespace Himii
             auto &tm = deserializedEntity.AddComponent<TilemapComponent>();
             if (tilemapComponent["TileMapHandle"])
                 tm.TileMapHandle = tilemapComponent["TileMapHandle"].as<uint64_t>();
+        }
+
+        auto tilemapColliderComponent = entity["TilemapCollider2DComponent"];
+        if (tilemapColliderComponent)
+        {
+            auto& tilemapCollider = deserializedEntity.AddComponent<TilemapCollider2DComponent>();
+            if (tilemapColliderComponent["Enabled"])
+                tilemapCollider.Enabled = tilemapColliderComponent["Enabled"].as<bool>();
+            if (tilemapColliderComponent["MergeAdjacentCells"])
+                tilemapCollider.MergeAdjacentCells =
+                        tilemapColliderComponent["MergeAdjacentCells"].as<bool>();
         }
 
         auto particleEmitterComponent = entity["ParticleEmitterComponent"];

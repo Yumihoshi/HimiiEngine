@@ -30,7 +30,7 @@ namespace Himii
                                                const glm::vec2& viewportOrigin,
                                                const glm::mat4& viewProjectionMatrix);
 
-        /** ImGui 显示用 UV（与 Renderer2D 的 AtlasGridCoordsToUVs 约定不同）。 */
+        /** @deprecated 请用 SpriteSheetUtility::PixelRectToImGuiImageUVCorners。 */
         static void AtlasCoordsToImGuiImageUVs(const glm::ivec2& atlasCoordinates,
                                                uint32_t tilePixelSize,
                                                uint32_t textureWidth,

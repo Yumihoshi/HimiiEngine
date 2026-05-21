@@ -6,40 +6,47 @@ namespace HimiiEngine
     {
         public uint Width
         {
-            get 
+            get
             {
-                 InternalCalls.Tilemap_GetSize(Entity.ID, out uint w, out uint h);
-                 return w;
+                InternalCalls.Tilemap_GetSize(Entity.ID, out uint width, out uint height);
+                return width;
             }
             set
             {
-                 InternalCalls.Tilemap_GetSize(Entity.ID, out uint w, out uint h);
-                 InternalCalls.Tilemap_SetSize(Entity.ID, value, h);
+                InternalCalls.Tilemap_GetSize(Entity.ID, out uint width, out uint height);
+                InternalCalls.Tilemap_SetSize(Entity.ID, value, height);
             }
         }
-        
+
         public uint Height
         {
-             get
-             {
-                 InternalCalls.Tilemap_GetSize(Entity.ID, out uint w, out uint h);
-                 return h;
-             }
-             set
-             {
-                 InternalCalls.Tilemap_GetSize(Entity.ID, out uint w, out uint h);
-                 InternalCalls.Tilemap_SetSize(Entity.ID, w, value);
-             }
+            get
+            {
+                InternalCalls.Tilemap_GetSize(Entity.ID, out uint width, out uint height);
+                return height;
+            }
+            set
+            {
+                InternalCalls.Tilemap_GetSize(Entity.ID, out uint width, out uint height);
+                InternalCalls.Tilemap_SetSize(Entity.ID, width, value);
+            }
         }
 
-        public ushort GetTile(uint x, uint y)
+        public bool HasBounds => Width != 0 && Height != 0;
+
+        public void GetBounds(out int minTileX, out int minTileY, out int maxTileX, out int maxTileY)
         {
-             return InternalCalls.Tilemap_GetTile(Entity.ID, x, y);
+            InternalCalls.Tilemap_GetBounds(Entity.ID, out minTileX, out minTileY, out maxTileX, out maxTileY);
         }
 
-        public void SetTile(uint x, uint y, ushort tileID)
+        public ushort GetTile(int tileX, int tileY)
         {
-             InternalCalls.Tilemap_SetTile(Entity.ID, x, y, tileID);
+            return InternalCalls.Tilemap_GetTile(Entity.ID, tileX, tileY);
+        }
+
+        public void SetTile(int tileX, int tileY, ushort tileIdentifier)
+        {
+            InternalCalls.Tilemap_SetTile(Entity.ID, tileX, tileY, tileIdentifier);
         }
     }
 }

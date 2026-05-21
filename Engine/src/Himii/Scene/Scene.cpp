@@ -12,6 +12,8 @@
 #include "Himii/Scene/SpriteAnimation.h"
 #include "Himii/Scene/TileSet.h"
 #include "Himii/Scene/TileMapData.h"
+#include "Himii/Scene/TileMapCoordinateUtility.h"
+#include "Himii/Scene/TilemapColliderBuilder.h"
 #include "Himii/Scene/ParticleEmitterAsset.h"
 #include "Himii/Renderer/Texture.h"
 #include "Himii/Particle/ParticleSystem.h"
@@ -44,6 +46,66 @@ namespace Himii
     {
         uintptr_t val = reinterpret_cast<uintptr_t>(ptr);
         return *reinterpret_cast<b2BodyId *>(&val);
+    }
+
+    static void AttachBoxColliderToBody(b2BodyId bodyId,
+                                        const BoxCollider2DComponent& boxCollider,
+                                        const TransformComponent& transform)
+    {
+        if (!b2Body_IsValid(bodyId))
+            return;
+
+        b2ShapeDef shapeDef = b2DefaultShapeDef();
+        shapeDef.enableContactEvents = true;
+        shapeDef.density = boxCollider.Density;
+        shapeDef.material.friction = boxCollider.Friction;
+        shapeDef.material.restitution = boxCollider.Restitution;
+        shapeDef.material.rollingResistance = boxCollider.RestitutionThreshold;
+
+        const float halfWidth = boxCollider.Size.x * transform.Scale.x * 0.5f;
+        const float halfHeight = boxCollider.Size.y * transform.Scale.y * 0.5f;
+        const b2Polygon polygon = b2MakeOffsetBox(
+                halfWidth, halfHeight,
+                {boxCollider.Offset.x * transform.Scale.x, boxCollider.Offset.y * transform.Scale.y},
+                b2MakeRot(0.0f));
+
+        b2CreatePolygonShape(bodyId, &shapeDef, &polygon);
+    }
+
+    static void AttachCircleColliderToBody(b2BodyId bodyId,
+                                           const CircleCollider2DComponent& circleCollider,
+                                           const TransformComponent& transform)
+    {
+        if (!b2Body_IsValid(bodyId))
+            return;
+
+        b2ShapeDef shapeDef = b2DefaultShapeDef();
+        shapeDef.enableContactEvents = true;
+        shapeDef.density = circleCollider.Density;
+        shapeDef.material.friction = circleCollider.Friction;
+        shapeDef.material.restitution = circleCollider.Restitution;
+        shapeDef.material.rollingResistance = circleCollider.RestitutionThreshold;
+
+        b2Circle circle;
+        circle.center = {
+            circleCollider.Offset.x * transform.Scale.x,
+            circleCollider.Offset.y * transform.Scale.y};
+        const float maxScale = std::max(transform.Scale.x, transform.Scale.y);
+        circle.radius = circleCollider.Radius * maxScale;
+
+        b2CreateCircleShape(bodyId, &shapeDef, &circle);
+    }
+
+    static b2BodyId CreateStaticPhysicsBody(b2WorldId world,
+                                            entt::entity entityHandle,
+                                            const TransformComponent& transform)
+    {
+        b2BodyDef bodyDef = b2DefaultBodyDef();
+        bodyDef.type = b2_staticBody;
+        bodyDef.position = {transform.Position.x, transform.Position.y};
+        bodyDef.rotation = b2MakeRot(transform.Rotation.z);
+        bodyDef.userData = (void*)(uintptr_t)(uint32_t)entityHandle;
+        return b2CreateBody(world, &bodyDef);
     }
 
     Entity Scene::CreateEntityWithUUID(UUID uuid, const std::string &name)
@@ -567,6 +629,7 @@ namespace Himii
         CopyComponent<SpriteAnimationComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<MeshComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<TilemapComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+        CopyComponent<TilemapCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<ParticleEmitterComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         //UI
         CopyComponent<UITransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
@@ -616,6 +679,9 @@ namespace Himii
 
         if (entity.HasComponent<TilemapComponent>())
             newEntity.AddComponent<TilemapComponent>(entity.GetComponent<TilemapComponent>());
+        if (entity.HasComponent<TilemapCollider2DComponent>())
+            newEntity.AddComponent<TilemapCollider2DComponent>(
+                    entity.GetComponent<TilemapCollider2DComponent>());
         if (entity.HasComponent<ParticleEmitterComponent>())
             newEntity.AddComponent<ParticleEmitterComponent>(entity.GetComponent<ParticleEmitterComponent>());
 
@@ -718,48 +784,89 @@ namespace Himii
             b2BodyId bodyId = b2CreateBody(m_Box2DWorld, &bodyDef);
             rigidbody2D.RuntimeBody = ToPtr(bodyId);
 
-            // 3. 添加碰撞体
             if (entity.HasComponent<BoxCollider2DComponent>())
-            {
-                auto &bc2d = entity.GetComponent<BoxCollider2DComponent>();
-
-                b2ShapeDef shapeDef = b2DefaultShapeDef();
-                shapeDef.enableContactEvents = true;
-                shapeDef.density = bc2d.Density;
-                shapeDef.material.friction = bc2d.Friction;
-                shapeDef.material.restitution = bc2d.Restitution;
-                shapeDef.material.rollingResistance = bc2d.RestitutionThreshold;
-
-                // Box2D v3 b2MakeBox 参数是半宽/半高
-                float hx = bc2d.Size.x * transform.Scale.x * 0.5f;
-                float hy = bc2d.Size.y * transform.Scale.y * 0.5f;
-
-                b2Polygon polygon = b2MakeBox(hx, hy);
-                // 应用 Offset
-                polygon.centroid = {bc2d.Offset.x, bc2d.Offset.y};
-
-                b2CreatePolygonShape(bodyId, &shapeDef, &polygon);
-            }
+                AttachBoxColliderToBody(bodyId, entity.GetComponent<BoxCollider2DComponent>(), transform);
 
             if (entity.HasComponent<CircleCollider2DComponent>())
+                AttachCircleColliderToBody(bodyId, entity.GetComponent<CircleCollider2DComponent>(), transform);
+        }
+
+        {
+            auto colliderOnlyView = m_Registry.view<TransformComponent>();
+            for (auto entityHandle : colliderOnlyView)
             {
-                auto &cc2d = entity.GetComponent<CircleCollider2DComponent>();
+                if (m_Registry.any_of<Rigidbody2DComponent>(entityHandle))
+                    continue;
 
-                b2ShapeDef shapeDef = b2DefaultShapeDef();
-                shapeDef.enableContactEvents = true;
-                shapeDef.density = cc2d.Density;
-                shapeDef.material.friction = cc2d.Friction;
-                shapeDef.material.restitution = cc2d.Restitution;
-                shapeDef.material.rollingResistance = cc2d.RestitutionThreshold;
+                const bool hasBoxCollider = m_Registry.all_of<BoxCollider2DComponent>(entityHandle);
+                const bool hasCircleCollider =
+                        m_Registry.all_of<CircleCollider2DComponent>(entityHandle);
+                if (!hasBoxCollider && !hasCircleCollider)
+                    continue;
 
-                b2Circle circle;
-                // 应用 Offset
-                circle.center = {cc2d.Offset.x * transform.Scale.x, cc2d.Offset.y * transform.Scale.y};
-                float maxScale = std::max(transform.Scale.x, transform.Scale.y);
-                circle.radius = cc2d.Radius * maxScale;
+                Entity entity = {entityHandle, this};
+                const TransformComponent& transform = entity.GetComponent<TransformComponent>();
+                const b2BodyId staticBodyId =
+                        CreateStaticPhysicsBody(m_Box2DWorld, entityHandle, transform);
 
-                b2CreateCircleShape(bodyId, &shapeDef, &circle);
+                if (hasBoxCollider)
+                    AttachBoxColliderToBody(
+                            staticBodyId, entity.GetComponent<BoxCollider2DComponent>(), transform);
+                if (hasCircleCollider)
+                    AttachCircleColliderToBody(
+                            staticBodyId, entity.GetComponent<CircleCollider2DComponent>(), transform);
             }
+        }
+
+        auto tilemapColliderView =
+                m_Registry.view<TransformComponent, TilemapComponent, TilemapCollider2DComponent>();
+        for (auto entityHandle : tilemapColliderView)
+        {
+            Entity entity = {entityHandle, this};
+            auto& transform = entity.GetComponent<TransformComponent>();
+            auto& tilemap = entity.GetComponent<TilemapComponent>();
+            auto& tilemapCollider = entity.GetComponent<TilemapCollider2DComponent>();
+
+            if (!tilemapCollider.Enabled || tilemap.TileMapHandle == 0)
+                continue;
+
+            auto assetManager = Project::GetAssetManager();
+            if (!assetManager)
+                continue;
+
+            Ref<TileMapData> mapData = std::static_pointer_cast<TileMapData>(
+                    assetManager->GetAsset(tilemap.TileMapHandle));
+            if (!mapData)
+                continue;
+
+            if (mapData->GetCellSize() <= 0.0f)
+                continue;
+
+            Ref<TileSet> tileSet;
+            if (mapData->GetTileSetHandle() != 0)
+            {
+                tileSet = std::static_pointer_cast<TileSet>(
+                        assetManager->GetAsset(mapData->GetTileSetHandle()));
+            }
+
+            if (!tileSet)
+            {
+                HIMII_CORE_WARNING(
+                        "TilemapCollider2D: entity '{0}' has no TileSet; colliders were not created.",
+                        entity.GetName());
+                continue;
+            }
+
+            void* bodyUserData = (void*)(uintptr_t)(uint32_t)entity;
+            const TilemapColliderBuildReport report = TilemapColliderBuilder::CreateColliderShapes(
+                    m_Box2DWorld,
+                    transform,
+                    *mapData,
+                    *tileSet,
+                    bodyUserData,
+                    tilemapCollider.MergeAdjacentCells);
+
+            TilemapColliderBuilder::LogBuildReport(entity.GetName(), report);
         }
     }
 
@@ -1038,6 +1145,11 @@ namespace Himii
 
     template<>
     void Scene::OnComponentAdded<TilemapComponent>(Entity entity, TilemapComponent &component)
+    {
+    }
+    template<>
+    void Scene::OnComponentAdded<TilemapCollider2DComponent>(Entity entity,
+                                                             TilemapCollider2DComponent& component)
     {
     }
     template<>

@@ -4,6 +4,7 @@
 #include "Himii/Asset/Asset.h"
 #include "Himii/Scene/TileSet.h"
 #include "Himii/Scene/TileMapData.h"
+#include "Himii/Scene/TileMapCoordinateUtility.h"
 
 #include <glm/glm.hpp>
 #include <queue>
@@ -30,8 +31,8 @@ namespace Himii
         bool HasActiveTileMap() const { return m_MapData != nullptr; }
 
         bool IsMoveEntityModeEnabled() const { return m_MoveEntityModeEnabled; }
-        void SetMoveEntityModeEnabled(bool enabled) { m_MoveEntityModeEnabled = enabled; }
-        void ToggleMoveEntityMode() { m_MoveEntityModeEnabled = !m_MoveEntityModeEnabled; }
+        void SetMoveEntityModeEnabled(bool enabled);
+        void ToggleMoveEntityMode();
 
         void ApplyToolAtTile(int tileX, int tileY);
         void SetCurrentTool(Tool tool) { m_CurrentTool = tool; }
@@ -39,6 +40,9 @@ namespace Himii
         void SetHoveredTileCoordinates(glm::ivec2 coordinates) { m_HoveredTileCoordinates = coordinates; }
 
         bool SaveActiveTileMapAssets();
+
+        /// 清空笔刷并退出场景绘制会话（关闭 Setup、切换选中、移动实体模式时调用）
+        void ClearScenePaintSession();
 
     private:
         static constexpr float LeftPanelWidth = 320.0f;
@@ -53,6 +57,7 @@ namespace Himii
         void DrawSelectedTileThumbnail();
 
         void UI_Toolbar();
+        void UI_Collision();
         void UI_AtlasSetup();
         void UI_Properties();
 
@@ -69,7 +74,8 @@ namespace Himii
         uint16_t m_SelectedTileID = 0;
         bool m_BrushTileSelected = false;
 
-        glm::ivec2 m_HoveredTileCoordinates{-1, -1};
+        glm::ivec2 m_HoveredTileCoordinates{TileMapCoordinateUtility::InvalidTileCoordinate,
+                                            TileMapCoordinateUtility::InvalidTileCoordinate};
 
         AssetHandle m_AtlasTextureHandle = 0;
         uint32_t m_AtlasTileSize = 16;

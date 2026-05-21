@@ -410,7 +410,7 @@ namespace Himii
         const SpriteDefinition& sprite = importData.Sprites[spriteIndex];
 
         resolved.Texture = texture;
-        resolved.UVs = SpriteSheetUtility::PixelRectToUVs(
+        resolved.UVs = SpriteSheetUtility::PixelRectToWorldQuadUVs(
             sprite.PixelRect, texture->GetWidth(), texture->GetHeight());
         resolved.Pivot = sprite.Pivot;
         resolved.PixelSize = {sprite.PixelRect.z, sprite.PixelRect.w};

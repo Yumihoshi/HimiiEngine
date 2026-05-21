@@ -22,6 +22,8 @@
 #include "Himii/Asset/SpriteSheetUtility.h"
 #include "Himii/Scene/SpriteRendererUtility.h"
 #include "Himii/Scene/TileSet.h"
+#include "Himii/Scene/TileMapCoordinateUtility.h"
+#include "Himii/Scene/TilemapColliderBuilder.h"
 #include <GLFW/glfw3.h>
 
 namespace Himii
@@ -351,6 +353,7 @@ namespace Himii
             m_AnimationPanel.OnImGuiRender(m_ShowAnimationPanel);
             m_TextureInspectorPanel.OnImGuiRender(m_ShowTextureInspector);
             m_TileMapEditorPanel.OnImGuiRender(m_ShowTileMapEditor);
+            UpdateTilemapPaintSession();
             m_ParticleEmitterEditorPanel.OnImGuiRender(m_ShowParticleEmitterEditor);
 
             AssetHandle tmEditorRequest = m_SceneHierarchyPanel.GetTileMapEditorRequest();
@@ -894,6 +897,54 @@ namespace Himii
 
                             Renderer2D::DrawCircle(transform, glm::vec4(0, 1, 0, 1), 0.01f);
                         });
+            }
+
+            {
+                auto assetManager = Project::GetAssetManager();
+                auto view = m_ActiveScene->GetAllEntitiesWith<TransformComponent, TilemapComponent,
+                                                               TilemapCollider2DComponent>();
+                view.each([&](auto entityHandle, auto& transformComponent,
+                              auto& tilemapComponent, auto& tilemapColliderComponent)
+                {
+                    if (!tilemapColliderComponent.Enabled || tilemapComponent.TileMapHandle == 0
+                        || !assetManager)
+                        return;
+
+                    Ref<TileMapData> mapData = std::static_pointer_cast<TileMapData>(
+                            assetManager->GetAsset(tilemapComponent.TileMapHandle));
+                    if (!mapData)
+                        return;
+
+                    Ref<TileSet> tileSet;
+                    if (mapData->GetTileSetHandle() != 0)
+                    {
+                        tileSet = std::static_pointer_cast<TileSet>(
+                                assetManager->GetAsset(mapData->GetTileSetHandle()));
+                    }
+
+                    const float cellSize = mapData->GetCellSize();
+                    if (cellSize <= 0.0f)
+                        return;
+
+                    const glm::mat4 entityTransform = transformComponent.GetTransform();
+                    const glm::vec4 colliderColor = {0.0f, 1.0f, 0.0f, 1.0f};
+
+                    mapData->ForEachTile([&](int32_t tileX, int32_t tileY, uint16_t tileIdentifier)
+                    {
+                        if (!tileSet
+                            || !TilemapColliderBuilder::ShouldCellCollide(tileIdentifier, *tileSet))
+                            return;
+
+                        const glm::vec2 tileCenter =
+                                TileMapCoordinateUtility::TileLocalCenter(tileX, tileY, cellSize);
+                        glm::mat4 colliderTransform = entityTransform
+                                * glm::translate(glm::mat4(1.0f), glm::vec3(tileCenter.x, tileCenter.y, 0.001f))
+                                * glm::scale(glm::mat4(1.0f),
+                                             glm::vec3(cellSize * transformComponent.Scale.x,
+                                                       cellSize * transformComponent.Scale.y, 1.0f));
+                        Renderer2D::DrawRect(colliderTransform, colliderColor);
+                    });
+                });
             }
         }
         // Draw selected entity outline
@@ -1673,7 +1724,12 @@ namespace Himii
         {
             Ref<Texture2D> icon = (m_SceneState == SceneState::Edit||m_SceneState==SceneState::Simulate) ? m_IconPlay : m_IconStop;
             ImGui::SetCursorPosX((ImGui::GetWindowContentRegionMax().x * 0.5f) - (size * 0.5f));
-            if (ImGui::ImageButton("state", (ImTextureID)icon->GetRendererID(), ImVec2(size, size), ImVec2(0, 0),ImVec2(1, 1),ImVec4(0.0f,0.0f,0.0f,0.0f),tintColor)&&toolbarEnable)
+            const auto& playIconUv = SpriteSheetUtility::FullTextureImGuiUvCorners;
+            if (ImGui::ImageButton("state", (ImTextureID)icon->GetRendererID(), ImVec2(size, size),
+                                   ImVec2(playIconUv.TopLeft.x, playIconUv.TopLeft.y),
+                                   ImVec2(playIconUv.BottomRight.x, playIconUv.BottomRight.y),
+                                   ImVec4(0.0f, 0.0f, 0.0f, 0.0f), tintColor)
+                && toolbarEnable)
             {
                 if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Simulate)
                     OnScenePlay();
@@ -1685,7 +1741,12 @@ namespace Himii
         {
             Ref<Texture2D> icon = (m_SceneState == SceneState::Edit||m_SceneState==SceneState::Play) ? m_IconSimulate : m_IconStop;
 
-            if (ImGui::ImageButton("state1", (ImTextureID)icon->GetRendererID(), ImVec2(size, size), ImVec2(0, 0),ImVec2(1, 1),ImVec4(0.0f,0.0f,0.0f,0.0f),tintColor)&&toolbarEnable)
+            const auto& simulateIconUv = SpriteSheetUtility::FullTextureImGuiUvCorners;
+            if (ImGui::ImageButton("state1", (ImTextureID)icon->GetRendererID(), ImVec2(size, size),
+                                   ImVec2(simulateIconUv.TopLeft.x, simulateIconUv.TopLeft.y),
+                                   ImVec2(simulateIconUv.BottomRight.x, simulateIconUv.BottomRight.y),
+                                   ImVec4(0.0f, 0.0f, 0.0f, 0.0f), tintColor)
+                && toolbarEnable)
             {
                 if (m_SceneState == SceneState::Edit || m_SceneState == SceneState::Play)
                     OnSceneSimulate();
@@ -1706,6 +1767,50 @@ namespace Himii
         const bool altHeld = ImGui::IsKeyDown(ImGuiKey_LeftAlt) || ImGui::IsKeyDown(ImGuiKey_RightAlt);
 
         return m_TileMapEditorPanel.IsMoveEntityModeEnabled() || altHeld;
+    }
+
+    void EditorLayer::UpdateTilemapPaintSession()
+    {
+        if (m_SceneState != SceneState::Edit)
+            return;
+
+        Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity();
+        UUID currentTilemapEntityUUID = 0;
+        bool isTilemapEditTarget = false;
+
+        if (selectedEntity && selectedEntity.HasComponent<TilemapComponent>())
+        {
+            const TilemapComponent& tilemapComponent = selectedEntity.GetComponent<TilemapComponent>();
+            if (tilemapComponent.TileMapHandle != 0 && Project::GetActive())
+            {
+                auto assetManager = Project::GetAssetManager();
+                if (assetManager && assetManager->IsAssetHandleValid(tilemapComponent.TileMapHandle)
+                    && assetManager->GetAsset(tilemapComponent.TileMapHandle))
+                {
+                    isTilemapEditTarget = true;
+                    currentTilemapEntityUUID = selectedEntity.GetUUID();
+                }
+            }
+        }
+
+        const bool tileMapEditorWindowClosed = m_TileMapEditorWasVisible && !m_ShowTileMapEditor;
+        const bool leftTilemapEditTarget = m_TilemapPaintSessionEntityUUID != 0 && !isTilemapEditTarget;
+        const bool switchedTilemapEntity = isTilemapEditTarget && m_TilemapPaintSessionEntityUUID != 0
+            && currentTilemapEntityUUID != m_TilemapPaintSessionEntityUUID;
+
+        if (tileMapEditorWindowClosed || leftTilemapEditTarget || switchedTilemapEntity)
+        {
+            m_TileMapEditorPanel.ClearScenePaintSession();
+            m_TilemapHoveredTile = {TileMapCoordinateUtility::InvalidTileCoordinate,
+                                    TileMapCoordinateUtility::InvalidTileCoordinate};
+            if (leftTilemapEditTarget || tileMapEditorWindowClosed)
+                m_TilemapPaintSessionEntityUUID = 0;
+        }
+
+        if (isTilemapEditTarget)
+            m_TilemapPaintSessionEntityUUID = currentTilemapEntityUUID;
+
+        m_TileMapEditorWasVisible = m_ShowTileMapEditor;
     }
 
     bool EditorLayer::IsTilemapEditContextActive()
@@ -1807,7 +1912,7 @@ namespace Himii
         m_TilemapHoveredTile = tileCoordinates;
         m_TileMapEditorPanel.SetHoveredTileCoordinates(tileCoordinates);
 
-        if (tileCoordinates.x < 0 || !allowPainting)
+        if (!TileMapCoordinateUtility::IsValidTileCoordinate(tileCoordinates) || !allowPainting)
             return;
 
         if (!m_TilemapViewportCapture && !m_ViewportHovered)
@@ -1817,12 +1922,13 @@ namespace Himii
             m_TileMapEditorPanel.ApplyToolAtTile(tileCoordinates.x, tileCoordinates.y);
 
         if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
-            mapData->SetTile((uint32_t)tileCoordinates.x, (uint32_t)tileCoordinates.y, 0);
+            mapData->SetTile(tileCoordinates.x, tileCoordinates.y, 0);
     }
 
     void EditorLayer::DrawTilemapGhostPreviewInViewport()
     {
-        if (m_SceneState != SceneState::Edit || m_TilemapHoveredTile.x < 0 || !IsTilemapPaintActive())
+        if (m_SceneState != SceneState::Edit || !TileMapCoordinateUtility::IsValidTileCoordinate(m_TilemapHoveredTile)
+            || !IsTilemapPaintActive())
             return;
 
         Entity selectedEntity;
@@ -1861,18 +1967,18 @@ namespace Himii
             return;
 
         const float cellSize = mapData->GetCellSize();
-        const glm::vec2 origin = TilemapEditorUtility::GetMapLocalOrigin(*mapData);
-        const float localX = origin.x + (float)m_TilemapHoveredTile.x * cellSize;
-        const float localY = origin.y + (float)m_TilemapHoveredTile.y * cellSize;
+        const glm::vec2 tileBottomLeft = TileMapCoordinateUtility::TileLocalBottomLeft(
+                m_TilemapHoveredTile.x, m_TilemapHoveredTile.y, cellSize);
 
         const glm::mat4 entityTransform = transformComponent->GetTransform();
-        const glm::vec3 worldBottomLeft = entityTransform * glm::vec4(localX, localY, 0.06f, 1.0f);
+        const glm::vec3 worldBottomLeft =
+                entityTransform * glm::vec4(tileBottomLeft.x, tileBottomLeft.y, 0.06f, 1.0f);
         const glm::vec3 worldBottomRight =
-                entityTransform * glm::vec4(localX + cellSize, localY, 0.06f, 1.0f);
+                entityTransform * glm::vec4(tileBottomLeft.x + cellSize, tileBottomLeft.y, 0.06f, 1.0f);
         const glm::vec3 worldTopLeft =
-                entityTransform * glm::vec4(localX, localY + cellSize, 0.06f, 1.0f);
-        const glm::vec3 worldTopRight =
-                entityTransform * glm::vec4(localX + cellSize, localY + cellSize, 0.06f, 1.0f);
+                entityTransform * glm::vec4(tileBottomLeft.x, tileBottomLeft.y + cellSize, 0.06f, 1.0f);
+        const glm::vec3 worldTopRight = entityTransform
+                * glm::vec4(tileBottomLeft.x + cellSize, tileBottomLeft.y + cellSize, 0.06f, 1.0f);
 
         const glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
         const glm::vec2 viewportOrigin = m_ViewportBounds[0];
@@ -1893,9 +1999,11 @@ namespace Himii
         if (tilePixelSize <= 0.0f)
             return;
 
-        const std::array<glm::vec2, 4> imguiQuadUVs = TilemapEditorUtility::AtlasCoordsToImGuiQuadUVs(
-                tileDefinition->AtlasCoords, static_cast<uint32_t>(tilePixelSize),
-                atlasTexture->GetWidth(), atlasTexture->GetHeight());
+        const glm::ivec4 pixelRect = SpriteSheetUtility::AtlasGridCoordsToPixelRect(
+                tileDefinition->AtlasCoords, static_cast<uint32_t>(tilePixelSize));
+        const std::array<glm::vec2, 4> imguiQuadUVs =
+                SpriteSheetUtility::PixelRectToImGuiQuadUVsForScreenCorners(
+                        pixelRect, atlasTexture->GetWidth(), atlasTexture->GetHeight());
 
         ImDrawList *drawList = ImGui::GetWindowDrawList();
         drawList->AddImageQuad((ImTextureID)(uint64_t)atlasTexture->GetRendererID(),
@@ -1903,10 +2011,10 @@ namespace Himii
                                ImVec2(screenBottomRight.x, screenBottomRight.y),
                                ImVec2(screenTopRight.x, screenTopRight.y),
                                ImVec2(screenTopLeft.x, screenTopLeft.y),
-                               ImVec2(imguiQuadUVs[3].x, imguiQuadUVs[3].y),
-                               ImVec2(imguiQuadUVs[2].x, imguiQuadUVs[2].y),
-                               ImVec2(imguiQuadUVs[1].x, imguiQuadUVs[1].y),
                                ImVec2(imguiQuadUVs[0].x, imguiQuadUVs[0].y),
+                               ImVec2(imguiQuadUVs[1].x, imguiQuadUVs[1].y),
+                               ImVec2(imguiQuadUVs[2].x, imguiQuadUVs[2].y),
+                               ImVec2(imguiQuadUVs[3].x, imguiQuadUVs[3].y),
                                IM_COL32(255, 255, 255, 180));
     }
 
@@ -1928,52 +2036,54 @@ namespace Himii
         const glm::mat4 entityTransform = transformComponent.GetTransform();
 
         const float cellSize = mapData->GetCellSize();
-        const uint32_t mapWidth = mapData->GetWidth();
-        const uint32_t mapHeight = mapData->GetHeight();
-        const glm::vec2 origin = TilemapEditorUtility::GetMapLocalOrigin(*mapData);
-        const float mapWorldWidth = (float)mapWidth * cellSize;
-        const float mapWorldHeight = (float)mapHeight * cellSize;
+        const TileMapEditorGridBounds gridBounds =
+                TileMapCoordinateUtility::GetEditorGridBounds(*mapData);
 
         const glm::vec4 gridColor = {0.4f, 0.8f, 1.0f, 0.35f};
         const glm::vec4 borderColor = {0.9f, 0.9f, 0.2f, 0.7f};
 
-        for (uint32_t gridX = 0; gridX <= mapWidth; ++gridX)
+        const glm::vec2 gridBottomLeft = TileMapCoordinateUtility::TileLocalBottomLeft(
+                gridBounds.MinTileX, gridBounds.MinTileY, cellSize);
+        const glm::vec2 gridTopRight = TileMapCoordinateUtility::TileLocalBottomLeft(
+                gridBounds.MaxTileX + 1, gridBounds.MaxTileY + 1, cellSize);
+
+        for (int32_t gridX = gridBounds.MinTileX; gridX <= gridBounds.MaxTileX + 1; ++gridX)
         {
-            const float localX = origin.x + (float)gridX * cellSize;
-            const glm::vec3 start = entityTransform * glm::vec4(localX, origin.y, 0.02f, 1.0f);
-            const glm::vec3 end = entityTransform * glm::vec4(localX, origin.y + mapWorldHeight, 0.02f, 1.0f);
+            const float localX = TileMapCoordinateUtility::TileLocalBottomLeft(gridX, 0, cellSize).x;
+            const glm::vec3 start = entityTransform * glm::vec4(localX, gridBottomLeft.y, 0.02f, 1.0f);
+            const glm::vec3 end = entityTransform * glm::vec4(localX, gridTopRight.y, 0.02f, 1.0f);
             Renderer2D::DrawLine(start, end, gridColor);
         }
 
-        for (uint32_t gridY = 0; gridY <= mapHeight; ++gridY)
+        for (int32_t gridY = gridBounds.MinTileY; gridY <= gridBounds.MaxTileY + 1; ++gridY)
         {
-            const float localY = origin.y + (float)gridY * cellSize;
-            const glm::vec3 start = entityTransform * glm::vec4(origin.x, localY, 0.02f, 1.0f);
-            const glm::vec3 end = entityTransform * glm::vec4(origin.x + mapWorldWidth, localY, 0.02f, 1.0f);
+            const float localY = TileMapCoordinateUtility::TileLocalBottomLeft(0, gridY, cellSize).y;
+            const glm::vec3 start = entityTransform * glm::vec4(gridBottomLeft.x, localY, 0.02f, 1.0f);
+            const glm::vec3 end = entityTransform * glm::vec4(gridTopRight.x, localY, 0.02f, 1.0f);
             Renderer2D::DrawLine(start, end, gridColor);
         }
 
-        const glm::vec3 cornerBottomLeft = entityTransform * glm::vec4(origin.x, origin.y, 0.02f, 1.0f);
+        const glm::vec3 cornerBottomLeft =
+                entityTransform * glm::vec4(gridBottomLeft.x, gridBottomLeft.y, 0.02f, 1.0f);
         const glm::vec3 cornerBottomRight =
-                entityTransform * glm::vec4(origin.x + mapWorldWidth, origin.y, 0.02f, 1.0f);
+                entityTransform * glm::vec4(gridTopRight.x, gridBottomLeft.y, 0.02f, 1.0f);
         const glm::vec3 cornerTopRight =
-                entityTransform * glm::vec4(origin.x + mapWorldWidth, origin.y + mapWorldHeight, 0.02f, 1.0f);
+                entityTransform * glm::vec4(gridTopRight.x, gridTopRight.y, 0.02f, 1.0f);
         const glm::vec3 cornerTopLeft =
-                entityTransform * glm::vec4(origin.x, origin.y + mapWorldHeight, 0.02f, 1.0f);
+                entityTransform * glm::vec4(gridBottomLeft.x, gridTopRight.y, 0.02f, 1.0f);
 
         Renderer2D::DrawLine(cornerBottomLeft, cornerBottomRight, borderColor);
         Renderer2D::DrawLine(cornerBottomRight, cornerTopRight, borderColor);
         Renderer2D::DrawLine(cornerTopRight, cornerTopLeft, borderColor);
         Renderer2D::DrawLine(cornerTopLeft, cornerBottomLeft, borderColor);
 
-        if (m_TilemapHoveredTile.x >= 0)
+        if (TileMapCoordinateUtility::IsValidTileCoordinate(m_TilemapHoveredTile))
         {
-            const float highlightX = origin.x + (float)m_TilemapHoveredTile.x * cellSize;
-            const float highlightY = origin.y + (float)m_TilemapHoveredTile.y * cellSize;
+            const glm::vec2 tileCenter = TileMapCoordinateUtility::TileLocalCenter(
+                    m_TilemapHoveredTile.x, m_TilemapHoveredTile.y, cellSize);
 
             glm::mat4 highlightTransform = entityTransform
-                    * glm::translate(glm::mat4(1.0f),
-                                     glm::vec3(highlightX + cellSize * 0.5f, highlightY + cellSize * 0.5f, 0.05f))
+                    * glm::translate(glm::mat4(1.0f), glm::vec3(tileCenter.x, tileCenter.y, 0.05f))
                     * glm::scale(glm::mat4(1.0f), glm::vec3(cellSize * 0.98f, cellSize * 0.98f, 1.0f));
 
             const glm::vec4 highlightColor = {0.3f, 0.85f, 1.0f, 0.25f};
@@ -2002,16 +2112,13 @@ namespace Himii
                                 if (atlasTexture && atlasSource.TileSize > 0)
                                 {
                                     const std::array<glm::vec2, 4> textureCoordinates =
-                                            SpriteSheetUtility::ReorderUVsForYUpWorldQuad(
-                                                    SpriteSheetUtility::AtlasGridCoordsToUVs(
-                                                            tileDefinition->AtlasCoords, atlasSource.TileSize,
-                                                            atlasTexture->GetWidth(), atlasTexture->GetHeight()));
+                                            SpriteSheetUtility::AtlasGridCoordsToWorldQuadUVs(
+                                                    tileDefinition->AtlasCoords, atlasSource.TileSize,
+                                                    atlasTexture->GetWidth(), atlasTexture->GetHeight());
 
                                     glm::mat4 ghostTransform = entityTransform
-                                            * glm::translate(
-                                                    glm::mat4(1.0f),
-                                                    glm::vec3(highlightX + cellSize * 0.5f,
-                                                              highlightY + cellSize * 0.5f, 0.06f))
+                                            * glm::translate(glm::mat4(1.0f),
+                                                             glm::vec3(tileCenter.x, tileCenter.y, 0.06f))
                                             * glm::scale(glm::mat4(1.0f),
                                                          glm::vec3(cellSize * 0.98f, cellSize * 0.98f, 1.0f));
 

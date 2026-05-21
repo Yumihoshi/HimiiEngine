@@ -331,19 +331,14 @@ namespace Himii {
 
     static void Tilemap_SetSize(uint64_t entityID, uint32_t width, uint32_t height)
     {
-        Scene *scene = ScriptEngine::GetSceneContext();
-        if (!scene) return;
-        Entity entity = scene->GetEntityByUUID(entityID);
-
-        auto mapData = GetTileMapDataFromEntity(entity);
-        if (!mapData) return;
-
-        uint32_t halfW = (width > 0) ? (width - 1) / 2 : 0;
-        uint32_t halfH = (height > 0) ? (height - 1) / 2 : 0;
-        mapData->Resize(halfW, halfH);
+        (void)entityID;
+        (void)width;
+        (void)height;
+        HIMII_CORE_WARNING(
+                "Tilemap_SetSize is deprecated: tilemaps auto-expand. Use paint/SetTile instead.");
     }
 
-    static uint16_t Tilemap_GetTile(uint64_t entityID, uint32_t x, uint32_t y)
+    static uint16_t Tilemap_GetTile(uint64_t entityID, int32_t x, int32_t y)
     {
         Scene *scene = ScriptEngine::GetSceneContext();
         if (!scene) return 0;
@@ -354,8 +349,8 @@ namespace Himii {
 
         return mapData->GetTile(x, y);
     }
-    
-    static void Tilemap_SetTile(uint64_t entityID, uint32_t x, uint32_t y, uint16_t tileID)
+
+    static void Tilemap_SetTile(uint64_t entityID, int32_t x, int32_t y, uint16_t tileID)
     {
         Scene *scene = ScriptEngine::GetSceneContext();
         if (!scene) return;
@@ -365,6 +360,25 @@ namespace Himii {
         if (!mapData) return;
 
         mapData->SetTile(x, y, tileID);
+    }
+
+    static void Tilemap_GetBounds(uint64_t entityID, int32_t* outMinX, int32_t* outMinY,
+                                int32_t* outMaxX, int32_t* outMaxY)
+    {
+        if (outMinX) *outMinX = 0;
+        if (outMinY) *outMinY = 0;
+        if (outMaxX) *outMaxX = 0;
+        if (outMaxY) *outMaxY = 0;
+
+        Scene *scene = ScriptEngine::GetSceneContext();
+        if (!scene) return;
+        Entity entity = scene->GetEntityByUUID(entityID);
+
+        auto mapData = GetTileMapDataFromEntity(entity);
+        if (!mapData || !mapData->HasBounds())
+            return;
+
+        mapData->GetBounds(*outMinX, *outMinY, *outMaxX, *outMaxY);
     }
 
     static void Physics2D_Raycast(glm::vec2* start, glm::vec2* end, Scene::RaycastHit2D* outHit)
@@ -561,6 +575,8 @@ namespace Himii {
         data.SpriteRenderer_SetSpriteHandle = (void *)&SpriteRenderer_SetSpriteHandle;
         data.SpriteRenderer_GetTextureHandle = (void *)&SpriteRenderer_GetTextureHandle;
         data.SpriteRenderer_SetTextureHandle = (void *)&SpriteRenderer_SetTextureHandle;
+
+        data.Tilemap_GetBounds = (void *)&Tilemap_GetBounds;
 
         return data;
     }

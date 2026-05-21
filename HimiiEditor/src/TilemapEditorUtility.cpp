@@ -1,6 +1,8 @@
 #include "TilemapEditorUtility.h"
 
-#include <array>
+#include "Himii/Asset/SpriteSheetUtility.h"
+#include "Himii/Scene/TileMapCoordinateUtility.h"
+
 #include <cmath>
 
 namespace Himii
@@ -8,28 +10,16 @@ namespace Himii
 
     glm::vec2 TilemapEditorUtility::GetMapLocalOrigin(const TileMapData& mapData)
     {
-        const float cellSize = mapData.GetCellSize();
-        const float offsetX = -(float)mapData.GetWidth() * cellSize * 0.5f;
-        const float offsetY = -(float)mapData.GetHeight() * cellSize * 0.5f;
-        return {offsetX, offsetY};
+        const TileMapEditorGridBounds gridBounds =
+                TileMapCoordinateUtility::GetEditorGridBounds(mapData);
+        return TileMapCoordinateUtility::TileLocalBottomLeft(
+                gridBounds.MinTileX, gridBounds.MinTileY, mapData.GetCellSize());
     }
 
     glm::ivec2 TilemapEditorUtility::LocalPositionToTileCoordinates(const glm::vec2& localPosition,
                                                                     const TileMapData& mapData)
     {
-        const glm::vec2 origin = GetMapLocalOrigin(mapData);
-        const float cellSize = mapData.GetCellSize();
-        if (cellSize <= 0.0f)
-            return {-1, -1};
-
-        const int tileX = (int)std::floor((localPosition.x - origin.x) / cellSize);
-        const int tileY = (int)std::floor((localPosition.y - origin.y) / cellSize);
-
-        if (tileX < 0 || tileY < 0
-            || tileX >= (int)mapData.GetWidth() || tileY >= (int)mapData.GetHeight())
-            return {-1, -1};
-
-        return {tileX, tileY};
+        return TileMapCoordinateUtility::TileLocalToCoordinates(localPosition, mapData.GetCellSize());
     }
 
     glm::vec3 TilemapEditorUtility::ViewportMouseToWorld(const glm::vec2& viewportMousePosition,
@@ -39,12 +29,6 @@ namespace Himii
         if (viewportSize.x <= 0.0f || viewportSize.y <= 0.0f)
             return {0.0f, 0.0f, 0.0f};
 
-        const float normalizedX = (viewportMousePosition.x / viewportSize.x) * 2.0f - 1.0f;
-        const float normalizedY = (viewportMousePosition.y / viewportSize.y) * 2.0f - 1.0f;
-        glm::vec4 clipSpace = {normalizedX, normalizedY, 0.0f, 1.0f};
-        glm::vec4 worldSpace = glm::inverse(viewProjectionMatrix) * clipSpace;
-        if (worldSpace.w != 0.0f)
-            worldSpace /= worldSpace.w;
         return ViewportMouseToWorldOnPlane(viewportMousePosition, viewportSize, viewProjectionMatrix, 0.0f);
     }
 
@@ -97,20 +81,10 @@ namespace Himii
                                                             glm::vec2& outUvMin,
                                                             glm::vec2& outUvMax)
     {
-        if (textureWidth == 0 || textureHeight == 0 || tilePixelSize == 0)
-        {
-            outUvMin = {0.0f, 1.0f};
-            outUvMax = {1.0f, 0.0f};
-            return;
-        }
-
-        const float unitU = static_cast<float>(tilePixelSize) / static_cast<float>(textureWidth);
-        const float unitV = static_cast<float>(tilePixelSize) / static_cast<float>(textureHeight);
-        const float coordinateU0 = atlasCoordinates.x * unitU;
-        const float coordinateV0 = atlasCoordinates.y * unitV;
-
-        outUvMin = {coordinateU0, coordinateV0 + unitV};
-        outUvMax = {coordinateU0 + unitU, coordinateV0};
+        const glm::ivec4 pixelRect =
+                SpriteSheetUtility::AtlasGridCoordsToPixelRect(atlasCoordinates, tilePixelSize);
+        SpriteSheetUtility::PixelRectToImGuiImageUVCorners(
+                pixelRect, textureWidth, textureHeight, outUvMin, outUvMax);
     }
 
     std::array<glm::vec2, 4> TilemapEditorUtility::AtlasCoordsToImGuiQuadUVs(
@@ -119,15 +93,10 @@ namespace Himii
             uint32_t textureWidth,
             uint32_t textureHeight)
     {
-        glm::vec2 uvMin;
-        glm::vec2 uvMax;
-        AtlasCoordsToImGuiImageUVs(atlasCoordinates, tilePixelSize, textureWidth, textureHeight, uvMin, uvMax);
-
-        return {
-            glm::vec2(uvMin.x, uvMin.y),
-            glm::vec2(uvMax.x, uvMin.y),
-            glm::vec2(uvMax.x, uvMax.y),
-            glm::vec2(uvMin.x, uvMax.y)};
+        const glm::ivec4 pixelRect =
+                SpriteSheetUtility::AtlasGridCoordsToPixelRect(atlasCoordinates, tilePixelSize);
+        return SpriteSheetUtility::PixelRectToImGuiQuadUVsForScreenCorners(
+                pixelRect, textureWidth, textureHeight);
     }
 
 } // namespace Himii

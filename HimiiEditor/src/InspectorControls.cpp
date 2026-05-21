@@ -2,6 +2,7 @@
 #include "InspectorControls.h"
 
 #include "Himii/Asset/AssetManager.h"
+#include "Himii/Asset/SpriteSheetUtility.h"
 #include "Himii/Project/Project.h"
 
 #include <imgui.h>
@@ -315,8 +316,8 @@ namespace Himii
                 if (showPreview)
                 {
                     ImGui::SetCursorPos(ImVec2(ImGui::GetStyle().WindowPadding.x, verticalPadding));
-                    ImGui::Image((ImTextureID)(intptr_t)previewTexture->GetRendererID(),
-                                 ImVec2(previewSize, previewSize), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+                    DrawEditorTextureImageFull(previewTexture->GetRendererID(),
+                                               ImVec2(previewSize, previewSize));
                 }
 
                 if (hasReference && onClear)
@@ -348,6 +349,25 @@ namespace Himii
             ImGui::PopStyleVar(3);
             ImGui::PopStyleColor();
         });
+    }
+
+    void DrawEditorTextureImageFull(uint64_t textureRendererId, const ImVec2& displaySize)
+    {
+        const auto& corners = SpriteSheetUtility::FullTextureImGuiUvCorners;
+        ImGui::Image((ImTextureID)(intptr_t)textureRendererId, displaySize,
+                     ImVec2(corners.TopLeft.x, corners.TopLeft.y),
+                     ImVec2(corners.BottomRight.x, corners.BottomRight.y));
+    }
+
+    void DrawEditorTextureImageSubRect(uint64_t textureRendererId, const ImVec2& displaySize,
+                                       const glm::ivec4& pixelRect, uint32_t textureWidth,
+                                       uint32_t textureHeight)
+    {
+        const auto corners =
+                SpriteSheetUtility::PixelRectToImGuiImageUv(pixelRect, textureWidth, textureHeight);
+        ImGui::Image((ImTextureID)(intptr_t)textureRendererId, displaySize,
+                     ImVec2(corners.TopLeft.x, corners.TopLeft.y),
+                     ImVec2(corners.BottomRight.x, corners.BottomRight.y));
     }
 
 } // namespace Himii

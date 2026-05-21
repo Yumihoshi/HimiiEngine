@@ -201,6 +201,15 @@ namespace Himii
         TilemapComponent(const TilemapComponent&) = default;
     };
 
+    struct TilemapCollider2DComponent
+    {
+        bool Enabled = true;
+        bool MergeAdjacentCells = false;
+
+        TilemapCollider2DComponent() = default;
+        TilemapCollider2DComponent(const TilemapCollider2DComponent&) = default;
+    };
+
     struct ParticleEmitterComponent
     {
         AssetHandle EmitterHandle = 0;

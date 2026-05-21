@@ -353,12 +353,6 @@ namespace Himii
             return;
 
         const float thumbnailSize = 72.0f;
-        glm::vec2 uvTopLeft{};
-        glm::vec2 uvBottomRight{};
-        SpriteSheetUtility::PixelRectToImGuiImageUVCorners(
-            sprite.PixelRect, m_PreviewTexture->GetWidth(), m_PreviewTexture->GetHeight(),
-            uvTopLeft, uvBottomRight);
-
         DrawPropertyRow("Thumbnail", [&]()
         {
             const float aspect = sprite.PixelRect.z > 0 && sprite.PixelRect.w > 0
@@ -372,11 +366,9 @@ namespace Himii
             else
                 displayWidth = displayHeight * aspect;
 
-            ImGui::Image(
-                (ImTextureID)(intptr_t)m_PreviewTexture->GetRendererID(),
-                ImVec2(displayWidth, displayHeight),
-                ImVec2(uvTopLeft.x, uvTopLeft.y),
-                ImVec2(uvBottomRight.x, uvBottomRight.y));
+            DrawEditorTextureImageSubRect(
+                m_PreviewTexture->GetRendererID(), ImVec2(displayWidth, displayHeight),
+                sprite.PixelRect, m_PreviewTexture->GetWidth(), m_PreviewTexture->GetHeight());
         });
     }
 
@@ -394,8 +386,8 @@ namespace Himii
             const float aspectRatio = static_cast<float>(m_PreviewTexture->GetWidth())
                 / static_cast<float>(m_PreviewTexture->GetHeight());
             const float previewHeight = previewWidth / aspectRatio;
-            ImGui::Image((ImTextureID)(intptr_t)m_PreviewTexture->GetRendererID(),
-                         ImVec2(previewWidth, previewHeight), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+            DrawEditorTextureImageFull(m_PreviewTexture->GetRendererID(),
+                                       ImVec2(previewWidth, previewHeight));
             return;
         }
 
@@ -421,8 +413,8 @@ namespace Himii
         ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + offsetX, ImGui::GetCursorPosY() + offsetY));
 
         const ImVec2 imagePosition = ImGui::GetCursorScreenPos();
-        ImGui::Image((ImTextureID)(intptr_t)m_PreviewTexture->GetRendererID(),
-                     ImVec2(displayWidth, displayHeight), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+        DrawEditorTextureImageFull(m_PreviewTexture->GetRendererID(),
+                                   ImVec2(displayWidth, displayHeight));
 
         const std::vector<SpriteDefinition>& sprites = assetManager->GetSpritesForTexture(m_TextureHandle);
         const float scaleX = displayWidth / static_cast<float>(m_PreviewTexture->GetWidth());

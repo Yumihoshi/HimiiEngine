@@ -55,6 +55,8 @@ namespace HimiiEngine
         public IntPtr SpriteRenderer_SetSpriteHandle;
         public IntPtr SpriteRenderer_GetTextureHandle;
         public IntPtr SpriteRenderer_SetTextureHandle;
+
+        public IntPtr Tilemap_GetBounds;
     }
 
     [StructLayout(LayoutKind.Sequential)]

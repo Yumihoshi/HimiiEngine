@@ -6,6 +6,7 @@
 #include "Himii/Asset/AssetManager.h"
 #include "Himii/Asset/AssetSerializer.h"
 #include "Himii/Asset/SpriteSheetUtility.h"
+#include "Himii/Scene/TileMapCoordinateUtility.h"
 #include "Himii/Project/Project.h"
 #include "Himii/Core/Log.h"
 
@@ -16,6 +17,7 @@
 #include <cstdio>
 #include <filesystem>
 #include <queue>
+#include <unordered_set>
 
 namespace Himii
 {
@@ -31,9 +33,35 @@ namespace Himii
         LoadAssets();
     }
 
+    void TileMapEditorPanel::ClearScenePaintSession()
+    {
+        m_SelectedTileID = 0;
+        m_BrushTileSelected = false;
+        m_CurrentTool = Tool::Brush;
+        m_MoveEntityModeEnabled = false;
+        m_HoveredTileCoordinates = {TileMapCoordinateUtility::InvalidTileCoordinate,
+                                    TileMapCoordinateUtility::InvalidTileCoordinate};
+    }
+
+    void TileMapEditorPanel::SetMoveEntityModeEnabled(bool enabled)
+    {
+        if (enabled)
+        {
+            m_SelectedTileID = 0;
+            m_BrushTileSelected = false;
+            m_CurrentTool = Tool::Brush;
+        }
+        m_MoveEntityModeEnabled = enabled;
+    }
+
+    void TileMapEditorPanel::ToggleMoveEntityMode()
+    {
+        SetMoveEntityModeEnabled(!m_MoveEntityModeEnabled);
+    }
+
     bool TileMapEditorPanel::CanPaintInScene() const
     {
-        if (!m_MapData)
+        if (!m_MapData || m_MoveEntityModeEnabled)
             return false;
 
         if (m_CurrentTool == Tool::Eraser)
@@ -183,6 +211,8 @@ namespace Himii
         ImGui::Separator();
         UI_Toolbar();
         ImGui::Separator();
+        UI_Collision();
+        ImGui::Separator();
         UI_AtlasSetup();
         ImGui::Separator();
         DrawSelectedTileThumbnail();
@@ -223,7 +253,7 @@ namespace Himii
 
         ImGui::Text("Tile ID: %d", (int)m_SelectedTileID);
 
-        if (m_HoveredTileCoordinates.x >= 0)
+        if (TileMapCoordinateUtility::IsValidTileCoordinate(m_HoveredTileCoordinates))
             ImGui::TextDisabled("Scene hover: (%d, %d)", m_HoveredTileCoordinates.x,
                                 m_HoveredTileCoordinates.y);
 
@@ -232,6 +262,59 @@ namespace Himii
         {
             ImGui::TextDisabled("Atlas cell: (%d, %d)", selectedTileDefinition->AtlasCoords.x,
                                 selectedTileDefinition->AtlasCoords.y);
+        }
+
+    }
+
+    void TileMapEditorPanel::UI_Collision()
+    {
+        DrawInspectorSectionHeader("Collision");
+
+        if (!m_TileSet)
+        {
+            ImGui::TextDisabled("Assign a TileSet to configure collision.");
+            return;
+        }
+
+        uint32_t collidableDefinitionCount = 0;
+        const uint32_t totalDefinitionCount = static_cast<uint32_t>(m_TileSet->GetTileDefs().size());
+        for (const auto& [tileIdentifier, tileDefinition] : m_TileSet->GetTileDefs())
+        {
+            if (tileDefinition.Collidable)
+                collidableDefinitionCount++;
+        }
+
+        ImGui::TextDisabled(
+                "Collidable is per tile TYPE (not per painted cell). Save TileSet before Play.");
+        ImGui::Text("Tile definitions: %u / %u Collidable",
+                    collidableDefinitionCount,
+                    totalDefinitionCount);
+
+        if (ImGui::Button("Set All Collidable", ImVec2(-1.0f, 0.0f)))
+        {
+            for (auto& [tileIdentifier, tileDefinition] : m_TileSet->GetTileDefs())
+                tileDefinition.Collidable = true;
+            SaveTileSet();
+        }
+
+        if (ImGui::Button("Clear All Collidable", ImVec2(-1.0f, 0.0f)))
+        {
+            for (auto& [tileIdentifier, tileDefinition] : m_TileSet->GetTileDefs())
+                tileDefinition.Collidable = false;
+            SaveTileSet();
+        }
+
+        if (m_SelectedTileID != 0)
+        {
+            auto& tileDefinitions = m_TileSet->GetTileDefs();
+            const auto iterator = tileDefinitions.find(m_SelectedTileID);
+            if (iterator != tileDefinitions.end())
+            {
+                ImGui::Separator();
+                DrawCheckboxControl("Selected Tile Collidable", iterator->second.Collidable);
+                if (ImGui::IsItemDeactivatedAfterEdit())
+                    SaveTileSet();
+            }
         }
     }
 
@@ -311,24 +394,15 @@ namespace Himii
             return;
 
         const uint32_t tilePixelSize = m_AtlasTileSize > 0 ? m_AtlasTileSize : 16;
-        const glm::ivec4 pixelRect(
-                selectedTileDefinition->AtlasCoords.x * static_cast<int>(tilePixelSize),
-                selectedTileDefinition->AtlasCoords.y * static_cast<int>(tilePixelSize),
-                static_cast<int>(tilePixelSize),
-                static_cast<int>(tilePixelSize));
-
-        glm::vec2 uvTopLeft{};
-        glm::vec2 uvBottomRight{};
-        SpriteSheetUtility::PixelRectToImGuiImageUVCorners(
-                pixelRect, atlasTexture->GetWidth(), atlasTexture->GetHeight(), uvTopLeft, uvBottomRight);
+        const glm::ivec4 pixelRect = SpriteSheetUtility::AtlasGridCoordsToPixelRect(
+                selectedTileDefinition->AtlasCoords, tilePixelSize);
 
         const float thumbnailSize = 72.0f;
         DrawPropertyRow("Selected Tile", [&]()
         {
-            ImGui::Image((ImTextureID)(intptr_t)atlasTexture->GetRendererID(),
-                         ImVec2(thumbnailSize, thumbnailSize),
-                         ImVec2(uvTopLeft.x, uvTopLeft.y),
-                         ImVec2(uvBottomRight.x, uvBottomRight.y));
+            DrawEditorTextureImageSubRect(
+                atlasTexture->GetRendererID(), ImVec2(thumbnailSize, thumbnailSize),
+                pixelRect, atlasTexture->GetWidth(), atlasTexture->GetHeight());
         });
     }
 
@@ -402,8 +476,7 @@ namespace Himii
         ImGui::SetCursorPos(ImVec2(ImGui::GetCursorPosX() + offsetX, ImGui::GetCursorPosY() + offsetY));
 
         const ImVec2 imagePosition = ImGui::GetCursorScreenPos();
-        ImGui::Image((ImTextureID)(intptr_t)atlasTexture->GetRendererID(),
-                     ImVec2(displayWidth, displayHeight), ImVec2(0.0f, 1.0f), ImVec2(1.0f, 0.0f));
+        DrawEditorTextureImageFull(atlasTexture->GetRendererID(), ImVec2(displayWidth, displayHeight));
 
         const uint32_t tilePixelSize = m_AtlasTileSize > 0 ? m_AtlasTileSize : 16;
         const uint32_t columnCount =
@@ -506,10 +579,12 @@ namespace Himii
             m_TileSet->GetAtlasSources()[0].TileSize = m_AtlasTileSize;
         }
 
+        const std::unordered_map<uint16_t, TileDef> previousDefinitions = m_TileSet->GetTileDefs();
+
         const uint32_t tileSize = m_AtlasTileSize > 0 ? m_AtlasTileSize : 16;
         const uint32_t columnCount = std::max(1u, texture->GetWidth() / tileSize);
         const uint32_t rowCount = std::max(1u, texture->GetHeight() / tileSize);
-        m_TileSet->GenerateGridTileDefs(0, columnCount, rowCount);
+        m_TileSet->GenerateGridTileDefs(0, columnCount, rowCount, &previousDefinitions);
 
         m_SelectedTileID = 0;
         m_BrushTileSelected = false;
@@ -523,15 +598,23 @@ namespace Himii
         if (!m_MapData)
             return;
 
-        int halfWidth = (int)m_MapData->GetHalfWidth();
-        int halfHeight = (int)m_MapData->GetHalfHeight();
         float cellSize = m_MapData->GetCellSize();
 
-        if (ImGui::DragInt("Half W", &halfWidth, 1.0f, 0, 512))
-            m_MapData->Resize((uint32_t)(halfWidth > 0 ? halfWidth : 0), m_MapData->GetHalfHeight());
-        if (ImGui::DragInt("Half H", &halfHeight, 1.0f, 0, 512))
-            m_MapData->Resize(m_MapData->GetHalfWidth(), (uint32_t)(halfHeight > 0 ? halfHeight : 0));
-        ImGui::TextDisabled("Grid: %u x %u", m_MapData->GetWidth(), m_MapData->GetHeight());
+        if (m_MapData->HasBounds())
+        {
+            int32_t minTileX = 0;
+            int32_t minTileY = 0;
+            int32_t maxTileX = 0;
+            int32_t maxTileY = 0;
+            m_MapData->GetBounds(minTileX, minTileY, maxTileX, maxTileY);
+            ImGui::TextDisabled("Bounds: (%d,%d) .. (%d,%d)", minTileX, minTileY, maxTileX, maxTileY);
+            ImGui::TextDisabled("Extent: %u x %u tiles", m_MapData->GetWidth(), m_MapData->GetHeight());
+        }
+        else
+        {
+            ImGui::TextDisabled("Bounds: empty (paint in Scene to expand)");
+        }
+
         if (ImGui::DragFloat("Cell Size", &cellSize, 0.05f, 0.1f, 10.0f))
             m_MapData->SetCellSize(cellSize);
 
@@ -554,14 +637,14 @@ namespace Himii
         switch (m_CurrentTool)
         {
             case Tool::Brush:
-                m_MapData->SetTile((uint32_t)tileX, (uint32_t)tileY, m_SelectedTileID);
+                m_MapData->SetTile(tileX, tileY, m_SelectedTileID);
                 break;
             case Tool::Eraser:
-                m_MapData->SetTile((uint32_t)tileX, (uint32_t)tileY, 0);
+                m_MapData->SetTile(tileX, tileY, 0);
                 break;
             case Tool::Fill:
             {
-                uint16_t target = m_MapData->GetTile((uint32_t)tileX, (uint32_t)tileY);
+                uint16_t target = m_MapData->GetTile(tileX, tileY);
                 if (target != m_SelectedTileID)
                     FloodFill(tileX, tileY, target, m_SelectedTileID);
                 break;
@@ -574,34 +657,41 @@ namespace Himii
         if (!m_MapData || target == replacement)
             return;
 
-        const int width = (int)m_MapData->GetWidth();
-        const int height = (int)m_MapData->GetHeight();
+        auto packCoordinates = [](int32_t x, int32_t y) -> int64_t
+        {
+            return (static_cast<int64_t>(x) << 32) | static_cast<uint32_t>(y);
+        };
 
         std::queue<glm::ivec2> queue;
+        std::unordered_set<int64_t> visited;
         queue.push({startX, startY});
+        visited.insert(packCoordinates(startX, startY));
 
         int filledCount = 0;
-        const int maxFill = width * height;
+        constexpr int maxFill = 65536;
 
         while (!queue.empty() && filledCount < maxFill)
         {
-            glm::ivec2 position = queue.front();
+            const glm::ivec2 position = queue.front();
             queue.pop();
-            const int x = position.x;
-            const int y = position.y;
+            const int32_t x = position.x;
+            const int32_t y = position.y;
 
-            if (x < 0 || x >= width || y < 0 || y >= height)
-                continue;
-            if (m_MapData->GetTile((uint32_t)x, (uint32_t)y) != target)
+            if (m_MapData->GetTile(x, y) != target)
                 continue;
 
-            m_MapData->SetTile((uint32_t)x, (uint32_t)y, replacement);
+            m_MapData->SetTile(x, y, replacement);
             filledCount++;
 
-            queue.push({x + 1, y});
-            queue.push({x - 1, y});
-            queue.push({x, y + 1});
-            queue.push({x, y - 1});
+            const glm::ivec2 neighbors[4] = {
+                {x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1}};
+
+            for (const glm::ivec2& neighbor : neighbors)
+            {
+                const int64_t packed = packCoordinates(neighbor.x, neighbor.y);
+                if (visited.insert(packed).second)
+                    queue.push(neighbor);
+            }
         }
     }
 

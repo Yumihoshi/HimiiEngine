@@ -11,6 +11,7 @@
 #include <string>
 
 struct ImGuiPayload;
+struct ImVec2;
 
 namespace Himii
 {
@@ -64,5 +65,13 @@ namespace Himii
                                  const std::function<void()>& onClear,
                                  const std::function<bool(const ImGuiPayload*)>& onAssignPayload,
                                  const std::function<void()>& onDoubleClick = nullptr);
+
+    /** 编辑器内显示整张纹理（与 SpriteSheetUtility 约定一致，避免上下颠倒）。 */
+    void DrawEditorTextureImageFull(uint64_t textureRendererId, const ImVec2& displaySize);
+
+    /** 编辑器内显示 PixelRect 子区域。 */
+    void DrawEditorTextureImageSubRect(uint64_t textureRendererId, const ImVec2& displaySize,
+                                       const glm::ivec4& pixelRect, uint32_t textureWidth,
+                                       uint32_t textureHeight);
 
 } // namespace Himii

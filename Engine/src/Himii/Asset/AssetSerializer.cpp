@@ -350,15 +350,31 @@ namespace Himii
         out << YAML::Key << "AssetType" << YAML::Value << "TileMap";
         out << YAML::Key << "Handle" << YAML::Value << (uint64_t)tileMapData->Handle;
         out << YAML::Key << "TileSetHandle" << YAML::Value << (uint64_t)tileMapData->GetTileSetHandle();
-        out << YAML::Key << "HalfWidth" << YAML::Value << tileMapData->GetHalfWidth();
-        out << YAML::Key << "HalfHeight" << YAML::Value << tileMapData->GetHalfHeight();
         out << YAML::Key << "CellSize" << YAML::Value << tileMapData->GetCellSize();
 
-        // Tiles 数据 - Flow 模式紧凑存储
-        out << YAML::Key << "Tiles" << YAML::Value << YAML::Flow << YAML::BeginSeq;
-        for (auto t : tileMapData->GetTiles())
+        out << YAML::Key << "Chunks" << YAML::Value << YAML::BeginSeq;
+        for (const auto& [chunkKey, chunk] : tileMapData->GetChunks())
         {
-            out << (int)t;
+            bool hasAnyTile = false;
+            for (uint16_t tileIdentifier : chunk.Tiles)
+            {
+                if (tileIdentifier != 0)
+                {
+                    hasAnyTile = true;
+                    break;
+                }
+            }
+            if (!hasAnyTile)
+                continue;
+
+            out << YAML::BeginMap;
+            out << YAML::Key << "ChunkX" << YAML::Value << chunkKey.ChunkX;
+            out << YAML::Key << "ChunkY" << YAML::Value << chunkKey.ChunkY;
+            out << YAML::Key << "Tiles" << YAML::Value << YAML::Flow << YAML::BeginSeq;
+            for (uint16_t tileIdentifier : chunk.Tiles)
+                out << (int)tileIdentifier;
+            out << YAML::EndSeq;
+            out << YAML::EndMap;
         }
         out << YAML::EndSeq;
 
@@ -414,17 +430,47 @@ namespace Himii
             if (data["CellSize"])
                 tileMapData->SetCellSize(data["CellSize"].as<float>());
 
+            if (data["Chunks"] && data["Chunks"].IsSequence())
             {
-                tileMapData->Resize(halfWidth, halfHeight);
-
-                if (data["Tiles"] && data["Tiles"].IsSequence())
+                for (const auto& chunkNode : data["Chunks"])
                 {
-                    auto &tiles = tileMapData->GetTiles();
-                    for (size_t i = 0; i < data["Tiles"].size() && i < tiles.size(); ++i)
+                    if (!chunkNode["ChunkX"] || !chunkNode["ChunkY"] || !chunkNode["Tiles"])
+                        continue;
+
+                    const int32_t chunkX = chunkNode["ChunkX"].as<int32_t>();
+                    const int32_t chunkY = chunkNode["ChunkY"].as<int32_t>();
+                    const auto& tilesSequence = chunkNode["Tiles"];
+
+                    for (int32_t localY = 0; localY < TileMapChunkSize; ++localY)
                     {
-                        tiles[i] = (uint16_t)data["Tiles"][i].as<int>();
+                        for (int32_t localX = 0; localX < TileMapChunkSize; ++localX)
+                        {
+                            const size_t arrayIndex =
+                                    static_cast<size_t>(localX)
+                                    + static_cast<size_t>(localY) * TileMapChunkSize;
+                            if (arrayIndex >= tilesSequence.size())
+                                continue;
+
+                            const uint16_t tileIdentifier =
+                                    (uint16_t)tilesSequence[arrayIndex].as<int>();
+                            if (tileIdentifier == 0)
+                                continue;
+
+                            const int32_t tileX = chunkX * TileMapChunkSize + localX;
+                            const int32_t tileY = chunkY * TileMapChunkSize + localY;
+                            tileMapData->SetTile(tileX, tileY, tileIdentifier);
+                        }
                     }
                 }
+            }
+            else if (data["Tiles"] && data["Tiles"].IsSequence())
+            {
+                std::vector<uint16_t> denseTiles;
+                denseTiles.reserve(data["Tiles"].size());
+                for (const auto& tileNode : data["Tiles"])
+                    denseTiles.push_back((uint16_t)tileNode.as<int>());
+
+                tileMapData->ImportLegacyDenseTiles(halfWidth, halfHeight, denseTiles);
             }
 
             return tileMapData;

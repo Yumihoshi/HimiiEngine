@@ -2,6 +2,7 @@
 #include "Hepch.h"
 #include "Himii/Renderer/Renderer2D.h"
 #include "Himii/Asset/SpriteSheetUtility.h"
+#include "Himii/Scene/TileMapCoordinateUtility.h"
 #include "Himii/Renderer/RenderCommand.h"
 #include "Himii/Renderer/Shader.h"
 #include "Himii/Renderer/UniformBuffer.h"
@@ -702,12 +703,8 @@ namespace Himii
 
         if (!mapData) return;
 
-        uint32_t width = mapData->GetWidth();
-        uint32_t height = mapData->GetHeight();
-        float cellSize = mapData->GetCellSize();
-        const auto &tiles = mapData->GetTiles();
-
-        if (tiles.size() < (size_t)(width * height))
+        const float cellSize = mapData->GetCellSize();
+        if (cellSize <= 0.0f)
             return;
 
         if (tileSet)
@@ -738,155 +735,100 @@ namespace Himii
             }
         }
 
-        // 预缓存 Atlas 纹理槽位：为每个 AtlasSource 分配纹理槽
-        // key: atlasSourceIndex, value: textureIndex in batch
-        std::unordered_map<uint32_t, float> atlasTextureIndices;
-        if (tileSet)
+        auto acquireTextureSlot = [&](const Ref<Texture2D>& texture) -> float
         {
-            const auto &sources = tileSet->GetAtlasSources();
-            for (uint32_t si = 0; si < sources.size(); ++si)
-            {
-                Ref<Texture2D> tex = sources[si].CachedTexture;
-                if (!tex) continue;
+            if (!texture)
+                return 0.0f;
 
-                float texIdx = 0.0f;
-                for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
-                {
-                    if (s_Data.TextureSlots[i] && *s_Data.TextureSlots[i] == *tex)
-                    {
-                        texIdx = (float)i;
-                        break;
-                    }
-                }
-                if (texIdx == 0.0f)
-                {
-                    if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTextureSlots)
-                        NextBatch();
-                    texIdx = (float)s_Data.TextureSlotIndex;
-                    s_Data.TextureSlots[s_Data.TextureSlotIndex] = tex;
-                    s_Data.TextureSlotIndex++;
-                }
-                atlasTextureIndices[si] = texIdx;
+            for (uint32_t slotIndex = 1; slotIndex < s_Data.TextureSlotIndex; slotIndex++)
+            {
+                if (s_Data.TextureSlots[slotIndex] && *s_Data.TextureSlots[slotIndex] == *texture)
+                    return static_cast<float>(slotIndex);
             }
-        }
 
-        // 遍历所有 Tile
-        for (uint32_t y = 0; y < height; ++y)
+            if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTextureSlots)
+                NextBatch();
+
+            const float textureSlotIndex = static_cast<float>(s_Data.TextureSlotIndex);
+            s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
+            s_Data.TextureSlotIndex++;
+            return textureSlotIndex;
+        };
+
+        mapData->ForEachTile([&](int32_t tileX, int32_t tileY, uint16_t tileIdentifier)
         {
-            for (uint32_t x = 0; x < width; ++x)
+            if (NeedsNewBatch(4, 6))
+                NextBatch();
+
+            float textureIndex = 0.0f;
+            glm::vec2 texCoords[4] = {
+                {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}};
+            glm::vec4 tint{1, 1, 1, 1};
+
+            if (tileSet)
             {
-                uint16_t tileID = tiles[x + y * width];
-                if (tileID == 0) continue;
-
-                if (NeedsNewBatch(4, 6)) NextBatch();
-
-                // 查找 TileDef 以确定纹理和 UV
-                float textureIndex = 0.0f; // 默认：白色纹理
-                glm::vec2 texCoords[4] = {
-                    {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 1.0f}
-                };
-                glm::vec4 tint{1, 1, 1, 1};
-
-                if (tileSet)
+                const TileDef* tileDefinition = tileSet->GetTileDef(tileIdentifier);
+                if (tileDefinition)
                 {
-                    const TileDef *def = tileSet->GetTileDef(tileID);
-                    if (def)
+                    tint = tileDefinition->Tint;
+
+                    if (tileDefinition->SourceType == TileSourceType::Atlas)
                     {
-                        tint = def->Tint;
-
-                        if (def->SourceType == TileSourceType::Atlas)
+                        const auto& sources = tileSet->GetAtlasSources();
+                        if (tileDefinition->AtlasSourceIndex < sources.size())
                         {
-                            auto it = atlasTextureIndices.find(def->AtlasSourceIndex);
-                            if (it != atlasTextureIndices.end())
+                            const auto& source = sources[tileDefinition->AtlasSourceIndex];
+                            if (source.CachedTexture)
                             {
-                                textureIndex = it->second;
+                                textureIndex = acquireTextureSlot(source.CachedTexture);
 
-                                const auto &sources = tileSet->GetAtlasSources();
-                                if (def->AtlasSourceIndex < sources.size())
-                                {
-                                    const auto &src = sources[def->AtlasSourceIndex];
-                                    if (src.CachedTexture)
-                                    {
-                                        float texW = (float)src.CachedTexture->GetWidth();
-                                        float texH = (float)src.CachedTexture->GetHeight();
-                                        float ts = (float)src.TileSize;
-                                        if (ts <= 0) ts = 16.0f;
+                                float tilePixelSize = (float)source.TileSize;
+                                if (tilePixelSize <= 0.0f)
+                                    tilePixelSize = 16.0f;
 
-                                        int cols = (int)(texW / ts);
-                                        if (cols <= 0) cols = 1;
-                                        float uSize = ts / texW;
-                                        float vSize = ts / texH;
-
-                                        const std::array<glm::vec2, 4> atlasUVs =
-                                                SpriteSheetUtility::ReorderUVsForYUpWorldQuad(
-                                                        SpriteSheetUtility::AtlasGridCoordsToUVs(
-                                                                def->AtlasCoords,
-                                                                static_cast<uint32_t>(ts),
-                                                                src.CachedTexture->GetWidth(),
-                                                                src.CachedTexture->GetHeight()));
-                                        for (size_t vertexIndex = 0; vertexIndex < 4; ++vertexIndex)
-                                            texCoords[vertexIndex] = atlasUVs[vertexIndex];
-                                    }
-                                }
-                            }
-                        }
-                        else if (def->SourceType == TileSourceType::Individual)
-                        {
-                            // 独立纹理模式
-                            Ref<Texture2D> indivTex = def->CachedIndividualTexture;
-                            if (indivTex)
-                            {
-                                float texIdx = 0.0f;
-                                for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
-                                {
-                                    if (s_Data.TextureSlots[i] && *s_Data.TextureSlots[i] == *indivTex)
-                                    {
-                                        texIdx = (float)i;
-                                        break;
-                                    }
-                                }
-                                if (texIdx == 0.0f)
-                                {
-                                    if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTextureSlots)
-                                        NextBatch();
-                                    texIdx = (float)s_Data.TextureSlotIndex;
-                                    s_Data.TextureSlots[s_Data.TextureSlotIndex] = indivTex;
-                                    s_Data.TextureSlotIndex++;
-                                }
-                                textureIndex = texIdx;
-                                // 独立纹理使用全 UV
+                                const std::array<glm::vec2, 4> atlasUVs =
+                                        SpriteSheetUtility::AtlasGridCoordsToWorldQuadUVs(
+                                                tileDefinition->AtlasCoords,
+                                                static_cast<uint32_t>(tilePixelSize),
+                                                source.CachedTexture->GetWidth(),
+                                                source.CachedTexture->GetHeight());
+                                for (size_t vertexIndex = 0; vertexIndex < 4; ++vertexIndex)
+                                    texCoords[vertexIndex] = atlasUVs[vertexIndex];
                             }
                         }
                     }
+                    else if (tileDefinition->SourceType == TileSourceType::Individual)
+                    {
+                        Ref<Texture2D> individualTexture = tileDefinition->CachedIndividualTexture;
+                        if (individualTexture)
+                            textureIndex = acquireTextureSlot(individualTexture);
+                    }
                 }
-                // 无 TileSet 或无 TileDef：使用白色纹理 (textureIndex=0, 全 UV)
-
-                // 计算每个 Tile 的四个顶点位置（地图居中：原点在中心）
-                float offsetX = -(float)width * cellSize * 0.5f;
-                float offsetY = -(float)height * cellSize * 0.5f;
-                float px = offsetX + (float)x * cellSize;
-                float py = offsetY + (float)y * cellSize;
-                glm::vec4 localPos[4] = {
-                    {px,            py,            0.0f, 1.0f},
-                    {px + cellSize, py,            0.0f, 1.0f},
-                    {px + cellSize, py + cellSize, 0.0f, 1.0f},
-                    {px,            py + cellSize, 0.0f, 1.0f}
-                };
-
-                for (int i = 0; i < 4; i++)
-                {
-                    s_Data.QuadVertexBufferPtr->Position = transform * localPos[i];
-                    s_Data.QuadVertexBufferPtr->Color = tint;
-                    s_Data.QuadVertexBufferPtr->TexCoord = texCoords[i];
-                    s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
-                    s_Data.QuadVertexBufferPtr->TilingFactor = 1.0f;
-                    s_Data.QuadVertexBufferPtr->EntityID = entityID;
-                    s_Data.QuadVertexBufferPtr++;
-                }
-                s_Data.QuadIndexCount += 6;
-                s_Data.Stats.QuadCount++;
             }
-        }
+
+            const glm::vec2 tileBottomLeft =
+                    TileMapCoordinateUtility::TileLocalBottomLeft(tileX, tileY, cellSize);
+            const float positionX = tileBottomLeft.x;
+            const float positionY = tileBottomLeft.y;
+            const glm::vec4 localPositions[4] = {
+                {positionX, positionY, 0.0f, 1.0f},
+                {positionX + cellSize, positionY, 0.0f, 1.0f},
+                {positionX + cellSize, positionY + cellSize, 0.0f, 1.0f},
+                {positionX, positionY + cellSize, 0.0f, 1.0f}};
+
+            for (int vertexIndex = 0; vertexIndex < 4; vertexIndex++)
+            {
+                s_Data.QuadVertexBufferPtr->Position = transform * localPositions[vertexIndex];
+                s_Data.QuadVertexBufferPtr->Color = tint;
+                s_Data.QuadVertexBufferPtr->TexCoord = texCoords[vertexIndex];
+                s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+                s_Data.QuadVertexBufferPtr->TilingFactor = 1.0f;
+                s_Data.QuadVertexBufferPtr->EntityID = entityID;
+                s_Data.QuadVertexBufferPtr++;
+            }
+            s_Data.QuadIndexCount += 6;
+            s_Data.Stats.QuadCount++;
+        });
     }
 
     void Renderer2D::DrawString(const std::string &string, Ref<Font> font, const glm::mat4 &transform,

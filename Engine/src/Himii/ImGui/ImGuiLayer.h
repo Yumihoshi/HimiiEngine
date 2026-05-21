@@ -24,7 +24,7 @@ namespace Himii
          {
              m_BlockEvents = block;
          }
-         void SetDarkThemeColors();
+         void ApplyEditorTheme();
          uint32_t GetActiveWidgetID() const;
 
     private:

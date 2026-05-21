@@ -12,12 +12,33 @@
 #include <GLFW/glfw3.h>
 #ifdef HIMII_PLATFORM_WINDOWS
 #include <windows.h>
+#include <dwmapi.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
+#pragma comment(lib, "dwmapi.lib")
 #endif
 namespace Himii
 {
     static uint8_t s_GLFWWindwCount = 0;
+
+#ifdef HIMII_PLATFORM_WINDOWS
+    static void ApplyDarkNativeTitleBar(HWND windowHandle)
+    {
+        if (!windowHandle)
+            return;
+
+        constexpr DWORD useImmersiveDarkMode = 20;
+        BOOL useDarkMode = TRUE;
+        DwmSetWindowAttribute(windowHandle, useImmersiveDarkMode, &useDarkMode, sizeof(useDarkMode));
+
+        constexpr DWORD captionColorAttribute = 35;
+        constexpr DWORD captionTextColorAttribute = 36;
+        const COLORREF captionBackground = RGB(31, 31, 31);
+        const COLORREF captionText = RGB(230, 230, 230);
+        DwmSetWindowAttribute(windowHandle, captionColorAttribute, &captionBackground, sizeof(captionBackground));
+        DwmSetWindowAttribute(windowHandle, captionTextColorAttribute, &captionText, sizeof(captionText));
+    }
+#endif
 
     static void GLFWErrorCallback(int error, const char *description)
     {
@@ -94,6 +115,8 @@ namespace Himii
                 {
                     HIMII_CORE_WARNING("Failed to load window icon from path: {0}", IconPath);
                 }
+
+                ApplyDarkNativeTitleBar(hwnd);
             }
         }
 #endif
@@ -245,6 +268,17 @@ namespace Himii
     bool WindowsWindow::IsVSync() const
     {
         return m_Data.VSync;
+    }
+
+    void WindowsWindow::SetTitle(const std::string &title)
+    {
+        if (m_Window)
+            glfwSetWindowTitle(m_Window, title.c_str());
+
+#ifdef HIMII_PLATFORM_WINDOWS
+        HWND windowHandle = glfwGetWin32Window(m_Window);
+        ApplyDarkNativeTitleBar(windowHandle);
+#endif
     }
 
 } // namespace Himii

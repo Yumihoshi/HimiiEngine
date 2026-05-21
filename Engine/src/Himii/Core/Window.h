@@ -39,6 +39,8 @@ namespace Himii
 
         virtual void *GetNativeWindow() const = 0;
 
+        virtual void SetTitle(const std::string &title) {}
+
         static Scope<Window> Create(const WindowProps &props = WindowProps());
 
     };

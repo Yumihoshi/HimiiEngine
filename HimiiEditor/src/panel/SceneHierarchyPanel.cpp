@@ -386,7 +386,7 @@ namespace Himii
             ImVec2 elementPos = ImGui::GetCursorPos();      // Window Space (for restoring)
             
             // 1. Draw Background (Lighter color)
-            ImU32 headerColor = ImGui::GetColorU32(ImVec4{0.27f, 0.275f, 0.28f, 1.0f}); // Brighter gray
+            ImU32 headerColor = ImGui::GetColorU32(ImVec4{0.16f, 0.16f, 0.16f, 1.0f});
             ImGui::GetWindowDrawList()->AddRectFilled(
                 cursorPos, 
                 ImVec2(cursorPos.x + contentRegionAvailable.x, cursorPos.y + lineHeight), 

@@ -112,6 +112,10 @@ x64/
 Generated Files/
 # Clangd
 .clangd
+# Editor layout (per-machine; default layout is built in code)
+imgui.ini
+editor_layout.ini
+
 # Other
 *.stackdump
 *.log

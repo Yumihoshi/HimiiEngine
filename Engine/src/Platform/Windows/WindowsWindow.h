@@ -32,6 +32,9 @@ namespace Himii
         {
             return m_Window;
         };
+
+        void SetTitle(const std::string &title) override;
+
     private:
         virtual void Init(const WindowProps &props);
         virtual void Shutdown();

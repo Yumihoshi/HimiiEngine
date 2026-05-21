@@ -1,5 +1,7 @@
 #include "EditorLayer.h"
+#include "EditorLayoutDefaults.h"
 #include "imgui.h"
+#include "imgui_internal.h"
 #include "Himii/Core/ConsoleLog.h"
 #include "Himii/Scripting/ScriptEngine.h"
 #include "Himii/Scripting/ScriptCompiler.h"
@@ -26,14 +28,63 @@
 #include "Himii/Scene/TilemapColliderBuilder.h"
 #include <GLFW/glfw3.h>
 
+#include <array>
+#include <filesystem>
+
+#include "stb_image.h"
+
 namespace Himii
 {
+    namespace
+    {
+        Ref<Texture2D> LoadEngineSplashTexture()
+        {
+            const std::array<const char *, 3> candidate_paths = {
+                "resources/icons/HimiiEngine.png",
+                "resources/icons/HimiiEngine.ico",
+                "resources/icons/Component_Script.png",
+            };
+
+            for (const char *candidate_path : candidate_paths)
+            {
+                if (!std::filesystem::exists(candidate_path))
+                    continue;
+
+                int width = 0;
+                int height = 0;
+                int channels = 0;
+                stbi_set_flip_vertically_on_load(1);
+                stbi_uc *image_data = stbi_load(candidate_path, &width, &height, &channels, 4);
+                if (!image_data || width <= 0 || height <= 0)
+                    continue;
+
+                Ref<Texture2D> texture = Texture2D::Create((uint32_t)width, (uint32_t)height);
+                texture->SetData(image_data, (uint32_t)(width * height * 4));
+                stbi_image_free(image_data);
+                HIMII_CORE_INFO("Startup splash texture loaded from: {0}", candidate_path);
+                return texture;
+            }
+
+            HIMII_CORE_WARNING("Startup splash texture not found; using text-only splash.");
+            return nullptr;
+        }
+    }
+
     EditorLayer::EditorLayer() :
         Layer("Example2D"), m_CameraController(1280.0f / 720.0f)
     {
     }
 
     void EditorLayer::OnAttach()
+    {
+        HIMII_PROFILE_FUNCTION();
+
+        m_EngineSplashTexture = LoadEngineSplashTexture();
+        m_EditorStartupFinished = false;
+        m_EditorStartupSplashFrameCount = 0;
+    }
+
+    void EditorLayer::FinishEditorStartup()
     {
         HIMII_PROFILE_FUNCTION();
 
@@ -78,7 +129,11 @@ namespace Himii
         {
             OpenProject(commandLineArgs.Args[1]);
         }
+
+        UpdateMainWindowTitle();
+        m_EditorStartupFinished = true;
     }
+
     void EditorLayer::OnDetach()
     {
         HIMII_PROFILE_FUNCTION();
@@ -87,6 +142,13 @@ namespace Himii
     void EditorLayer::OnUpdate(Timestep ts)
     {
         HIMII_PROFILE_FUNCTION();
+
+        if (!m_EditorStartupFinished)
+        {
+            if (m_EditorStartupSplashFrameCount > 0)
+                FinishEditorStartup();
+            return;
+        }
 
         const bool wasCompiling = m_WasScriptCompiling;
         ScriptCompiler::Update();
@@ -206,9 +268,16 @@ namespace Himii
     {
         HIMII_PROFILE_FUNCTION();
 
-        // 如果没有 Active Project，显示 Project Hub
+        // 如果没有 Active Project，先显示启动闪屏，再显示 Project Hub
         if (!Project::GetActive())
         {
+            if (!m_EditorStartupFinished)
+            {
+                DrawStartupSplash();
+                ++m_EditorStartupSplashFrameCount;
+                return;
+            }
+
             DrawProjectHub();
             return;
         }
@@ -226,8 +295,8 @@ namespace Himii
             if (opt_fullscreen)
             {
                 const ImGuiViewport *viewport = ImGui::GetMainViewport();
-                ImGui::SetNextWindowPos(viewport->Pos);
-                ImGui::SetNextWindowSize(viewport->Size);
+                ImGui::SetNextWindowPos(viewport->WorkPos);
+                ImGui::SetNextWindowSize(viewport->WorkSize);
                 ImGui::SetNextWindowViewport(viewport->ID);
 
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
@@ -247,84 +316,22 @@ namespace Himii
             if (opt_fullscreen)
                 ImGui::PopStyleVar(2);
 
-            // DockSpace
             ImGuiIO &io = ImGui::GetIO();
             ImGuiStyle &style = ImGui::GetStyle();
             float minWinSizeX = style.WindowMinSize.x;
             style.WindowMinSize.x = 370.0f;
+
+            DrawMainMenuBar();
+
             if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
             {
                 ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
                 ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
+                EditorLayoutDefaults::ApplyDefaultDockLayoutIfNeeded(dockspace_id);
             }
 
             style.WindowMinSize.x = minWinSizeX;
 
-            if (ImGui::BeginMenuBar())
-            {
-                if (ImGui::BeginMenu("File"))
-                {
-                    if (ImGui::MenuItem("Save Project"))
-                    {
-                        SaveProject();
-                    }
-                    if (ImGui::MenuItem("Project Settings..."))
-                        m_ShowProjectSettings = true;
-                    if (ImGui::MenuItem("Build Project..."))
-                    {
-                        BuildProject();
-                    }
-                    ImGui::EndMenu();
-                }
-                if (ImGui::BeginMenu("Edit"))
-                {
-                    if (ImGui::MenuItem("Preferences..."))
-                        m_ShowEditorPreferences = true;
-                    ImGui::EndMenu();
-                }
-                if (ImGui::BeginMenu("Options"))
-                {
-                    if (ImGui::MenuItem("New Scene..", "Ctrl+N"))
-                    {
-                        NewScene();
-                    }
-
-                    if (ImGui::MenuItem("Open Scene..", "Ctrl+O"))
-                    {
-                        OpenScene();
-                    }
-
-                    if (ImGui::MenuItem("Save Scene As..", "Ctrl+Shift+S"))
-                    {
-                        SaveSceneAs();
-                    }
-
-                    if (ImGui::MenuItem("Quit"))
-                        Himii::Application::Get().Close();
-                    ImGui::EndMenu();
-                }
-                if (ImGui::BeginMenu("Script"))
-                {
-                    bool compiling = ScriptCompiler::IsCompiling();
-                    if (ImGui::MenuItem("Compile and Reload", nullptr, false, !compiling))
-                        CompileAndReloadScripts();
-                    if (ImGui::MenuItem("Open C# Solution"))
-                        OpenCSProject();
-                    ImGui::EndMenu();
-                }
-                if (ImGui::BeginMenu("Window"))
-                {
-                    ImGui::MenuItem("Animation Editor", nullptr, &m_ShowAnimationEditorPanel);
-                    ImGui::MenuItem("Texture Inspector", nullptr, &m_ShowTextureInspector);
-                    ImGui::MenuItem("TileMap Setup", nullptr, &m_ShowTileMapEditor);
-                    ImGui::MenuItem("Particle Emitter Editor", nullptr, &m_ShowParticleEmitterEditor);
-                    ImGui::MenuItem("Script Console", nullptr, &m_ShowScriptConsole);
-                    ImGui::MenuItem("Console", nullptr, &m_ShowConsole);
-                    ImGui::MenuItem("Show Grid", nullptr, &m_ShowGrid);
-                    ImGui::EndMenu();
-                }
-                ImGui::EndMenuBar();
-            }
             ImGui::End();
 
             if (m_ShowScriptReloadNotice)
@@ -1116,7 +1123,77 @@ namespace Himii
                 NewScene();
             }
 
+            UpdateMainWindowTitle();
         }
+    }
+
+    void EditorLayer::UpdateMainWindowTitle()
+    {
+        std::string windowTitle = "Himii Editor";
+        if (Project::GetActive())
+            windowTitle = Project::GetConfig().Name + " - Himii Editor";
+
+        Application::Get().GetWindow().SetTitle(windowTitle);
+    }
+
+    void EditorLayer::DrawMainMenuBar()
+    {
+        if (!ImGui::BeginMenuBar())
+            return;
+
+        if (ImGui::BeginMenu("File"))
+        {
+            if (ImGui::MenuItem("Save Project"))
+                SaveProject();
+            if (ImGui::MenuItem("Project Settings..."))
+                m_ShowProjectSettings = true;
+            if (ImGui::MenuItem("Build Project..."))
+                BuildProject();
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Edit"))
+        {
+            if (ImGui::MenuItem("Preferences..."))
+                m_ShowEditorPreferences = true;
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Options"))
+        {
+            if (ImGui::MenuItem("New Scene..", "Ctrl+N"))
+                NewScene();
+
+            if (ImGui::MenuItem("Open Scene..", "Ctrl+O"))
+                OpenScene();
+
+            if (ImGui::MenuItem("Save Scene As..", "Ctrl+Shift+S"))
+                SaveSceneAs();
+
+            if (ImGui::MenuItem("Quit"))
+                Application::Get().Close();
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Script"))
+        {
+            bool compiling = ScriptCompiler::IsCompiling();
+            if (ImGui::MenuItem("Compile and Reload", nullptr, false, !compiling))
+                CompileAndReloadScripts();
+            if (ImGui::MenuItem("Open C# Solution"))
+                OpenCSProject();
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Window"))
+        {
+            ImGui::MenuItem("Animation Editor", nullptr, &m_ShowAnimationEditorPanel);
+            ImGui::MenuItem("Texture Inspector", nullptr, &m_ShowTextureInspector);
+            ImGui::MenuItem("TileMap Setup", nullptr, &m_ShowTileMapEditor);
+            ImGui::MenuItem("Particle Emitter Editor", nullptr, &m_ShowParticleEmitterEditor);
+            ImGui::MenuItem("Script Console", nullptr, &m_ShowScriptConsole);
+            ImGui::MenuItem("Console", nullptr, &m_ShowConsole);
+            ImGui::MenuItem("Show Grid", nullptr, &m_ShowGrid);
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMenuBar();
     }
 
     void EditorLayer::BuildProject()
@@ -1322,6 +1399,63 @@ namespace Himii
 
         std::ofstream fout("recent_projects.yaml");
         fout << out.c_str();
+    }
+
+    void EditorLayer::DrawStartupSplash()
+    {
+        ImGuiViewport *viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->Pos);
+        ImGui::SetNextWindowSize(viewport->Size);
+        ImGui::SetNextWindowViewport(viewport->ID);
+
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
+                                        ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+                                        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
+                                        ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoScrollbar |
+                                        ImGuiWindowFlags_NoScrollWithMouse;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4{0.23f, 0.23f, 0.23f, 1.0f});
+
+        ImGui::Begin("Startup Splash", nullptr, window_flags);
+        ImGui::PopStyleVar(2);
+
+        const ImVec2 content_region_available = ImGui::GetContentRegionAvail();
+        const char *splash_label = "Himii Engine";
+
+        if (m_EngineSplashTexture && m_EngineSplashTexture->GetRendererID() != 0)
+        {
+            const float maximum_icon_size =
+                std::min(content_region_available.x, content_region_available.y) * 0.32f;
+            const float texture_aspect_ratio =
+                (float)m_EngineSplashTexture->GetWidth() / (float)m_EngineSplashTexture->GetHeight();
+            ImVec2 icon_display_size = ImVec2{maximum_icon_size, maximum_icon_size};
+            if (texture_aspect_ratio > 1.0f)
+                icon_display_size.y = maximum_icon_size / texture_aspect_ratio;
+            else
+                icon_display_size.x = maximum_icon_size * texture_aspect_ratio;
+
+            const ImVec2 cursor_position = {
+                (content_region_available.x - icon_display_size.x) * 0.5f,
+                (content_region_available.y - icon_display_size.y) * 0.5f,
+            };
+            ImGui::SetCursorPos(cursor_position);
+            ImGui::Image((ImTextureID)(uintptr_t)m_EngineSplashTexture->GetRendererID(), icon_display_size,
+                         ImVec2{0.0f, 1.0f}, ImVec2{1.0f, 0.0f});
+        }
+        else
+        {
+            const ImVec2 label_size = ImGui::CalcTextSize(splash_label);
+            ImGui::SetCursorPos({
+                (content_region_available.x - label_size.x) * 0.5f,
+                (content_region_available.y - label_size.y) * 0.5f,
+            });
+            ImGui::TextUnformatted(splash_label);
+        }
+
+        ImGui::End();
+        ImGui::PopStyleColor();
     }
 
     void EditorLayer::DrawProjectHub()
@@ -1638,6 +1772,10 @@ namespace Himii
 
     void EditorLayer::UI_Toolbar()
     {
+        ImGuiWindowClass toolbar_window_class;
+        toolbar_window_class.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_HiddenTabBar;
+        ImGui::SetNextWindowClass(&toolbar_window_class);
+
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 2));
         ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));

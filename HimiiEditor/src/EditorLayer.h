@@ -72,6 +72,11 @@ namespace Himii
 
         //UI panel
         void UI_Toolbar();
+        void DrawMainMenuBar();
+        void UpdateMainWindowTitle();
+        void DrawStartupSplash();
+        void FinishEditorStartup();
+
     private:
         Ref<Scene> m_ActiveScene;
         Ref<Scene> m_EditorScene;
@@ -140,7 +145,11 @@ namespace Himii
         bool m_NotifyReloadAfterCompile = false;
 
         Ref<Texture2D> m_IconPlay, m_IconStop, m_IconSimulate;
+        Ref<Texture2D> m_EngineSplashTexture;
         Ref<TextureCube> m_SkyboxTexture;
+
+        bool m_EditorStartupFinished = false;
+        uint32_t m_EditorStartupSplashFrameCount = 0;
 
         SceneState m_SceneState = SceneState::Edit;
         std::string m_Clipboard;

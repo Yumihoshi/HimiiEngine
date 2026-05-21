@@ -3,6 +3,9 @@
 #include "Himii/Core/Application.h"
 #include "imgui_internal.h"
 
+#include <fstream>
+#include <sstream>
+
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -11,6 +14,32 @@
 
 namespace Himii
 {
+    namespace
+    {
+        bool IniFileContainsDockingSection(const std::filesystem::path &layout_ini_path)
+        {
+            std::ifstream input(layout_ini_path);
+            if (!input.is_open())
+                return false;
+
+            std::stringstream buffer;
+            buffer << input.rdbuf();
+            return buffer.str().find("[Docking]") != std::string::npos;
+        }
+
+        void PrepareEditorLayoutIniOnStartup(const std::filesystem::path &layout_ini_path)
+        {
+            if (!std::filesystem::exists(layout_ini_path))
+                return;
+
+            if (IniFileContainsDockingSection(layout_ini_path))
+                return;
+
+            std::error_code error_code;
+            std::filesystem::remove(layout_ini_path, error_code);
+        }
+    }
+
     ImGuiLayer::ImGuiLayer() : Layer("ImGuiLayer")
     {
     }
@@ -28,23 +57,22 @@ namespace Himii
         GLFWwindow *window = static_cast<GLFWwindow *>(app.GetWindow().GetNativeWindow());
 
         (void)io;
-        /* 使用深色主题 */
         ImGui::StyleColorsDark();
 
-        m_IniFilePath = (Application::Get().GetEngineDir() / "imgui.ini").string();
-        HIMII_CORE_INFO("ImGui Ini File Path: {0}", m_IniFilePath);
+        m_IniFilePath = (Application::Get().GetExecutableDir() / "editor_layout.ini").string();
+        PrepareEditorLayoutIniOnStartup(m_IniFilePath);
+        HIMII_CORE_INFO("Editor layout ini: {0}", m_IniFilePath);
         io.IniFilename = m_IniFilePath.c_str();
 
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;   // Enable Docking
-        //io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport / Platform Windows
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
         float x_scale, y_scale;
         glfwGetWindowContentScale(window, &x_scale, &y_scale);
-        float ui_scale = x_scale; 
+        float ui_scale = x_scale;
         HIMII_CORE_INFO("Window Content Scale: {0}, {1}", x_scale, y_scale);
 
-        const char *font_path = "assets/fonts/msyh.ttc"; // 请替换为你的字体实际路径和文件名
+        const char *font_path = "assets/fonts/msyh.ttc";
         float font_size = 15.0f * ui_scale;
 
         io.Fonts->AddFontFromFileTTF(font_path, font_size);
@@ -57,7 +85,7 @@ namespace Himii
             style.WindowRounding = 0.0f;
             style.Colors[ImGuiCol_WindowBg].w = 1.0f;
         }
-        SetDarkThemeColors();
+        ApplyEditorTheme();
         style.ScaleAllSizes(ui_scale);
 
         ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -73,6 +101,7 @@ namespace Himii
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
     }
+
     void ImGuiLayer::OnEvent(Event &e)
     {
         if (m_BlockEvents)
@@ -101,7 +130,6 @@ namespace Himii
         Application &app = Application::Get();
         io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
 
-        // Rendering
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -113,63 +141,121 @@ namespace Himii
         }
     }
 
-    void ImGuiLayer::SetDarkThemeColors()
+    void ImGuiLayer::ApplyEditorTheme()
     {
-        auto &style = ImGui::GetStyle();
-        auto &colors = style.Colors;
+        ImGuiStyle &style = ImGui::GetStyle();
+        ImVec4 *colors = style.Colors;
 
-        style.WindowRounding = 5.0f;  // Subtle rounding
-        style.FrameRounding = 4.0f;   // Boxy but soft
-        style.PopupRounding = 3.0f;
-        style.ScrollbarRounding = 10.0f;
-        style.GrabRounding = 8.0f;
-        style.TabRounding = 4.0f;     // Tabs look better with more rounding on top
+        const ImVec4 accent_blue = ImVec4{0.0f, 0.47f, 0.84f, 1.0f};
+        const ImVec4 accent_blue_dim = ImVec4{0.0f, 0.35f, 0.65f, 1.0f};
 
-        style.WindowBorderSize = 0.0f; // Subtle border
+        // 面板 / Project Hub 等内容区背景
+        const ImVec4 panel_content_background = ImVec4{0.23f, 0.23f, 0.23f, 1.0f};
+
+        // 输入框：比面板背景更暗（凹槽）
+        const ImVec4 input_field = ImVec4{0.16f, 0.16f, 0.16f, 1.0f};
+        const ImVec4 input_field_hover = ImVec4{0.19f, 0.19f, 0.19f, 1.0f};
+        const ImVec4 input_field_active = ImVec4{0.18f, 0.18f, 0.18f, 1.0f};
+
+        // 组件折叠标题条（比面板更暗）
+        const ImVec4 inspector_section_header = ImVec4{0.16f, 0.16f, 0.16f, 1.0f};
+
+        // 标题栏条背景（整条 Tab 条保持深色）
+        const ImVec4 recessed_title = ImVec4{0.12f, 0.12f, 0.12f, 1.0f};
+
+        // 单个 Tab：未选中略亮；选中与面板背景一致
+        const ImVec4 tab_unselected = ImVec4{0.18f, 0.18f, 0.18f, 1.0f};
+        const ImVec4 tab_hover = ImVec4{0.20f, 0.20f, 0.20f, 1.0f};
+        const ImVec4 tab_selected = panel_content_background;
+
+        const ImVec4 shell_mid = ImVec4{0.28f, 0.28f, 0.28f, 1.0f};
+        const ImVec4 shell_hover = ImVec4{0.32f, 0.32f, 0.32f, 1.0f};
+        const ImVec4 shell_button = ImVec4{0.28f, 0.28f, 0.28f, 1.0f};
+        const ImVec4 shell_button_active = ImVec4{0.26f, 0.26f, 0.26f, 1.0f};
+
+        const ImVec4 header_active = ImVec4{0.0f, 0.40f, 0.72f, 0.55f};
+
+        const ImVec4 border_subtle = ImVec4{0.26f, 0.26f, 0.26f, 1.0f};
+        const ImVec4 text_primary = ImVec4{0.90f, 0.90f, 0.90f, 1.0f};
+        const ImVec4 text_disabled = ImVec4{0.50f, 0.50f, 0.50f, 1.0f};
+
+        style.WindowRounding = 2.0f;
+        style.ChildRounding = 2.0f;
+        style.FrameRounding = 2.0f;
+        style.PopupRounding = 2.0f;
+        style.ScrollbarRounding = 4.0f;
+        style.GrabRounding = 2.0f;
+        style.TabRounding = 2.0f;
+        style.TabBarOverlineSize = 0.0f;
+
+        style.WindowBorderSize = 1.0f;
         style.FrameBorderSize = 0.0f;
         style.PopupBorderSize = 1.0f;
-        
-        // Backgrounds (Softer Dark Grey)
-        colors[ImGuiCol_WindowBg] = ImVec4{0.2f, 0.2f, 0.2f, 1.0f};
-        colors[ImGuiCol_PopupBg] = ImVec4{0.14f, 0.14f, 0.14f, 0.94f};
-        
-        // Headers
-        colors[ImGuiCol_Header] = ImVec4{0.13f, 0.13f, 0.13f, 1.0f};
-        colors[ImGuiCol_HeaderHovered] = ImVec4{0.42f, 0.42f, 0.42f, 1.0f};
-        colors[ImGuiCol_HeaderActive] = ImVec4{0.30f, 0.30f, 0.30f, 1.0f};
+        style.WindowPadding = ImVec2{8.0f, 8.0f};
+        style.FramePadding = ImVec2{6.0f, 4.0f};
+        style.ItemSpacing = ImVec2{8.0f, 6.0f};
 
-        // Buttons
-        colors[ImGuiCol_Button] = ImVec4{0.26f, 0.26f, 0.26f, 1.0f};
-        colors[ImGuiCol_ButtonHovered] = ImVec4{0.30f, 0.30f, 0.30f, 1.0f};
-        colors[ImGuiCol_ButtonActive] = ImVec4{0.18f, 0.18f, 0.18f, 1.0f};
+        colors[ImGuiCol_Text] = text_primary;
+        colors[ImGuiCol_TextDisabled] = text_disabled;
 
-        // Frame BG (Input fields - Darker than window for contrast)
-        colors[ImGuiCol_FrameBg] = ImVec4{0.14f, 0.14f, 0.14f, 1.0f}; 
-        colors[ImGuiCol_FrameBgHovered] = ImVec4{0.16f, 0.16f, 0.16f, 1.0f};
-        colors[ImGuiCol_FrameBgActive] = ImVec4{0.14f, 0.14f, 0.14f, 1.0f};
+        colors[ImGuiCol_WindowBg] = panel_content_background;
+        colors[ImGuiCol_ChildBg] = panel_content_background;
+        colors[ImGuiCol_PopupBg] = ImVec4{shell_mid.x, shell_mid.y, shell_mid.z, 0.98f};
 
-        // Tabs
-        colors[ImGuiCol_Tab] = ImVec4{0.18f, 0.18f, 0.18f, 1.0f}; // Match WindowBg
-        colors[ImGuiCol_TabHovered] = ImVec4{0.30f, 0.30f, 0.32f, 1.0f}; 
-        colors[ImGuiCol_TabActive] = ImVec4{0.25f, 0.25f, 0.25f, 1.0f};  
-        colors[ImGuiCol_TabUnfocused] = ImVec4{0.2f, 0.2f, 0.2f, 1.0f};
-        colors[ImGuiCol_TabUnfocusedActive] = ImVec4{0.2f, 0.2f, 0.2f, 1.0f};
+        colors[ImGuiCol_Border] = border_subtle;
+        colors[ImGuiCol_BorderShadow] = ImVec4{0.0f, 0.0f, 0.0f, 0.0f};
 
-        // Title
-        colors[ImGuiCol_TitleBg] = ImVec4{0.11f, 0.11f, 0.11f, 1.0f}; 
-        colors[ImGuiCol_TitleBgActive] = ImVec4{0.11f, 0.11f, 0.11f, 1.0f};
-        colors[ImGuiCol_TitleBgCollapsed] = ImVec4{0.11f, 0.11f, 0.11f, 1.0f};
-        
-        // Separators
-        colors[ImGuiCol_Separator] = ImVec4{0.23f, 0.23f, 0.23f, 1.0f}; 
-        colors[ImGuiCol_SeparatorHovered] = ImVec4{0.32f, 0.32f, 0.32f, 1.0f};
-        colors[ImGuiCol_SeparatorActive] = ImVec4{0.28f, 0.28f, 0.28f, 1.0f};
-        
-        // Resize Grip
-        colors[ImGuiCol_ResizeGrip] = ImVec4{0.30f, 0.30f, 0.30f, 0.25f};
-        
-        // Standard Text
-        colors[ImGuiCol_Text] = ImVec4{0.85f, 0.85f, 0.85f, 1.0f}; // Soft white
+        // 输入框 / 下拉 / 引用框
+        colors[ImGuiCol_FrameBg] = input_field;
+        colors[ImGuiCol_FrameBgHovered] = input_field_hover;
+        colors[ImGuiCol_FrameBgActive] = input_field_active;
+
+        colors[ImGuiCol_TitleBg] = recessed_title;
+        colors[ImGuiCol_TitleBgActive] = recessed_title;
+        colors[ImGuiCol_TitleBgCollapsed] = recessed_title;
+
+        colors[ImGuiCol_MenuBarBg] = recessed_title;
+
+        colors[ImGuiCol_ScrollbarBg] = panel_content_background;
+        colors[ImGuiCol_ScrollbarGrab] = shell_mid;
+        colors[ImGuiCol_ScrollbarGrabHovered] = shell_hover;
+        colors[ImGuiCol_ScrollbarGrabActive] = accent_blue_dim;
+
+        colors[ImGuiCol_CheckMark] = accent_blue;
+        colors[ImGuiCol_SliderGrab] = accent_blue_dim;
+        colors[ImGuiCol_SliderGrabActive] = accent_blue;
+
+        colors[ImGuiCol_Button] = shell_button;
+        colors[ImGuiCol_ButtonHovered] = shell_hover;
+        colors[ImGuiCol_ButtonActive] = shell_button_active;
+
+        colors[ImGuiCol_Header] = inspector_section_header;
+        colors[ImGuiCol_HeaderHovered] = ImVec4{0.0f, 0.35f, 0.65f, 0.45f};
+        colors[ImGuiCol_HeaderActive] = header_active;
+
+        colors[ImGuiCol_Separator] = border_subtle;
+        colors[ImGuiCol_SeparatorHovered] = accent_blue_dim;
+        colors[ImGuiCol_SeparatorActive] = accent_blue;
+
+        colors[ImGuiCol_ResizeGrip] = ImVec4{0.23f, 0.23f, 0.23f, 0.30f};
+        colors[ImGuiCol_ResizeGripHovered] = accent_blue_dim;
+        colors[ImGuiCol_ResizeGripActive] = accent_blue;
+
+        colors[ImGuiCol_Tab] = tab_unselected;
+        colors[ImGuiCol_TabHovered] = tab_hover;
+        colors[ImGuiCol_TabSelected] = tab_selected;
+        colors[ImGuiCol_TabSelectedOverline] = tab_selected;
+        colors[ImGuiCol_TabDimmed] = tab_unselected;
+        colors[ImGuiCol_TabDimmedSelected] = tab_selected;
+        colors[ImGuiCol_TabDimmedSelectedOverline] = tab_selected;
+
+        colors[ImGuiCol_DockingPreview] = ImVec4{0.0f, 0.47f, 0.84f, 0.35f};
+        colors[ImGuiCol_DockingEmptyBg] = panel_content_background;
+
+        colors[ImGuiCol_TextSelectedBg] = ImVec4{0.0f, 0.47f, 0.84f, 0.35f};
+
+        colors[ImGuiCol_NavHighlight] = accent_blue;
+        colors[ImGuiCol_NavWindowingHighlight] = accent_blue;
     }
 
     uint32_t ImGuiLayer::GetActiveWidgetID() const
@@ -180,4 +266,4 @@ namespace Himii
     void ImGuiLayer::OnImGuiRender()
     {
     }
-} // namespace Himii
+}

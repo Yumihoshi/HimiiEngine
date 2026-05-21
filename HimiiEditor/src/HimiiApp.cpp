@@ -1,7 +1,7 @@
 #include "EditorLayer.h"
 #include "Engine.h"
 #include "Himii/Core/EntryPoint.h"
-
+#include "Himii/Renderer/RenderCommand.h"
 
 #include <iostream>
 
@@ -12,6 +12,10 @@ namespace Himii
         HimiiApp(ApplicationCommandLineArgs args) : Application("Himii Editor", args)
         {
             PushOverlay(new EditorLayer());
+
+            RenderCommand::SetClearColor(glm::vec4{0.23f, 0.23f, 0.23f, 1.0f});
+            RenderCommand::Clear();
+            GetWindow().Update();
         }
 
         virtual ~HimiiApp()

@@ -42,7 +42,7 @@ namespace Himii
     };
 
     struct Renderer3DData {
-        static const uint32_t MaxInstances = 10000; // Max instances per batch
+        static constexpr uint32_t MaxInstances = 10000; // Max instances per batch
 
         // Shared Instance Buffer (Dynamic GPU Resource)
         Ref<VertexBuffer> InstanceVertexBuffer;

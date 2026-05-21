@@ -22,6 +22,7 @@
 #include <cctype>
 #include <functional>
 #include <sstream>
+#include <cstdio>
 
 #include <glm/gtc/type_ptr.hpp>
 
@@ -644,7 +645,7 @@ namespace Himii
 
                     char buffer[256];
                     memset(buffer, 0, sizeof(buffer));
-                    strcpy_s(buffer, sizeof(buffer), component.ClassName.c_str());
+                    snprintf(buffer, sizeof(buffer), "%s", component.ClassName.c_str());
 
                     bool isEdited = ImGui::InputText("##ClassName", buffer, sizeof(buffer));
                     if (isEdited)
@@ -823,7 +824,7 @@ namespace Himii
 
                                         char buffer[256];
                                         memset(buffer, 0, sizeof(buffer));
-                                        strncpy_s(buffer, sizeof(buffer), data.c_str(), sizeof(buffer) - 1);
+                                        snprintf(buffer, sizeof(buffer), "%s", data.c_str());
 
                                         if (ImGui::InputText("##Value", buffer, sizeof(buffer)))
                                         {
@@ -1485,8 +1486,7 @@ namespace Himii
                                            ImGui::PushID("Content");
                                            char buffer[1024];
                                            memset(buffer, 0, sizeof(buffer));
-                                           strncpy_s(buffer, sizeof(buffer), component.TextString.c_str(),
-                                                     sizeof(buffer) - 1);
+                                           snprintf(buffer, sizeof(buffer), "%s", component.TextString.c_str());
                                            if (ImGui::InputTextMultiline("##TextContent", buffer, sizeof(buffer),
                                                                          ImVec2(-1, ImGui::GetFontSize() * 3)))
                                            {

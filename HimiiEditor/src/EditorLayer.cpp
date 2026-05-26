@@ -3,6 +3,7 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "Himii/Core/ConsoleLog.h"
+#include "Himii/Core/FileSystem.h"
 #include "Himii/Scripting/ScriptEngine.h"
 #include "Himii/Scripting/ScriptCompiler.h"
 #include "Himii/Scripting/ScriptIDELauncher.h"
@@ -50,14 +51,13 @@ namespace Himii
         m_StartupStatusMessage = "正在启动 Himii Editor…";
         m_StartupSplashElapsedSeconds = 0.0f;
 
-        const std::array<std::filesystem::path, 2> splash_image_candidates = {
+        const std::array<std::filesystem::path, 1> splash_image_candidates = {
             "resources/splash/HimiiEngineSplash.png",
-            Application::Get().GetExecutableDir() / "resources/splash/HimiiEngineSplash.png",
         };
 
         for (const std::filesystem::path &candidate_path : splash_image_candidates)
         {
-            if (!std::filesystem::exists(candidate_path))
+            if (!FileSystem::Exists(candidate_path.string()))
                 continue;
 
             m_EngineSplashTexture = Texture2D::Create(candidate_path.string());
@@ -393,6 +393,9 @@ namespace Himii
 
             if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
             {
+                if (ImGuiLayer *imgui_layer = Application::Get().GetImGuiLayer())
+                    imgui_layer->EnableLayoutPersistence();
+
                 ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
                 ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
                 EditorLayoutDefaults::ApplyDefaultDockLayoutIfNeeded(dockspace_id);
@@ -1295,8 +1298,13 @@ namespace Himii
         std::filesystem::path engineBinDir = Application::Get().GetExecutableDir();
         
         // 这里的相对路径依赖于 CMake 的输出目录结构
-        std::filesystem::path binRoot = engineBinDir.parent_path().parent_path(); // .../bin
-        std::filesystem::path runtimeDir = binRoot / "HimiiRuntime" / "Debug";
+        std::filesystem::path binRoot = engineBinDir.parent_path().parent_path();
+#if defined(HIMII_DEBUG)
+        const char *configurationFolder = "Debug";
+#else
+        const char *configurationFolder = "Release";
+#endif
+        std::filesystem::path runtimeDir = binRoot / "HimiiRuntime" / configurationFolder;
 
         // 定义需要复制的文件清单
         struct CopyEntry {

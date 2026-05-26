@@ -1,5 +1,6 @@
 #include "Hepch.h"
 #include "Himii/Core/Log.h"
+#include "Himii/Core/FileSystem.h"
 #include "Platform/OpenGL/OpenGLTexture.h"
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -68,7 +69,12 @@ namespace Himii
         stbi_uc *data = nullptr;
         {
             HIMII_PROFILE_SCOPE("stbi_load - OpenGLTexture2D::OpenGLTexture2D(const std::string&)");
-            data = stbi_load(path.c_str(), &width, &height, &source_channels, 4);
+            const auto fileBytes = FileSystem::ReadBytes(path);
+            if (fileBytes)
+                data = stbi_load_from_memory(fileBytes->data(), static_cast<int>(fileBytes->size()), &width, &height,
+                                             &source_channels, 4);
+            else
+                data = stbi_load(path.c_str(), &width, &height, &source_channels, 4);
         }
         HIMII_CORE_ASSERT(data, "Failed to load image!");
         m_Width = (uint32_t)width;

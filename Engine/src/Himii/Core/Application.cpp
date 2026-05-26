@@ -1,9 +1,14 @@
 ﻿#include "Hepch.h"
 #include "Himii/Core/Application.h"
+#include "Himii/Core/FileSystem.h"
 #include "Himii/Renderer/Renderer.h"
 #include <GLFW/glfw3.h>
 #ifndef HIMII_PLATFORM_WINDOWS
 #include <unistd.h>
+#endif
+
+#ifdef HIMII_PLATFORM_WINDOWS
+#include <Windows.h>
 #endif
 
 #include "Himii/Scripting/ScriptEngine.h"
@@ -39,6 +44,7 @@ namespace Himii
         HIMII_PROFILE_FUNCTION();
 
         ScriptEngine::Shutdown();
+        FileSystem::Shutdown();
         s_Instance = nullptr;
     }
 
@@ -81,66 +87,45 @@ namespace Himii
 
     void Application::SetEnvironmentVariables()
     {
-        //获取引擎根目录
-        std::string engineDir;
-
-#if defined(HIMII_DEBUG) && defined(HIMII_ROOT_DIR)
-        // 开发模式：直接指向源码目录 E:\HimiiEngine
-        engineDir = HIMII_ROOT_DIR;
-#else
-        // 发布模式：假设结构是 Bin/HimiiEditor.exe，那么根目录就是上一级
-        // 注意：这取决于你的安装目录结构，假设 Release 包解压后就是根目录
-        // 如果 exe 在 bin 下，可能需要 engineDir = m_ExecutableDir.parent_path().string();
-       // engineDir = exePath.string(); // Will be set below
-#endif
-
-        // 获取当前 Editor.exe 所在的目录 (更健壮的方式) - 必须无条件执行
 #ifdef HIMII_PLATFORM_WINDOWS
         char buffer[MAX_PATH];
         GetModuleFileNameA(NULL, buffer, MAX_PATH);
-        std::filesystem::path exePath = std::filesystem::path(buffer).parent_path();
+        std::filesystem::path executablePath = std::filesystem::path(buffer).parent_path();
 #else
-        // Linux implementation (using /proc/self/exe)
         char buffer[1024];
         ssize_t count = readlink("/proc/self/exe", buffer, 1024);
-        std::filesystem::path exePath;
-        if (count != -1) {
-            exePath = std::filesystem::path(std::string(buffer, (count > 0) ? count : 0)).parent_path();
-        } else {
-             exePath = std::filesystem::current_path(); // Fallback
-        }
-#endif
-        m_ExecutableDir = exePath;
-
-#if !defined(HIMII_DEBUG) || !defined(HIMII_ROOT_DIR)
-        engineDir = exePath.string();
-#endif
-
-        // 2. 设置环境变量 HIMII_DIR
-        // Windows 专用 API，跨平台可以用 setenv
-        // 格式：变量名，变量值
-        m_EngineDir = engineDir;
-#ifdef HIMII_PLATFORM_WINDOWS
-        if (_putenv_s("HIMII_DIR", engineDir.c_str()) == 0)
-        {
-            HIMII_CORE_INFO("Set environment variable HIMII_DIR = {0}", engineDir);
-        }
+        std::filesystem::path executablePath;
+        if (count != -1)
+            executablePath = std::filesystem::path(std::string(buffer, (count > 0) ? count : 0)).parent_path();
         else
-        {
-            HIMII_CORE_ERROR("Failed to set HIMII_DIR environment variable!");
-        }
+            executablePath = std::filesystem::current_path();
+#endif
+        m_ExecutableDir = executablePath;
+
+#if defined(HIMII_DEBUG)
+        m_EngineDir = m_ExecutableDir;
+        FileSystem::Init(m_ExecutableDir, m_ExecutableDir, true);
 #else
-        // Linux/Unix implementation
-        if (setenv("HIMII_DIR", engineDir.c_str(), 1) == 0)
-        {
-             HIMII_CORE_INFO("Set environment variable HIMII_DIR = {0}", engineDir);
-        }
-        else
-        {
-             HIMII_CORE_ERROR("Failed to set HIMII_DIR environment variable!");
-        }
+        m_EngineDir = m_ExecutableDir / "HimiiEngine";
+#ifdef HIMII_PLATFORM_WINDOWS
+        const std::wstring engineLibraryDirectory = m_EngineDir.wstring();
+        SetDllDirectoryW(engineLibraryDirectory.c_str());
+#endif
+        FileSystem::Init(m_EngineDir, m_ExecutableDir, false);
 #endif
 
+        const std::string engineDirectoryString = m_EngineDir.string();
+#ifdef HIMII_PLATFORM_WINDOWS
+        if (_putenv_s("HIMII_DIR", engineDirectoryString.c_str()) == 0)
+            HIMII_CORE_INFO("Set environment variable HIMII_DIR = {0}", engineDirectoryString);
+        else
+            HIMII_CORE_ERROR("Failed to set HIMII_DIR environment variable!");
+#else
+        if (setenv("HIMII_DIR", engineDirectoryString.c_str(), 1) == 0)
+            HIMII_CORE_INFO("Set environment variable HIMII_DIR = {0}", engineDirectoryString);
+        else
+            HIMII_CORE_ERROR("Failed to set HIMII_DIR environment variable!");
+#endif
     }
 
     bool Application::OnWindowClosed(WindowCloseEvent &e)

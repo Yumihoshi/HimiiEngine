@@ -31,7 +31,7 @@ class BuildScript:
                 "release": "build-x64-release-win"
             }
             # 同时查找两个可执行
-            self.executable_names = ["HimiiEditor.exe"]
+            self.executable_names = ["HimiiEditor.exe", "HimiiEngine.exe"]
         elif self.is_linux:
             self.configure_presets = {
                 "debug": "linux-debug",

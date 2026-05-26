@@ -61,7 +61,29 @@ python build.py debug
 
 Release 下编辑器目标在 CMake 中仍名为 `HimiiEditor`，输出文件名称为 `HimiiEngine.exe`。
 
-Post-build 会将 `assets`、`resources`、`ScriptCore.dll` 等拷贝到 HimiiEditor 输出目录。
+### Debug 与 Release 资源布局
+
+| 配置 | 引擎资源 | ScriptCore |
+|------|----------|------------|
+| Debug | 松散目录 `assets/`、`resources/`（POST_BUILD 拷贝到 exe 旁） | exe 同目录 |
+| Release | 二进制包 `HimiiEngine/engine.hpck`（由 `ResourcePacker` 构建） | `HimiiEngine/` 子目录 |
+
+Release 分发目录结构（Godot 式顶层入口）：
+
+```text
+HimiiEngine.exe
+HimiiEngine/
+  engine.hpck
+  ScriptCore.dll
+  ScriptCore.runtimeconfig.json
+```
+
+安装 Release 包：
+
+```powershell
+cmake --build --preset build-x64-release-win --config Release
+cmake --install build/x64-release --config Release --prefix install/x64-release
+```
 
 ## 运行 HimiiRuntime（本地构建）
 

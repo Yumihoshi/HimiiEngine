@@ -1,5 +1,6 @@
 #include "Font.h"
 #include "Hepch.h"
+#include "Himii/Core/FileSystem.h"
 
 using namespace msdf_atlas;
 
@@ -24,7 +25,8 @@ namespace Himii
         HIMII_CORE_ASSERT(ft, "Failed to initialize FreeType!");
 
         // 2. 加载字体文件
-        msdfgen::FontHandle *font = msdfgen::loadFont(ft, filepath.string().c_str());
+        const std::filesystem::path resolvedFontPath = FileSystem::MaterializeLooseFile(filepath.string());
+        msdfgen::FontHandle *font = msdfgen::loadFont(ft, resolvedFontPath.string().c_str());
 
         // 3. 设定要渲染的字符集 (这里先以 ASCII 为例，支持 0x0020 到 0x00FF)
         msdf_atlas::Charset charset;

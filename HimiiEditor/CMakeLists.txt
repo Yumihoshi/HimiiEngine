@@ -9,27 +9,22 @@ set(ALL_SOURCES
     ${HEADERS}
 )
 
-# Windows 下通过 .rc 资源文件为可执行程序嵌入应用图标
 if (WIN32)
     set(APP_ICON_RESOURCE "AppIcon.rc")
 endif()
 
-# 使用控制台子系统，保留控制台窗口用于查看日志；图标仍然通过 .rc 嵌入 exe
 add_executable(HimiiEditor ${ALL_SOURCES} ${APP_ICON_RESOURCE})
 
-# Link against the Engine library
 target_link_libraries(HimiiEditor PRIVATE Engine)
 
-# Include Engine headers
 target_include_directories(HimiiEditor PRIVATE
     ${CMAKE_SOURCE_DIR}/Engine/src
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
 file(TO_CMAKE_PATH "${CMAKE_SOURCE_DIR}" PROJECT_ROOT_PATH)
-target_compile_definitions(HimiiEditor PRIVATE 
+target_compile_definitions(HimiiEditor PRIVATE
     HIMII_ROOT_DIR="${PROJECT_ROOT_PATH}")
-
 
 if(MSVC)
     target_compile_options(HimiiEditor PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/utf-8> $<$<C_COMPILER_ID:MSVC>:/utf-8>)
@@ -37,46 +32,36 @@ endif()
 
 himii_set_output_dirs(HimiiEditor)
 
-# Release 分发包对外文件名为 HimiiEngine.exe（与 Godot 根目录单入口一致）
 set_target_properties(HimiiEditor PROPERTIES
     OUTPUT_NAME_RELEASE "HimiiEngine"
     OUTPUT_NAME_RELWITHDEBINFO "HimiiEngine"
     OUTPUT_NAME_MINSIZEREL "HimiiEngine"
 )
 
-set(SCRIPT_CORE_BUILD_DIR "${CMAKE_SOURCE_DIR}/ScriptCore/bin/$<IF:$<CONFIG:Debug>,Debug,Release>/net8.0")
+add_dependencies(HimiiEditor PackEngineResources)
 
-# Copy font assets to the executable output directory so the runtime can
-# load them without referencing the repository structure.
 add_custom_command(TARGET HimiiEditor POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:HimiiEditor>/assets
-    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:HimiiEditor>/resources
+    COMMAND ${CMAKE_COMMAND}
+        -DTARGET_DIR=$<TARGET_FILE_DIR:HimiiEditor>
+        -DHIMII_EDITOR_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+        -DENGINE_HPCK=${HIMII_ENGINE_HPCK}
+        -DSCRIPT_CORE_DIR=${CMAKE_SOURCE_DIR}/ScriptCore/bin/$<IF:$<CONFIG:Debug>,Debug,Release>/net8.0
+        -DCONFIG=$<CONFIG>
+        -P ${CMAKE_SOURCE_DIR}/cmake/EditorPostBuild.cmake
+    COMMENT "Post-Build: staging editor/runtime files for Debug or Release layout"
+)
 
-    # 2. 拷贝 Assets 和 Resources 文件夹
-    # 注意：这里使用了 copy_directory，意味着如果你修改了 Source 里的资源，
-    # 必须重新编译一次 Editor 才会同步过去。
-    # 更好的方式是以后做资源系统时直接读取 Source 目录，或者使用 mklink (Symbolic Link)。
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_CURRENT_SOURCE_DIR}/assets
-            $<TARGET_FILE_DIR:HimiiEditor>/assets
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_CURRENT_SOURCE_DIR}/resources
-            $<TARGET_FILE_DIR:HimiiEditor>/resources
-
-            # 3. 拷贝 ScriptCore 核心库
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${SCRIPT_CORE_BUILD_DIR}/ScriptCore.dll"
-            "$<TARGET_FILE_DIR:HimiiEditor>"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${SCRIPT_CORE_BUILD_DIR}/ScriptCore.pdb"
-            "$<TARGET_FILE_DIR:HimiiEditor>"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${SCRIPT_CORE_BUILD_DIR}/ScriptCore.runtimeconfig.json"
-            "$<TARGET_FILE_DIR:HimiiEditor>"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${SCRIPT_CORE_BUILD_DIR}/ScriptCore.xml"
-            "$<TARGET_FILE_DIR:HimiiEditor>"
-
-
-    COMMENT "Post-Build: Copying Assets, Scripts, and CSPROJ to output bin directory"
+install(TARGETS HimiiEditor RUNTIME DESTINATION . CONFIGURATIONS Release RelWithDebInfo MinSizeRel)
+install(FILES "${HIMII_ENGINE_HPCK}" DESTINATION HimiiEngine CONFIGURATIONS Release RelWithDebInfo MinSizeRel RENAME engine.hpck)
+install(FILES
+    "${CMAKE_SOURCE_DIR}/ScriptCore/bin/Release/net8.0/ScriptCore.dll"
+    "${CMAKE_SOURCE_DIR}/ScriptCore/bin/Release/net8.0/ScriptCore.runtimeconfig.json"
+    DESTINATION HimiiEngine
+    CONFIGURATIONS Release RelWithDebInfo MinSizeRel
+)
+install(FILES
+    "${CMAKE_SOURCE_DIR}/HimiiEditor/resources/default/editor_layout.ini"
+    DESTINATION .
+    CONFIGURATIONS Release RelWithDebInfo MinSizeRel
+    RENAME editor_layout.ini
 )

@@ -1,0 +1,28 @@
+if(NOT DEFINED TARGET_DIR)
+    message(FATAL_ERROR "RuntimePostBuild.cmake: TARGET_DIR is required")
+endif()
+
+if(CONFIG STREQUAL "Release" OR CONFIG STREQUAL "RelWithDebInfo" OR CONFIG STREQUAL "MinSizeRel")
+    set(HIMII_ENGINE_DIR "${TARGET_DIR}/HimiiEngine")
+    file(MAKE_DIRECTORY "${HIMII_ENGINE_DIR}")
+
+    if(EXISTS "${ENGINE_HPCK}")
+        file(COPY_FILE "${ENGINE_HPCK}" "${HIMII_ENGINE_DIR}/engine.hpck" ONLY_IF_DIFFERENT)
+    endif()
+
+    foreach(script_core_file ScriptCore.dll ScriptCore.runtimeconfig.json)
+        set(source_file "${SCRIPT_CORE_DIR}/${script_core_file}")
+        if(EXISTS "${source_file}")
+            file(COPY_FILE "${source_file}" "${HIMII_ENGINE_DIR}/${script_core_file}" ONLY_IF_DIFFERENT)
+        endif()
+    endforeach()
+else()
+    file(COPY "${HIMII_RUNTIME_DIR}/assets/." DESTINATION "${TARGET_DIR}/assets")
+
+    foreach(script_core_file ScriptCore.dll ScriptCore.pdb ScriptCore.runtimeconfig.json)
+        set(source_file "${SCRIPT_CORE_DIR}/${script_core_file}")
+        if(EXISTS "${source_file}")
+            file(COPY_FILE "${source_file}" "${TARGET_DIR}/${script_core_file}" ONLY_IF_DIFFERENT)
+        endif()
+    endforeach()
+endif()

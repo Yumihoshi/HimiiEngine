@@ -26,10 +26,12 @@ namespace Himii
          }
          void ApplyEditorTheme();
          void LoadEditorFonts();
+         void EnableLayoutPersistence();
          uint32_t GetActiveWidgetID() const;
 
     private:
          bool m_BlockEvents = true;
+         bool m_LayoutPersistenceEnabled = false;
          std::string m_IniFilePath;
     };
 }

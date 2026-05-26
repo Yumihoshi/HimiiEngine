@@ -47,6 +47,7 @@ add_compile_definitions(
 # 添加子项目
 add_subdirectory(ScriptCore)
 add_subdirectory(Engine)
+add_subdirectory(Tools/ResourcePacker)
 add_subdirectory(HimiiEditor)
 add_subdirectory(HimiiRuntime)
 add_dependencies(HimiiEditor ScriptCore_Build)

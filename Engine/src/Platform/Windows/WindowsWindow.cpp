@@ -1,6 +1,7 @@
 #include "WindowsWindow.h"
 #include "Hepch.h"
 #include "Himii/Core/Input.h"
+#include "Himii/Core/FileSystem.h"
 #include "Himii/Core/Log.h"
 #include "Platform/OpenGL/OpenGLContext.h"
 
@@ -120,9 +121,10 @@ namespace Himii
             HWND window_handle = glfwGetWin32Window(m_Window);
             if (window_handle)
             {
-                constexpr const char *icon_path = "resources/icons/HimiiEngine.ico";
-                HICON window_icon = static_cast<HICON>(
-                        LoadImageA(nullptr, icon_path, IMAGE_ICON, 0, 0, LR_LOADFROMFILE | LR_DEFAULTSIZE));
+                const std::filesystem::path iconPath =
+                        FileSystem::MaterializeLooseFile("resources/icons/HimiiEngine.ico");
+                HICON window_icon = static_cast<HICON>(LoadImageA(nullptr, iconPath.string().c_str(), IMAGE_ICON, 0, 0,
+                                                                LR_LOADFROMFILE | LR_DEFAULTSIZE));
 
                 if (window_icon)
                 {
@@ -131,7 +133,7 @@ namespace Himii
                 }
                 else
                 {
-                    HIMII_CORE_WARNING("Failed to load window icon from path: {0}", icon_path);
+                    HIMII_CORE_WARNING("Failed to load window icon from path: {0}", iconPath.string());
                 }
 
                 if (props.Decorated)

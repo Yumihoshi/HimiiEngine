@@ -16,7 +16,7 @@ namespace Himii
             return Application::Get().GetExecutableDir() / "editor_layout.ini";
         }
 
-        static bool IniFileContainsDockingSection(const std::filesystem::path &layout_ini_path)
+        static bool IniHasEditorDockLayout(const std::filesystem::path &layout_ini_path)
         {
             std::ifstream input(layout_ini_path);
             if (!input.is_open())
@@ -24,7 +24,11 @@ namespace Himii
 
             std::stringstream buffer;
             buffer << input.rdbuf();
-            return buffer.str().find("[Docking]") != std::string::npos;
+            const std::string content = buffer.str();
+
+            return content.find("[Docking][Data]") != std::string::npos &&
+                   content.find("[Window][ViewPort]") != std::string::npos &&
+                   content.find("[Window][Scene Hierarchy]") != std::string::npos;
         }
 
         static bool ShouldBuildDefaultLayout()
@@ -33,18 +37,27 @@ namespace Himii
             if (!std::filesystem::exists(layout_ini_path))
                 return true;
 
-            // 仅有 [Window] 浮动坐标、没有 [Docking] 时仍会乱布局，需要重建默认停靠
-            return !IniFileContainsDockingSection(layout_ini_path);
+            return !IniHasEditorDockLayout(layout_ini_path);
+        }
+
+        static bool DockLayoutHasSplitNodes(ImGuiID dockspace_id)
+        {
+            ImGuiDockNode *dock_node = ImGui::DockBuilderGetNode(dockspace_id);
+            return dock_node != nullptr && dock_node->IsSplitNode();
         }
 
         void ApplyDefaultDockLayoutIfNeeded(ImGuiID dockspace_id)
         {
-            static bool default_layout_built = false;
-            if (default_layout_built)
+            static bool layout_initialized = false;
+            if (layout_initialized)
                 return;
 
-            if (!ShouldBuildDefaultLayout())
+            const bool should_build_default_layout = ShouldBuildDefaultLayout();
+            if (!should_build_default_layout && DockLayoutHasSplitNodes(dockspace_id))
+            {
+                layout_initialized = true;
                 return;
+            }
 
             ImGui::DockBuilderRemoveNode(dockspace_id);
             ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
@@ -87,7 +100,7 @@ namespace Himii
                                                  ImGuiDockNodeFlags_HiddenTabBar);
             }
 
-            default_layout_built = true;
+            layout_initialized = true;
         }
     }
 }

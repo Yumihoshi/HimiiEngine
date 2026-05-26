@@ -1,8 +1,10 @@
 ﻿#include "ImGuiLayer.h"
 #include "GLFW/glfw3.h"
 #include "Himii/Core/Application.h"
+#include "Himii/Core/FileSystem.h"
 #include "imgui_internal.h"
 
+#include <filesystem>
 #include <fstream>
 #include <sstream>
 
@@ -16,7 +18,7 @@ namespace Himii
 {
     namespace
     {
-        bool IniFileContainsDockingSection(const std::filesystem::path &layout_ini_path)
+        static bool IniHasEditorDockLayout(const std::filesystem::path &layout_ini_path)
         {
             std::ifstream input(layout_ini_path);
             if (!input.is_open())
@@ -24,7 +26,11 @@ namespace Himii
 
             std::stringstream buffer;
             buffer << input.rdbuf();
-            return buffer.str().find("[Docking]") != std::string::npos;
+            const std::string content = buffer.str();
+
+            return content.find("[Docking][Data]") != std::string::npos &&
+                   content.find("[Window][ViewPort]") != std::string::npos &&
+                   content.find("[Window][Scene Hierarchy]") != std::string::npos;
         }
 
         void PrepareEditorLayoutIniOnStartup(const std::filesystem::path &layout_ini_path)
@@ -32,7 +38,7 @@ namespace Himii
             if (!std::filesystem::exists(layout_ini_path))
                 return;
 
-            if (IniFileContainsDockingSection(layout_ini_path))
+            if (IniHasEditorDockLayout(layout_ini_path))
                 return;
 
             std::error_code error_code;
@@ -60,9 +66,9 @@ namespace Himii
         ImGui::StyleColorsDark();
 
         m_IniFilePath = (Application::Get().GetExecutableDir() / "editor_layout.ini").string();
-        PrepareEditorLayoutIniOnStartup(m_IniFilePath);
         HIMII_CORE_INFO("Editor layout ini: {0}", m_IniFilePath);
-        io.IniFilename = m_IniFilePath.c_str();
+
+        io.IniFilename = nullptr;
 
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -81,6 +87,36 @@ namespace Himii
         LoadEditorFonts();
     }
 
+    void ImGuiLayer::EnableLayoutPersistence()
+    {
+        if (m_LayoutPersistenceEnabled)
+            return;
+
+        PrepareEditorLayoutIniOnStartup(m_IniFilePath);
+
+        // Splash/Hub 阶段 IniFilename 为 null 时，ImGui 已在首帧把 SettingsLoaded 置 true 且不会自动再读盘。
+        // 进入编辑器前必须清空内存中的 ini 状态并显式加载 editor_layout.ini。
+        ImGuiContext &imgui_context = *ImGui::GetCurrentContext();
+        ImGui::ClearIniSettings();
+        imgui_context.SettingsLoaded = false;
+
+        ImGuiIO &io = ImGui::GetIO();
+        io.IniFilename = m_IniFilePath.c_str();
+
+        if (std::filesystem::exists(m_IniFilePath))
+        {
+            ImGui::LoadIniSettingsFromDisk(m_IniFilePath.c_str());
+            HIMII_CORE_INFO("Loaded editor layout from: {0}", m_IniFilePath);
+        }
+        else
+        {
+            imgui_context.SettingsLoaded = true;
+            HIMII_CORE_INFO("No editor layout ini found, default dock layout will be built: {0}", m_IniFilePath);
+        }
+
+        m_LayoutPersistenceEnabled = true;
+    }
+
     void ImGuiLayer::LoadEditorFonts()
     {
         ImGuiIO &io = ImGui::GetIO();
@@ -94,11 +130,11 @@ namespace Himii
         HIMII_CORE_INFO("Window Content Scale: {0}, {1}", x_scale, y_scale);
 
         io.Fonts->Clear();
-        const char *font_path = "assets/fonts/msyh.ttc";
+        const std::filesystem::path fontPath = FileSystem::MaterializeLooseFile("assets/fonts/msyh.ttc");
         const float font_size = 15.0f * user_interface_scale;
-        io.Fonts->AddFontFromFileTTF(font_path, font_size);
-        io.FontDefault =
-                io.Fonts->AddFontFromFileTTF(font_path, font_size, nullptr, io.Fonts->GetGlyphRangesChineseFull());
+        io.Fonts->AddFontFromFileTTF(fontPath.string().c_str(), font_size);
+        io.FontDefault = io.Fonts->AddFontFromFileTTF(fontPath.string().c_str(), font_size, nullptr,
+                                                       io.Fonts->GetGlyphRangesChineseFull());
         io.Fonts->Build();
 
         ImGuiStyle &style = ImGui::GetStyle();

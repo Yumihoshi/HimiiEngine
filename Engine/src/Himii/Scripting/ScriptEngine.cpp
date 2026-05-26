@@ -3,6 +3,7 @@
 #include "ScriptGlue.h"
 #include "ScriptCompiler.h"
 #include "Himii/Project/Project.h"
+#include "Himii/Core/Application.h"
 #include "Himii/Scene/Components.h"
 #include "Himii/Scene/Entity.h"
 
@@ -158,10 +159,9 @@ namespace Himii
             return;
         }
 
-        // 2. 确定配置文件的路径
-        // 假设 ScriptCore.runtimeconfig.json 与可执行文件在同一位置
-        // 实际项目中可能需要更复杂的路径处理
-        std::filesystem::path runtimeConfigPath = std::filesystem::current_path() / "ScriptCore.runtimeconfig.json";
+        // 2. 确定配置文件的路径（与 HimiiEngine 子目录中的 ScriptCore 对齐）
+        const std::filesystem::path engineDirectory = Application::GetEngineDir();
+        std::filesystem::path runtimeConfigPath = engineDirectory / "ScriptCore.runtimeconfig.json";
 
         if (!std::filesystem::exists(runtimeConfigPath))
         {
@@ -190,7 +190,7 @@ namespace Himii
         }
 
         // 5. 加载 ScriptCore 程序集并进行初始化
-        std::filesystem::path assemblyPath = std::filesystem::current_path() / "ScriptCore.dll";
+        std::filesystem::path assemblyPath = engineDirectory / "ScriptCore.dll";
         LoadAssembly(assemblyPath);
     }
 

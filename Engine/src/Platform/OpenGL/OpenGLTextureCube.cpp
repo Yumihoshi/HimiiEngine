@@ -1,6 +1,7 @@
 #include "Hepch.h"
 
 #include "OpenGLTextureCube.h"
+#include "Himii/Core/FileSystem.h"
 #include "glad/glad.h"
 #include "stb_image.h"
 
@@ -19,22 +20,27 @@ namespace Himii
         if (paths.size() > 0)
              m_Path = paths[0];
 
-        for (unsigned int i = 0; i < paths.size(); i++)
+        for (unsigned int index = 0; index < paths.size(); index++)
         {
-            unsigned char *data = stbi_load(paths[i].c_str(), &width, &height, &channels, 3);
+            unsigned char *data = nullptr;
+            const auto fileBytes = FileSystem::ReadBytes(paths[index]);
+            if (fileBytes)
+                data = stbi_load_from_memory(fileBytes->data(), static_cast<int>(fileBytes->size()), &width, &height,
+                                             &channels, 3);
+            else
+                data = stbi_load(paths[index].c_str(), &width, &height, &channels, 3);
+
             if (data)
             {
                 m_Width = width;
                 m_Height = height;
-                // GL_TEXTURE_CUBE_MAP_POSITIVE_X 也是从这个枚举值开始递增的
-                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE,
-                             data);
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + index, 0, GL_RGB, width, height, 0, GL_RGB,
+                             GL_UNSIGNED_BYTE, data);
                 stbi_image_free(data);
             }
             else
             {
-                HIMII_CORE_ERROR("Failed to load cubemap texture: {0}", paths[i]);
-                stbi_image_free(data);
+                HIMII_CORE_ERROR("Failed to load cubemap texture: {0}", paths[index]);
             }
         }
 

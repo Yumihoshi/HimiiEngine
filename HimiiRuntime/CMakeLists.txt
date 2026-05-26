@@ -1,40 +1,28 @@
 project(HimiiRuntime)
 
-# 添加可执行文件
-# 如果你想看日志调试，可以先去掉 WIN32
 add_executable(HimiiRuntime src/RuntimeApp.cpp)
 
-# 设置 C++ 标准
 target_compile_features(HimiiRuntime PUBLIC cxx_std_17)
 
-# 包含引擎头文件
-target_include_directories(HimiiRuntime PRIVATE 
+target_include_directories(HimiiRuntime PRIVATE
     ${CMAKE_SOURCE_DIR}/Engine/src
 )
 
-# 链接引擎核心库
 target_link_libraries(HimiiRuntime PRIVATE Engine)
 
-set(SCRIPT_CORE_BUILD_DIR "${CMAKE_SOURCE_DIR}/ScriptCore/bin/$<IF:$<CONFIG:Debug>,Debug,Release>/net8.0")
+himii_set_output_dirs(HimiiRuntime)
+
+add_dependencies(HimiiRuntime PackEngineResources)
 
 add_custom_command(TARGET HimiiRuntime POST_BUILD
-    # [删除] 既然是静态库，不需要复制 Himii-Engine.dll/.lib
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_CURRENT_SOURCE_DIR}/assets
-            $<TARGET_FILE_DIR:HimiiRuntime>/assets
-    # 1. [Nethost 关键] 复制 .runtimeconfig.json
-    # nethost 启动时会在 exe 同级目录下找 "HimiiRuntime.runtimeconfig.json"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${SCRIPT_CORE_BUILD_DIR}/ScriptCore.dll"
-            "$<TARGET_FILE_DIR:HimiiRuntime>"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${SCRIPT_CORE_BUILD_DIR}/ScriptCore.pdb"
-            "$<TARGET_FILE_DIR:HimiiRuntime>"
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${SCRIPT_CORE_BUILD_DIR}/ScriptCore.runtimeconfig.json"
-            "$<TARGET_FILE_DIR:HimiiRuntime>"
+    COMMAND ${CMAKE_COMMAND}
+        -DTARGET_DIR=$<TARGET_FILE_DIR:HimiiRuntime>
+        -DHIMII_RUNTIME_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+        -DENGINE_HPCK=${HIMII_ENGINE_HPCK}
+        -DSCRIPT_CORE_DIR=${CMAKE_SOURCE_DIR}/ScriptCore/bin/$<IF:$<CONFIG:Debug>,Debug,Release>/net8.0
+        -DCONFIG=$<CONFIG>
+        -P ${CMAKE_SOURCE_DIR}/cmake/RuntimePostBuild.cmake
+    COMMENT "Post-Build: staging runtime files for Debug or Release layout"
 )
 
-# 注意：
-# 如果你使用了 vcpkg 且安装了动态库（如 glfw3.dll, openal32.dll 等），
-# vcpkg 通常会自动处理 DLL 复制，或者你需要手动在这里添加 copy 命令。
+install(TARGETS HimiiRuntime RUNTIME DESTINATION HimiiEngine CONFIGURATIONS Release RelWithDebInfo MinSizeRel)

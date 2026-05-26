@@ -1,6 +1,7 @@
 #include "Hepch.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 
+#include "Himii/Core/FileSystem.h"
 #include "fstream"
 #include "filesystem"
 #include "glad/glad.h"
@@ -54,14 +55,14 @@ namespace Himii
             return nullptr;
         }
 
-        static char *GetCacheDirectory()
+        static std::filesystem::path GetCacheDirectory()
         {
-            return "assets/cache/shader/opengl";
+            return FileSystem::GetWritableCacheRoot() / "shader" / "opengl";
         }
 
-        static void CreateCacheDirectoryIfNeeded()
+        static         void CreateCacheDirectoryIfNeeded()
         {
-            std::string cacheDirectory = GetCacheDirectory();
+            const std::filesystem::path cacheDirectory = GetCacheDirectory();
             if (!std::filesystem::exists(cacheDirectory))
                 std::filesystem::create_directories(cacheDirectory);
         }
@@ -142,22 +143,7 @@ namespace Himii
     std::string OpenGLShader::ReadFile(const std::string &filepath)
     {
         HIMII_PROFILE_FUNCTION();
-
-        std::string result;
-        std::ifstream in(filepath, std::ios::in|std::ios::binary);
-        if (in)
-        {
-            in.seekg(0, std::ios::end);
-            result.resize(in.tellg());
-            in.seekg(0, std::ios::beg);
-            in.read(&result[0], result.size());
-            in.close();
-        }
-        else
-        {
-            HIMII_CORE_ERROR("Could no open file '{0}'", filepath);
-        }
-        return result;
+        return FileSystem::ReadText(filepath);
     }
 
     std::unordered_map<GLenum, std::string> OpenGLShader::PreProcess(const std::string &source)

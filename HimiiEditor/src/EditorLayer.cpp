@@ -281,6 +281,7 @@ namespace Himii
                 if (Project::GetActive())
                     is2D = Project::GetActive()->GetConfig().Is2D;
 
+                m_EditorCamera.SetOrthographicProjection(is2D);
                 m_EditorCamera.OnUpdate(ts, m_ViewportHovered, is2D);
                 
                 m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
@@ -296,7 +297,8 @@ namespace Himii
                     bool is2D = false;
                     if (Project::GetActive())
                         is2D = Project::GetActive()->GetConfig().Is2D;
-                        
+
+                    m_EditorCamera.SetOrthographicProjection(is2D);
                     m_EditorCamera.OnUpdate(ts, m_ViewportHovered, is2D);
                     m_ActiveScene->OnUpdateSimulation(ts, m_EditorCamera);
                 }
@@ -933,7 +935,9 @@ namespace Himii
             }
             else
             {
-                Renderer3D::DrawGrid(m_EditorCamera, is2D);
+                const bool usePerspectiveGridPlaneRotation =
+                    is2D && !m_EditorCamera.IsOrthographicProjection();
+                Renderer3D::DrawGrid(m_EditorCamera, usePerspectiveGridPlaneRotation);
             }
         }
 
@@ -1189,8 +1193,16 @@ namespace Himii
                 NewScene();
             }
 
+            UpdateEditorCameraForActiveProject();
             UpdateMainWindowTitle();
         }
+    }
+
+    void EditorLayer::UpdateEditorCameraForActiveProject()
+    {
+        const bool is_two_dimensional_project =
+            Project::GetActive() && Project::GetActive()->GetConfig().Is2D;
+        m_EditorCamera.SetOrthographicProjection(is_two_dimensional_project);
     }
 
     void EditorLayer::UpdateMainWindowTitle()
@@ -2024,6 +2036,7 @@ namespace Himii
         if (tileMapEditorWindowClosed || leftTilemapEditTarget || switchedTilemapEntity)
         {
             m_TileMapEditorPanel.ClearScenePaintSession();
+            ResetTilemapBoxSelection();
             m_TilemapHoveredTile = {TileMapCoordinateUtility::InvalidTileCoordinate,
                                     TileMapCoordinateUtility::InvalidTileCoordinate};
             if (leftTilemapEditTarget || tileMapEditorWindowClosed)
@@ -2110,11 +2123,22 @@ namespace Himii
         if (m_TilemapViewportCapture || m_ViewportFocused || m_ViewportHovered)
         {
             if (ImGui::IsKeyPressed(ImGuiKey_B))
+            {
                 m_TileMapEditorPanel.SetCurrentTool(TileMapEditorPanel::Tool::Brush);
+                ResetTilemapBoxSelection();
+            }
             if (ImGui::IsKeyPressed(ImGuiKey_E))
-                m_TileMapEditorPanel.SetCurrentTool(TileMapEditorPanel::Tool::Eraser);
+            {
+                const bool shiftHeld = ImGui::IsKeyDown(ImGuiKey_LeftShift) || ImGui::IsKeyDown(ImGuiKey_RightShift);
+                m_TileMapEditorPanel.SetCurrentTool(
+                        shiftHeld ? TileMapEditorPanel::Tool::BoxErase : TileMapEditorPanel::Tool::Eraser);
+                ResetTilemapBoxSelection();
+            }
             if (ImGui::IsKeyPressed(ImGuiKey_G))
-                m_TileMapEditorPanel.SetCurrentTool(TileMapEditorPanel::Tool::Fill);
+            {
+                m_TileMapEditorPanel.SetCurrentTool(TileMapEditorPanel::Tool::BoxFill);
+                ResetTilemapBoxSelection();
+            }
         }
 
         const glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
@@ -2135,17 +2159,131 @@ namespace Himii
         m_TilemapHoveredTile = tileCoordinates;
         m_TileMapEditorPanel.SetHoveredTileCoordinates(tileCoordinates);
 
-        if (!TileMapCoordinateUtility::IsValidTileCoordinate(tileCoordinates) || !allowPainting)
-            return;
+        const bool validTileCoordinate = TileMapCoordinateUtility::IsValidTileCoordinate(tileCoordinates);
 
         if (!m_TilemapViewportCapture && !m_ViewportHovered)
             return;
 
-        if (!ImGuizmo::IsUsing() && Input::IsMouseButtonPressed(Mouse::ButtonLeft))
-            m_TileMapEditorPanel.ApplyToolAtTile(tileCoordinates.x, tileCoordinates.y);
+        if (ImGuizmo::IsUsing())
+            return;
 
-        if (Input::IsMouseButtonPressed(Mouse::ButtonRight))
-            mapData->SetTile(tileCoordinates.x, tileCoordinates.y, 0);
+        if (m_TilemapBoxSelecting && !m_TileMapEditorPanel.IsBoxToolActive())
+            ResetTilemapBoxSelection();
+
+        if (!allowPainting)
+        {
+            if (m_TilemapBoxSelecting && ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+                ResetTilemapBoxSelection();
+            return;
+        }
+
+        const TileMapEditorPanel::Tool currentTool = m_TileMapEditorPanel.GetCurrentTool();
+        if (m_TileMapEditorPanel.IsBoxTool(currentTool))
+        {
+            if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && validTileCoordinate)
+            {
+                m_TilemapBoxSelecting = true;
+                m_TilemapBoxSelectionStart = tileCoordinates;
+                m_TilemapBoxSelectionEnd = tileCoordinates;
+            }
+
+            if (m_TilemapBoxSelecting)
+            {
+                if (validTileCoordinate)
+                    m_TilemapBoxSelectionEnd = tileCoordinates;
+
+                if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+                {
+                    if (TileMapCoordinateUtility::IsValidTileCoordinate(m_TilemapBoxSelectionStart)
+                        && TileMapCoordinateUtility::IsValidTileCoordinate(m_TilemapBoxSelectionEnd))
+                    {
+                        m_TileMapEditorPanel.ApplyBoxTool(m_TilemapBoxSelectionStart.x,
+                                                          m_TilemapBoxSelectionStart.y,
+                                                          m_TilemapBoxSelectionEnd.x,
+                                                          m_TilemapBoxSelectionEnd.y);
+                    }
+                    ResetTilemapBoxSelection();
+                }
+            }
+            return;
+        }
+
+        if (!validTileCoordinate)
+            return;
+
+        if (Input::IsMouseButtonPressed(Mouse::ButtonLeft))
+            m_TileMapEditorPanel.ApplyToolAtTile(tileCoordinates.x, tileCoordinates.y);
+    }
+
+    void EditorLayer::ResetTilemapBoxSelection()
+    {
+        m_TilemapBoxSelecting = false;
+        m_TilemapBoxSelectionStart = {TileMapCoordinateUtility::InvalidTileCoordinate,
+                                      TileMapCoordinateUtility::InvalidTileCoordinate};
+        m_TilemapBoxSelectionEnd = {TileMapCoordinateUtility::InvalidTileCoordinate,
+                                    TileMapCoordinateUtility::InvalidTileCoordinate};
+    }
+
+    void EditorLayer::DrawTilemapBoxSelectionOverlay(const TransformComponent& transformComponent,
+                                                     float cellSize)
+    {
+        if (!m_TilemapBoxSelecting)
+            return;
+
+        if (!TileMapCoordinateUtility::IsValidTileCoordinate(m_TilemapBoxSelectionStart)
+            || !TileMapCoordinateUtility::IsValidTileCoordinate(m_TilemapBoxSelectionEnd))
+            return;
+
+        int32_t minTileX = m_TilemapBoxSelectionStart.x;
+        int32_t maxTileX = m_TilemapBoxSelectionEnd.x;
+        int32_t minTileY = m_TilemapBoxSelectionStart.y;
+        int32_t maxTileY = m_TilemapBoxSelectionEnd.y;
+
+        if (minTileX > maxTileX)
+            std::swap(minTileX, maxTileX);
+        if (minTileY > maxTileY)
+            std::swap(minTileY, maxTileY);
+
+        const glm::mat4 entityTransform = transformComponent.GetTransform();
+        const glm::vec2 selectionBottomLeft =
+                TileMapCoordinateUtility::TileLocalBottomLeft(minTileX, minTileY, cellSize);
+        const glm::vec2 selectionTopRight = TileMapCoordinateUtility::TileLocalBottomLeft(
+                maxTileX + 1, maxTileY + 1, cellSize);
+
+        const bool isBoxErase =
+                m_TileMapEditorPanel.GetCurrentTool() == TileMapEditorPanel::Tool::BoxErase;
+        const glm::vec4 fillColor =
+                isBoxErase ? glm::vec4(1.0f, 0.35f, 0.35f, 0.22f) : glm::vec4(0.35f, 0.9f, 0.45f, 0.22f);
+        const glm::vec4 borderColor =
+                isBoxErase ? glm::vec4(1.0f, 0.45f, 0.45f, 0.85f) : glm::vec4(0.45f, 1.0f, 0.55f, 0.85f);
+
+        const glm::vec3 selectionCenter = {
+                (selectionBottomLeft.x + selectionTopRight.x) * 0.5f,
+                (selectionBottomLeft.y + selectionTopRight.y) * 0.5f,
+                0.04f};
+        const glm::vec3 selectionScale = {
+                selectionTopRight.x - selectionBottomLeft.x,
+                selectionTopRight.y - selectionBottomLeft.y,
+                1.0f};
+
+        glm::mat4 selectionTransform = entityTransform
+                * glm::translate(glm::mat4(1.0f), selectionCenter)
+                * glm::scale(glm::mat4(1.0f), selectionScale);
+
+        Renderer2D::DrawRect(selectionTransform, fillColor);
+
+        const glm::vec3 cornerBottomLeft = entityTransform
+                * glm::vec4(selectionBottomLeft.x, selectionBottomLeft.y, 0.04f, 1.0f);
+        const glm::vec3 cornerBottomRight = entityTransform
+                * glm::vec4(selectionTopRight.x, selectionBottomLeft.y, 0.04f, 1.0f);
+        const glm::vec3 cornerTopRight =
+                entityTransform * glm::vec4(selectionTopRight.x, selectionTopRight.y, 0.04f, 1.0f);
+        const glm::vec3 cornerTopLeft = entityTransform
+                * glm::vec4(selectionBottomLeft.x, selectionTopRight.y, 0.04f, 1.0f);
+        Renderer2D::DrawLine(cornerBottomLeft, cornerBottomRight, borderColor);
+        Renderer2D::DrawLine(cornerBottomRight, cornerTopRight, borderColor);
+        Renderer2D::DrawLine(cornerTopRight, cornerTopLeft, borderColor);
+        Renderer2D::DrawLine(cornerTopLeft, cornerBottomLeft, borderColor);
     }
 
     void EditorLayer::DrawTilemapGhostPreviewInViewport()
@@ -2164,7 +2302,9 @@ namespace Himii
         if (selectedTileIdentifier == 0)
             return;
 
-        if (m_TileMapEditorPanel.GetCurrentTool() == TileMapEditorPanel::Tool::Eraser)
+        if (m_TileMapEditorPanel.GetCurrentTool() == TileMapEditorPanel::Tool::Eraser
+            || m_TileMapEditorPanel.GetCurrentTool() == TileMapEditorPanel::Tool::BoxErase
+            || m_TileMapEditorPanel.IsBoxToolActive())
             return;
 
         Ref<TileSet> tileSet = m_TileMapEditorPanel.GetTileSet();
@@ -2300,7 +2440,10 @@ namespace Himii
         Renderer2D::DrawLine(cornerTopRight, cornerTopLeft, borderColor);
         Renderer2D::DrawLine(cornerTopLeft, cornerBottomLeft, borderColor);
 
-        if (TileMapCoordinateUtility::IsValidTileCoordinate(m_TilemapHoveredTile))
+        DrawTilemapBoxSelectionOverlay(transformComponent, cellSize);
+
+        if (TileMapCoordinateUtility::IsValidTileCoordinate(m_TilemapHoveredTile)
+            && !m_TilemapBoxSelecting && !m_TileMapEditorPanel.IsBoxToolActive())
         {
             const glm::vec2 tileCenter = TileMapCoordinateUtility::TileLocalCenter(
                     m_TilemapHoveredTile.x, m_TilemapHoveredTile.y, cellSize);
@@ -2314,7 +2457,8 @@ namespace Himii
 
             const uint16_t selectedTileIdentifier = m_TileMapEditorPanel.GetSelectedTileID();
             if (IsTilemapPaintActive() && selectedTileIdentifier != 0
-                && m_TileMapEditorPanel.GetCurrentTool() != TileMapEditorPanel::Tool::Eraser)
+                && m_TileMapEditorPanel.GetCurrentTool() != TileMapEditorPanel::Tool::Eraser
+                && m_TileMapEditorPanel.GetCurrentTool() != TileMapEditorPanel::Tool::BoxErase)
             {
                 Ref<TileSet> tileSet = m_TileMapEditorPanel.GetTileSet();
                 if (tileSet)

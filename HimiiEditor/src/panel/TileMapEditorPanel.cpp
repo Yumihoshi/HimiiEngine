@@ -17,8 +17,6 @@
 #include <cfloat>
 #include <cstdio>
 #include <filesystem>
-#include <queue>
-#include <unordered_set>
 
 namespace Himii
 {
@@ -65,7 +63,7 @@ namespace Himii
         if (!m_MapData || m_MoveEntityModeEnabled)
             return false;
 
-        if (m_CurrentTool == Tool::Eraser)
+        if (m_CurrentTool == Tool::Eraser || m_CurrentTool == Tool::BoxErase)
             return true;
 
         return m_BrushTileSelected && m_SelectedTileID != 0;
@@ -240,13 +238,14 @@ namespace Himii
     {
         DrawInspectorSectionHeader(
                 "Paint Tools",
-                "先在右侧图集点选笔刷图块（橡皮擦除外），再在 Scene 中点击或拖动绘制。");
+                "笔刷/橡皮擦：点击或拖动绘制。框选工具：在 Scene 中拖拽矩形后松开应用。");
 
         const bool isBrush = (m_CurrentTool == Tool::Brush);
         const bool isEraser = (m_CurrentTool == Tool::Eraser);
-        const bool isFill = (m_CurrentTool == Tool::Fill);
+        const bool isBoxFill = (m_CurrentTool == Tool::BoxFill);
+        const bool isBoxErase = (m_CurrentTool == Tool::BoxErase);
 
-        if (ImGui::BeginTable("##PaintTools", 3, ImGuiTableFlags_SizingStretchSame))
+        if (ImGui::BeginTable("##PaintTools", 2, ImGuiTableFlags_SizingStretchSame))
         {
             ImGui::TableNextColumn();
             if (DrawEditorToggleButton("Brush [B]", isBrush, ImVec2(-FLT_MIN, 0.0f),
@@ -258,10 +257,17 @@ namespace Himii
                                        "擦除瓦片（设为 Empty）。快捷键 E。"))
                 m_CurrentTool = Tool::Eraser;
 
+            ImGui::TableNextRow();
+
             ImGui::TableNextColumn();
-            if (DrawEditorToggleButton("Fill [G]", isFill, ImVec2(-FLT_MIN, 0.0f),
-                                       "用当前笔刷填充相连区域。快捷键 G。"))
-                m_CurrentTool = Tool::Fill;
+            if (DrawEditorToggleButton("Box Fill [G]", isBoxFill, ImVec2(-FLT_MIN, 0.0f),
+                                       "拖拽框选矩形，用当前笔刷填充区域内全部瓦片。快捷键 G。"))
+                m_CurrentTool = Tool::BoxFill;
+
+            ImGui::TableNextColumn();
+            if (DrawEditorToggleButton("Box Erase [Shift+E]", isBoxErase, ImVec2(-FLT_MIN, 0.0f),
+                                       "拖拽框选矩形，擦除区域内全部瓦片。快捷键 Shift+E。"))
+                m_CurrentTool = Tool::BoxErase;
 
             ImGui::EndTable();
         }
@@ -564,7 +570,7 @@ namespace Himii
                     {
                         m_SelectedTileID = pickedTileIdentifier;
                         m_BrushTileSelected = true;
-                        if (m_CurrentTool == Tool::Eraser)
+                        if (m_CurrentTool == Tool::Eraser || m_CurrentTool == Tool::BoxErase)
                             m_CurrentTool = Tool::Brush;
                     }
                 }
@@ -678,56 +684,29 @@ namespace Himii
             case Tool::Eraser:
                 m_MapData->SetTile(tileX, tileY, 0);
                 break;
-            case Tool::Fill:
-            {
-                uint16_t target = m_MapData->GetTile(tileX, tileY);
-                if (target != m_SelectedTileID)
-                    FloodFill(tileX, tileY, target, m_SelectedTileID);
+            case Tool::BoxFill:
+            case Tool::BoxErase:
                 break;
-            }
         }
     }
 
-    void TileMapEditorPanel::FloodFill(int startX, int startY, uint16_t target, uint16_t replacement)
+    void TileMapEditorPanel::ApplyBoxTool(int minTileX, int minTileY, int maxTileX, int maxTileY)
     {
-        if (!m_MapData || target == replacement)
+        if (!m_MapData)
             return;
 
-        auto packCoordinates = [](int32_t x, int32_t y) -> int64_t
+        if (minTileX > maxTileX)
+            std::swap(minTileX, maxTileX);
+        if (minTileY > maxTileY)
+            std::swap(minTileY, maxTileY);
+
+        const uint16_t replacementTile =
+                m_CurrentTool == Tool::BoxFill ? m_SelectedTileID : static_cast<uint16_t>(0);
+
+        for (int32_t tileY = minTileY; tileY <= maxTileY; ++tileY)
         {
-            return (static_cast<int64_t>(x) << 32) | static_cast<uint32_t>(y);
-        };
-
-        std::queue<glm::ivec2> queue;
-        std::unordered_set<int64_t> visited;
-        queue.push({startX, startY});
-        visited.insert(packCoordinates(startX, startY));
-
-        int filledCount = 0;
-        constexpr int maxFill = 65536;
-
-        while (!queue.empty() && filledCount < maxFill)
-        {
-            const glm::ivec2 position = queue.front();
-            queue.pop();
-            const int32_t x = position.x;
-            const int32_t y = position.y;
-
-            if (m_MapData->GetTile(x, y) != target)
-                continue;
-
-            m_MapData->SetTile(x, y, replacement);
-            filledCount++;
-
-            const glm::ivec2 neighbors[4] = {
-                {x + 1, y}, {x - 1, y}, {x, y + 1}, {x, y - 1}};
-
-            for (const glm::ivec2& neighbor : neighbors)
-            {
-                const int64_t packed = packCoordinates(neighbor.x, neighbor.y);
-                if (visited.insert(packed).second)
-                    queue.push(neighbor);
-            }
+            for (int32_t tileX = minTileX; tileX <= maxTileX; ++tileX)
+                m_MapData->SetTile(tileX, tileY, replacementTile);
         }
     }
 

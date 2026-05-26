@@ -19,10 +19,43 @@ namespace Himii
         UpdateView();
     }
 
+    void EditorCamera::SetOrthographicProjection(bool enabled)
+    {
+        if (m_UseOrthographicProjection == enabled)
+            return;
+
+        m_UseOrthographicProjection = enabled;
+
+        if (enabled)
+        {
+            m_Pitch = 0.0f;
+            m_Yaw = 0.0f;
+            if (m_Distance < 1.0f)
+                m_Distance = 10.0f;
+        }
+
+        UpdateProjection();
+        UpdateView();
+    }
+
     void EditorCamera::UpdateProjection()
     {
+        if (m_ViewportHeight < 1.0f)
+            return;
+
         m_AspectRatio = m_ViewportWidth / m_ViewportHeight;
-        m_Projection = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip);
+
+        if (m_UseOrthographicProjection)
+        {
+            const float orthographicHalfHeight = m_Distance;
+            const float orthographicHalfWidth = orthographicHalfHeight * m_AspectRatio;
+            m_Projection = glm::ortho(-orthographicHalfWidth, orthographicHalfWidth, -orthographicHalfHeight,
+                                      orthographicHalfHeight, m_NearClip, m_FarClip);
+        }
+        else
+        {
+            m_Projection = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearClip, m_FarClip);
+        }
     }
 
     void EditorCamera::UpdateView()
@@ -90,7 +123,8 @@ namespace Himii
 
         if (m_IsActive)
         {
-            glm::vec2 delta = (mouse - m_InitialMousePosition) * 0.01f;
+            const float mouseDeltaScale = is2D ? 0.01f : 0.01f;
+            glm::vec2 delta = (mouse - m_InitialMousePosition) * mouseDeltaScale;
             m_InitialMousePosition = mouse;
             
             if (is2D)
@@ -98,7 +132,7 @@ namespace Himii
                 // 2D Mode Logic
                 if (is2DPan)
                 {
-                    MousePan(delta);
+                    MousePan(delta, true);
                 }
                 
                 if (m_Pitch != 0.0f || m_Yaw != 0.0f)
@@ -142,6 +176,7 @@ namespace Himii
             }
         }
 
+        UpdateProjection();
         UpdateView();
     }
 
@@ -164,17 +199,25 @@ namespace Himii
         else
         {
             MouseZoom(delta);
+            UpdateProjection();
             UpdateView();
         }
         
         return false;
     }
 
-    void EditorCamera::MousePan(const glm::vec2 &delta)
+    void EditorCamera::MousePan(const glm::vec2 &delta, bool isTwoDimensional)
     {
-        auto [xSpeed, ySpeed] = PanSpeed();
-        m_FocalPoint += -GetRightDirection() * delta.x * xSpeed * m_Distance;
-        m_FocalPoint += GetUpDirection() * delta.y * ySpeed * m_Distance;
+        auto [horizontalPanSpeed, verticalPanSpeed] = PanSpeed();
+
+        if (isTwoDimensional)
+        {
+            horizontalPanSpeed *= kTwoDimensionalPanSpeedMultiplier;
+            verticalPanSpeed *= kTwoDimensionalPanSpeedMultiplier;
+        }
+
+        m_FocalPoint += -GetRightDirection() * delta.x * horizontalPanSpeed * m_Distance;
+        m_FocalPoint += GetUpDirection() * delta.y * verticalPanSpeed * m_Distance;
     }
 
     void EditorCamera::MouseRotate(const glm::vec2 &delta)

@@ -9,6 +9,7 @@
 #include <fstream>
 #include <algorithm>
 #include <cctype>
+#include <cstring>
 #include <imgui.h>
 
 namespace Himii
@@ -21,6 +22,102 @@ namespace Himii
                        [](unsigned char character) { return static_cast<char>(std::tolower(character)); });
         return extension == ".png" || extension == ".jpg" || extension == ".jpeg" || extension == ".bmp"
                || extension == ".tga";
+    }
+
+    static std::filesystem::path NormalizePath(const std::filesystem::path& path)
+    {
+        std::error_code errorCode;
+        std::filesystem::path normalizedPath = std::filesystem::weakly_canonical(path, errorCode);
+        if (errorCode)
+            normalizedPath = path.lexically_normal();
+        return normalizedPath;
+    }
+
+    std::string ContentBrowserPanel::TruncateTextToWidth(const char* text, float maxWidth)
+    {
+        if (!text || text[0] == '\0')
+            return {};
+
+        const ImVec2 fullTextSize = ImGui::CalcTextSize(text);
+        if (fullTextSize.x <= maxWidth)
+            return text;
+
+        constexpr const char* ellipsis = "...";
+        const float ellipsisWidth = ImGui::CalcTextSize(ellipsis).x;
+        const float maximumTextWidth = maxWidth - ellipsisWidth;
+        if (maximumTextWidth <= 0.0f)
+            return ellipsis;
+
+        const size_t textLength = std::strlen(text);
+        size_t lowIndex = 0;
+        size_t highIndex = textLength;
+        size_t bestFitIndex = 0;
+
+        while (lowIndex <= highIndex)
+        {
+            const size_t middleIndex = lowIndex + (highIndex - lowIndex) / 2;
+            const ImVec2 partialTextSize = ImGui::CalcTextSize(text, text + middleIndex);
+            if (partialTextSize.x <= maximumTextWidth)
+            {
+                bestFitIndex = middleIndex;
+                lowIndex = middleIndex + 1;
+            }
+            else
+            {
+                if (middleIndex == 0)
+                    break;
+                highIndex = middleIndex - 1;
+            }
+        }
+
+        std::string truncatedText(text, bestFitIndex);
+        truncatedText += ellipsis;
+        return truncatedText;
+    }
+
+    bool ContentBrowserPanel::IsOnPathToCurrentDirectory(const std::filesystem::path& path) const
+    {
+        const std::filesystem::path normalizedPath = NormalizePath(path);
+        const std::filesystem::path normalizedCurrentDirectory = NormalizePath(m_CurrentDirectory);
+
+        if (normalizedPath == normalizedCurrentDirectory)
+            return true;
+
+        std::error_code errorCode;
+        const std::filesystem::path relativePath =
+                std::filesystem::relative(normalizedCurrentDirectory, normalizedPath, errorCode);
+        if (errorCode || relativePath.empty())
+            return false;
+
+        const std::string relativeString = relativePath.generic_string();
+        return relativeString.rfind("..", 0) != 0;
+    }
+
+    void ContentBrowserPanel::DrawContentDetailBar(float barWidth)
+    {
+        const ImGuiStyle& style = ImGui::GetStyle();
+        const float detailBarHeight = ImGui::GetTextLineHeight() + style.WindowPadding.y * 2.0f;
+        const ImVec2 detailBarMin = ImGui::GetCursorScreenPos();
+        const ImVec2 detailBarMax(detailBarMin.x + barWidth, detailBarMin.y + detailBarHeight);
+
+        ImDrawList* drawList = ImGui::GetWindowDrawList();
+        drawList->AddRectFilled(
+                detailBarMin, detailBarMax,
+                ImGui::GetColorU32(ImVec4(0.0f, 0.0f, 0.0f, 0.38f)));
+        drawList->AddLine(
+                ImVec2(detailBarMin.x, detailBarMin.y),
+                ImVec2(detailBarMax.x, detailBarMin.y),
+                ImGui::GetColorU32(ImVec4(1.0f, 1.0f, 1.0f, 0.08f)));
+
+        ImGui::Dummy(ImVec2(barWidth, detailBarHeight));
+
+        if (!m_SelectedItemDisplayName.empty())
+        {
+            ImGui::SetCursorScreenPos(
+                    ImVec2(detailBarMin.x + style.WindowPadding.x,
+                           detailBarMin.y + style.WindowPadding.y));
+            ImGui::TextUnformatted(m_SelectedItemDisplayName.c_str());
+        }
     }
 
     ContentBrowserPanel::ContentBrowserPanel() : m_CurrentDirectory("")
@@ -72,8 +169,11 @@ namespace Himii
                 ImGui::GetColorU32(ImVec4(0.0f, 0.0f, 0.0f, 0.0f))  // Bot Left (Transparent)
             );
 
-            // Draw Tree
-            DrawTree(assetsPath);
+            if (ImGui::BeginChild("##ContentBrowserTree", ImVec2(0.0f, 0.0f), false))
+            {
+                DrawTree(assetsPath, assetsPath);
+            }
+            ImGui::EndChild();
 
             // --- Right Panel: Grid View ---
             ImGui::TableNextColumn();
@@ -172,89 +272,131 @@ namespace Himii
                 ImGui::EndPopup();
             }
 
-            // Adaptive Flow Layout
+            if (NormalizePath(m_LastBrowsedDirectory) != NormalizePath(m_CurrentDirectory))
+            {
+                m_SelectedItemDisplayName.clear();
+                m_LastBrowsedDirectory = m_CurrentDirectory;
+            }
+
             static float thumbnailSize = 64.0f;
             static float padding = 16.0f;
-            float cellSize = thumbnailSize + padding;
-            
-            float panelWidth = ImGui::GetContentRegionAvail().x;
-            int columnCount = (int)(panelWidth / cellSize);
-            if (columnCount < 1) columnCount = 1;
+            const float cellWidth = thumbnailSize + padding;
+            const float detailBarHeight =
+                    ImGui::GetTextLineHeight() + ImGui::GetStyle().WindowPadding.y * 2.0f;
+            const float contentColumnWidth = ImGui::GetContentRegionAvail().x;
 
-            int column = 0;
-            for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
+            if (ImGui::BeginChild("##ContentBrowserGrid", ImVec2(0.0f, -detailBarHeight), false))
             {
-                const auto& path = directoryEntry.path();
-                auto relativePath = std::filesystem::relative(path, assetsPath);
-                std::string fileNameString = relativePath.filename().string();
-                
-                Ref<Texture2D> icon = m_FileIcon;
-                if (directoryEntry.is_directory())
-                    icon = m_DirectoryIcon;
-                else if (path.extension() == ".cs")
-                    icon = m_ScriptIcon;
-                else if (path.extension() == ".himii")
-                    icon = m_SceneIcon;
+                const float panelWidth = ImGui::GetContentRegionAvail().x;
+                int columnCount = static_cast<int>((panelWidth + padding) / (cellWidth + padding));
+                if (columnCount < 1)
+                    columnCount = 1;
 
-                ImGui::PushID(fileNameString.c_str());
-                
-                // Group the icon and text together for the flow layout
-                ImGui::BeginGroup();
-                
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-                ImGui::ImageButton("BtnId", (ImTextureID)icon->GetRendererID(), {thumbnailSize, thumbnailSize}, {0, 1}, {1, 0});
-                ImGui::PopStyleColor();
-
-                if (ImGui::BeginDragDropSource())
+                int column = 0;
+                for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
                 {
-                    std::wstring itemPath = relativePath.wstring();
-                    ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath.c_str(), (itemPath.size() + 1) * sizeof(wchar_t));
-                    ImGui::EndDragDropSource();
-                }
+                    const auto& path = directoryEntry.path();
+                    auto relativePath = std::filesystem::relative(path, assetsPath);
+                    std::string fileNameString = relativePath.filename().string();
 
-                if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-                {
+                    Ref<Texture2D> icon = m_FileIcon;
                     if (directoryEntry.is_directory())
+                        icon = m_DirectoryIcon;
+                    else if (path.extension() == ".cs")
+                        icon = m_ScriptIcon;
+                    else if (path.extension() == ".himii")
+                        icon = m_SceneIcon;
+
+                    ImGui::PushID(fileNameString.c_str());
+
+                    if (column > 0)
+                        ImGui::SameLine(0.0f, padding);
+
+                    ImGui::BeginGroup();
+
+                    const float cellStartX = ImGui::GetCursorPosX();
+                    const float thumbnailOffsetX = (cellWidth - thumbnailSize) * 0.5f;
+                    ImGui::SetCursorPosX(cellStartX + thumbnailOffsetX);
+
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+                    ImGui::ImageButton("##Thumbnail", (ImTextureID)icon->GetRendererID(),
+                                       {thumbnailSize, thumbnailSize}, {0, 1}, {1, 0});
+                    ImGui::PopStyleColor();
+
+                    if (ImGui::BeginDragDropSource())
                     {
-                        m_CurrentDirectory /= path.filename();
+                        std::wstring itemPath = relativePath.wstring();
+                        ImGui::SetDragDropPayload("CONTENT_BROWSER_ITEM", itemPath.c_str(),
+                                                  (itemPath.size() + 1) * sizeof(wchar_t));
+                        ImGui::EndDragDropSource();
                     }
-                    else if (IsImageFileExtension(path))
+
+                    const bool thumbnailDoubleClicked =
+                            ImGui::IsItemHovered()
+                            && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left);
+                    const bool thumbnailClicked =
+                            ImGui::IsItemClicked(ImGuiMouseButton_Left) && !thumbnailDoubleClicked;
+
+                    if (thumbnailDoubleClicked)
                     {
-                        if (auto assetManager = Project::GetAssetManager())
+                        if (directoryEntry.is_directory())
                         {
-                            const AssetHandle textureHandle = assetManager->ImportAsset(relativePath);
-                            if (textureHandle != 0)
-                                m_TextureInspectorRequest = textureHandle;
+                            m_CurrentDirectory /= path.filename();
+                        }
+                        else if (IsImageFileExtension(path))
+                        {
+                            if (auto assetManager = Project::GetAssetManager())
+                            {
+                                const AssetHandle textureHandle = assetManager->ImportAsset(relativePath);
+                                if (textureHandle != 0)
+                                    m_TextureInspectorRequest = textureHandle;
+                            }
+                        }
+                        else if (path.extension() == ".anim")
+                        {
+                            m_AnimationEditorRequest = Project::GetAssetFileSystemPath(relativePath);
                         }
                     }
-                    else if (path.extension() == ".anim")
+                    else if (thumbnailClicked)
                     {
-                        m_AnimationEditorRequest = Project::GetAssetFileSystemPath(relativePath);
+                        m_SelectedItemDisplayName = fileNameString;
                     }
-                }
-                
-                // Center Text
-                float textWidth = ImGui::CalcTextSize(fileNameString.c_str()).x;
-                if (textWidth < thumbnailSize)
-                {
-                    ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (thumbnailSize - textWidth) * 0.5f);
-                }
-                ImGui::TextWrapped(fileNameString.c_str());
-                
-                ImGui::EndGroup();
-                
-                ImGui::PopID();
-                
-                column++;
-                if (column < columnCount)
-                {
-                    ImGui::SameLine();
-                }
-                else
-                {
-                    column = 0;
+
+                    const std::string truncatedFileName = TruncateTextToWidth(fileNameString.c_str(), cellWidth);
+                    const ImVec2 truncatedLabelSize = ImGui::CalcTextSize(truncatedFileName.c_str());
+                    ImGui::SetCursorPosX(cellStartX + (cellWidth - truncatedLabelSize.x) * 0.5f);
+                    ImGui::TextUnformatted(truncatedFileName.c_str());
+
+                    const bool labelDoubleClicked =
+                            ImGui::IsItemHovered()
+                            && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left);
+                    const bool labelClicked =
+                            ImGui::IsItemClicked(ImGuiMouseButton_Left) && !labelDoubleClicked;
+
+                    if (labelDoubleClicked)
+                    {
+                        if (directoryEntry.is_directory())
+                            m_CurrentDirectory /= path.filename();
+                    }
+                    else if (labelClicked)
+                    {
+                        m_SelectedItemDisplayName = fileNameString;
+                    }
+
+                    ImGui::Dummy(ImVec2(cellWidth, 0.0f));
+
+                    ImGui::EndGroup();
+
+                    ImGui::PopID();
+
+                    column++;
+                    if (column >= columnCount)
+                        column = 0;
                 }
             }
+            ImGui::EndChild();
+
+            DrawContentDetailBar(contentColumnWidth);
 
             ImGui::EndTable();
         }
@@ -262,38 +404,35 @@ namespace Himii
         ImGui::End();
     }
 
-    void ContentBrowserPanel::DrawTree(const std::filesystem::path& path)
+    void ContentBrowserPanel::DrawTree(const std::filesystem::path& path,
+                                       const std::filesystem::path& assetsPath)
     {
-        // Name Computation
-        std::string filename = path.filename().string();
-        if (filename.empty()) filename = path.string(); // Fallback for root if needed, though assetsPath usually has name
-        
-        // Tree Node Flags
-        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
-        
-        // Check if this path is part of the current path to auto-open or highlight?
-        // For now just basic tree.
-        if (m_CurrentDirectory == path)
+        std::string displayName = path.filename().string();
+        if (displayName.empty())
+            displayName = path.string();
+        if (NormalizePath(path) == NormalizePath(assetsPath))
+            displayName = "Assets";
+
+        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick
+                                   | ImGuiTreeNodeFlags_SpanAvailWidth;
+
+        if (NormalizePath(path) == NormalizePath(m_CurrentDirectory))
             flags |= ImGuiTreeNodeFlags_Selected;
-        
-        // If directory is empty, maybe make it a leaf?
-        // But iterating to check emptiness might be slow. Let's just assume folders are folders.
-        
-        bool opened = ImGui::TreeNodeEx(filename.c_str(), flags);
-        
+
+        if (IsOnPathToCurrentDirectory(path))
+            flags |= ImGuiTreeNodeFlags_DefaultOpen;
+
+        const bool opened = ImGui::TreeNodeEx(displayName.c_str(), flags);
+
         if (ImGui::IsItemClicked())
-        {
             m_CurrentDirectory = path;
-        }
 
         if (opened)
         {
             for (auto& directoryEntry : std::filesystem::directory_iterator(path))
             {
                 if (directoryEntry.is_directory())
-                {
-                    DrawTree(directoryEntry.path());
-                }
+                    DrawTree(directoryEntry.path(), assetsPath);
             }
             ImGui::TreePop();
         }

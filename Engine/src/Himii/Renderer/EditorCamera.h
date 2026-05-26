@@ -17,6 +17,12 @@ namespace Himii {
         void OnUpdate(Timestep ts, bool allowInput = true, bool is2D = false);
         void OnEvent(Event &event);
 
+        void SetOrthographicProjection(bool enabled);
+        bool IsOrthographicProjection() const
+        {
+            return m_UseOrthographicProjection;
+        }
+
         inline float GetDistance() const
         {
             return m_Distance;
@@ -73,7 +79,7 @@ namespace Himii {
 
         bool OnMouseScroll(MouseScrolledEvent &e);
 
-        void MousePan(const glm::vec2 &delta);
+        void MousePan(const glm::vec2 &delta, bool isTwoDimensional = false);
         void MouseRotate(const glm::vec2 &delta);
         void MouseZoom(float delta);
 
@@ -96,9 +102,12 @@ namespace Himii {
         float m_Pitch = 0.0f, m_Yaw = 0.0f;
 
         float m_ViewportWidth = 1280, m_ViewportHeight = 720;
-        float m_MoveSpeed = 1.0f; // New: Camera movement speed
-        
-        // Is the camera currently being moved?
+        float m_MoveSpeed = 1.0f;
+
+        bool m_UseOrthographicProjection = false;
+
+        static constexpr float kTwoDimensionalPanSpeedMultiplier = 4.0f;
+
         bool m_IsActive = false;
     };
 

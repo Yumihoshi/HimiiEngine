@@ -45,9 +45,14 @@ namespace Himii
         Ref<Texture2D> m_ScriptIcon;
         Ref<Texture2D> m_SceneIcon;
         
-        void DrawTree(const std::filesystem::path& path);
+        void DrawTree(const std::filesystem::path& path, const std::filesystem::path& assetsPath);
+        void DrawContentDetailBar(float barWidth);
+        bool IsOnPathToCurrentDirectory(const std::filesystem::path& path) const;
+        static std::string TruncateTextToWidth(const char* text, float maxWidth);
 
         std::function<void()> m_OnScriptChanged;
+        std::string m_SelectedItemDisplayName;
+        std::filesystem::path m_LastBrowsedDirectory;
         AssetHandle m_TextureInspectorRequest = 0;
         std::filesystem::path m_AnimationEditorRequest;
     };

@@ -7,7 +7,6 @@
 #include "Himii/Scene/TileMapCoordinateUtility.h"
 
 #include <glm/glm.hpp>
-#include <queue>
 
 namespace Himii
 {
@@ -19,7 +18,7 @@ namespace Himii
         void OnImGuiRender(bool &isOpen);
         void Open(AssetHandle tileMapHandle);
 
-        enum class Tool { Brush, Eraser, Fill };
+        enum class Tool { Brush, Eraser, BoxFill, BoxErase };
 
         AssetHandle GetTileMapHandle() const { return m_TileMapHandle; }
         Ref<TileMapData> GetMapData() const { return m_MapData; }
@@ -35,7 +34,13 @@ namespace Himii
         void ToggleMoveEntityMode();
 
         void ApplyToolAtTile(int tileX, int tileY);
+        void ApplyBoxTool(int minTileX, int minTileY, int maxTileX, int maxTileY);
         void SetCurrentTool(Tool tool) { m_CurrentTool = tool; }
+        bool IsBoxTool(Tool tool) const
+        {
+            return tool == Tool::BoxFill || tool == Tool::BoxErase;
+        }
+        bool IsBoxToolActive() const { return IsBoxTool(m_CurrentTool); }
         glm::ivec2 GetHoveredTileCoordinates() const { return m_HoveredTileCoordinates; }
         void SetHoveredTileCoordinates(glm::ivec2 coordinates) { m_HoveredTileCoordinates = coordinates; }
 
@@ -66,8 +71,6 @@ namespace Himii
 
         uint16_t FindTileIDAtAtlasCell(int column, int row) const;
         const TileDef* GetSelectedTileDefinition() const;
-
-        void FloodFill(int startX, int startY, uint16_t target, uint16_t replacement);
 
         AssetHandle m_TileMapHandle = 0;
         Ref<TileMapData> m_MapData;

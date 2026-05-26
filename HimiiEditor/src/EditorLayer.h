@@ -39,6 +39,8 @@ namespace Himii
         void UpdateTilemapPaintSession();
         void DrawTilemapEditOverlay();
         void DrawTilemapGhostPreviewInViewport();
+        void DrawTilemapBoxSelectionOverlay(const TransformComponent& transformComponent, float cellSize);
+        void ResetTilemapBoxSelection();
         void UpdateTilemapHoverFromInput();
         bool TryGetTilemapPaintContext(Entity &outEntity, Ref<TileMapData> &outMapData,
                                        TransformComponent const *&outTransform);
@@ -74,6 +76,7 @@ namespace Himii
         void UI_Toolbar();
         void DrawMainMenuBar();
         void UpdateMainWindowTitle();
+        void UpdateEditorCameraForActiveProject();
         void DrawStartupSplash();
         void AdvanceEditorStartupLoading();
         void ApplySplashWindowSize();
@@ -188,6 +191,11 @@ namespace Himii
 
         glm::ivec2 m_TilemapHoveredTile{TileMapCoordinateUtility::InvalidTileCoordinate,
                                         TileMapCoordinateUtility::InvalidTileCoordinate};
+        glm::ivec2 m_TilemapBoxSelectionStart{TileMapCoordinateUtility::InvalidTileCoordinate,
+                                              TileMapCoordinateUtility::InvalidTileCoordinate};
+        glm::ivec2 m_TilemapBoxSelectionEnd{TileMapCoordinateUtility::InvalidTileCoordinate,
+                                            TileMapCoordinateUtility::InvalidTileCoordinate};
+        bool m_TilemapBoxSelecting = false;
         bool m_TilemapViewportCapture = false;
         UUID m_TilemapPaintSessionEntityUUID = 0;
         bool m_TileMapEditorWasVisible = false;

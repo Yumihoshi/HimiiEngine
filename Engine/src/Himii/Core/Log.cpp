@@ -21,9 +21,11 @@ namespace Himii
     void Log::Init(bool toFile, const std::string &filePath)
     {
         std::vector<spdlog::sink_ptr> sinks;
+#ifdef HIMII_DEBUG
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
         console_sink->set_pattern("%^[%T] [%n] [%l] %v%$");
         sinks.push_back(console_sink);
+#endif
 
         if (toFile)
         {

@@ -5,7 +5,7 @@
 extern Himii::Application* Himii::CreateApplication(ApplicationCommandLineArgs args);
 
 // -------------------------------------------------------------------------
-// 现有的 main 函数（控制台入口）
+// 应用入口（Debug 为控制台子系统；Release 链接为 WINDOWS 子系统 + mainCRTStartup）
 // -------------------------------------------------------------------------
 int main(int argc, char** argv)
 {

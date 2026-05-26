@@ -10,6 +10,13 @@ target_include_directories(HimiiRuntime PRIVATE
 
 target_link_libraries(HimiiRuntime PRIVATE Engine)
 
+if(MSVC)
+    target_link_options(HimiiRuntime PRIVATE
+        "$<$<NOT:$<CONFIG:Debug>>:/SUBSYSTEM:WINDOWS>"
+        "$<$<NOT:$<CONFIG:Debug>>:/ENTRY:mainCRTStartup>"
+    )
+endif()
+
 himii_set_output_dirs(HimiiRuntime)
 
 add_dependencies(HimiiRuntime PackEngineResources)

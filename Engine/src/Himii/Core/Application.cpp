@@ -13,8 +13,8 @@ namespace Himii
     Application *Application::s_Instance = nullptr;
 
     Application::Application(const std::string &name, ApplicationCommandLineArgs args,
-                             const WindowProps &window_props, bool use_startup_phase)
-        : m_CommandLineArgs(args), m_InStartupPhase(use_startup_phase)
+                             const WindowProps &window_props)
+        : m_CommandLineArgs(args)
     {
         HIMII_PROFILE_FUNCTION();
 
@@ -61,17 +61,6 @@ namespace Himii
     void Application::Close()
     {
         m_Running = false;
-    }
-
-    void Application::EndStartupPhase()
-    {
-        if (!m_InStartupPhase)
-            return;
-
-        m_InStartupPhase = false;
-        m_Window->ApplyEditorPresentation();
-        Renderer::OnWindowResize(m_Window->GetWidth(), m_Window->GetHeight());
-        m_ImGuiLayer->LoadEditorFonts();
     }
 
     void Application::OnEvent(Event &e)
@@ -198,18 +187,15 @@ namespace Himii
                     }
                 }
 
-                if (!m_InStartupPhase)
+                m_ImGuiLayer->Begin();
                 {
-                    m_ImGuiLayer->Begin();
+                    HIMII_PROFILE_SCOPE("Layerstack OnImGuiRender")
+                    for (Layer *layer: m_LayerStack)
                     {
-                        HIMII_PROFILE_SCOPE("Layerstack OnImGuiRender")
-                        for (Layer *layer: m_LayerStack)
-                        {
-                            layer->OnImGuiRender();
-                        }
+                        layer->OnImGuiRender();
                     }
-                    m_ImGuiLayer->End();
                 }
+                m_ImGuiLayer->End();
             }
 
             m_Window->Update();

@@ -2,14 +2,11 @@
 #include "Engine.h"
 #include "Himii/Core/EntryPoint.h"
 
-#include <iostream>
-
 namespace Himii
 {
     class HimiiApp : public Application {
     public:
-        HimiiApp(ApplicationCommandLineArgs args)
-            : Application("Himii Editor", args, CreateStartupWindowProps(), true)
+        HimiiApp(ApplicationCommandLineArgs args) : Application("Himii Editor", args, CreateSplashWindowProps())
         {
             PushOverlay(new EditorLayer());
         }
@@ -19,14 +16,13 @@ namespace Himii
         }
 
     private:
-        static WindowProps CreateStartupWindowProps()
+        static WindowProps CreateSplashWindowProps()
         {
-            WindowProps startup_window_props("Himii Editor", 128, 128);
-            startup_window_props.Decorated = false;
-            startup_window_props.TransparentFramebuffer = true;
-            startup_window_props.Maximized = false;
-            startup_window_props.CenterOnScreen = true;
-            return startup_window_props;
+            WindowProps splash_window_props("Himii Editor", 640, 400);
+            splash_window_props.Decorated = false;
+            splash_window_props.Maximized = false;
+            splash_window_props.CenterOnScreen = true;
+            return splash_window_props;
         }
     };
 

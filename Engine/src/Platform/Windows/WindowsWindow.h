@@ -39,7 +39,9 @@ namespace Himii
 
         void CenterOnScreen() override;
 
-        void ApplyEditorPresentation() override;
+        void MaximizeForEditor() override;
+
+        void SetDecorated(bool decorated) override;
 
     private:
         virtual void Init(const WindowProps &props);
@@ -53,7 +55,6 @@ namespace Himii
             std::string Title;
             uint32_t Width, Height;
             bool VSync;
-            bool TransparentFramebuffer;
 
             EventCallbackFn EventCallback;
         };

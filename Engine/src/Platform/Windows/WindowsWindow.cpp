@@ -22,23 +22,21 @@ namespace Himii
     static uint8_t s_GLFWWindwCount = 0;
 
 #ifdef HIMII_PLATFORM_WINDOWS
-    static void ApplyStartupTransparentWindow(HWND windowHandle)
+    static void ApplyBorderlessWindow(HWND window_handle)
     {
-        if (!windowHandle)
+        if (!window_handle)
             return;
 
-        LONG_PTR window_style = GetWindowLongPtr(windowHandle, GWL_EXSTYLE);
-        SetWindowLongPtr(windowHandle, GWL_EXSTYLE, window_style | WS_EX_LAYERED);
-        SetLayeredWindowAttributes(windowHandle, RGB(0, 0, 0), 0, LWA_COLORKEY);
-    }
+        LONG_PTR window_style = GetWindowLongPtr(window_handle, GWL_STYLE);
+        window_style &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU);
+        SetWindowLongPtr(window_handle, GWL_STYLE, window_style);
 
-    static void RemoveStartupTransparentWindow(HWND windowHandle)
-    {
-        if (!windowHandle)
-            return;
+        LONG_PTR extended_style = GetWindowLongPtr(window_handle, GWL_EXSTYLE);
+        extended_style &= ~(WS_EX_DLGMODALFRAME | WS_EX_WINDOWEDGE | WS_EX_CLIENTEDGE);
+        SetWindowLongPtr(window_handle, GWL_EXSTYLE, extended_style);
 
-        LONG_PTR window_style = GetWindowLongPtr(windowHandle, GWL_EXSTYLE);
-        SetWindowLongPtr(windowHandle, GWL_EXSTYLE, window_style & ~WS_EX_LAYERED);
+        SetWindowPos(window_handle, nullptr, 0, 0, 0, 0,
+                     SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
     }
 
     static void ApplyDarkNativeTitleBar(HWND windowHandle)
@@ -103,13 +101,8 @@ namespace Himii
         glfwWindowHint(GLFW_DECORATED, props.Decorated ? GLFW_TRUE : GLFW_FALSE);
         glfwWindowHint(GLFW_MAXIMIZED, props.Maximized ? GLFW_TRUE : GLFW_FALSE);
         glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
-#if defined(GLFW_TRANSPARENT_FRAMEBUFFER)
-        if (props.TransparentFramebuffer)
-            glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
-#endif
 
-        m_Data.TransparentFramebuffer = props.TransparentFramebuffer;
-        m_Window = glfwCreateWindow((int)props.Width, props.Height, m_Data.Title.c_str(), nullptr, nullptr);
+        m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
         ++s_GLFWWindwCount;
 
         if (!m_Window)
@@ -141,10 +134,10 @@ namespace Himii
                     HIMII_CORE_WARNING("Failed to load window icon from path: {0}", icon_path);
                 }
 
-                if (props.TransparentFramebuffer)
-                    ApplyStartupTransparentWindow(window_handle);
-                else
+                if (props.Decorated)
                     ApplyDarkNativeTitleBar(window_handle);
+                else
+                    ApplyBorderlessWindow(window_handle);
             }
         }
 #endif
@@ -334,26 +327,28 @@ namespace Himii
         glfwSetWindowPos(m_Window, position_x, position_y);
     }
 
-    void WindowsWindow::ApplyEditorPresentation()
+    void WindowsWindow::SetDecorated(bool decorated)
     {
         if (!m_Window)
             return;
 
-        m_Data.TransparentFramebuffer = false;
-#if defined(GLFW_TRANSPARENT_FRAMEBUFFER)
-        glfwSetWindowAttrib(m_Window, GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_FALSE);
-#endif
-        glfwSetWindowAttrib(m_Window, GLFW_DECORATED, GLFW_TRUE);
+        glfwSetWindowAttrib(m_Window, GLFW_DECORATED, decorated ? GLFW_TRUE : GLFW_FALSE);
 
 #ifdef HIMII_PLATFORM_WINDOWS
-        HWND window_handle = glfwGetWin32Window(m_Window);
-        RemoveStartupTransparentWindow(window_handle);
-        ApplyDarkNativeTitleBar(window_handle);
+        if (decorated)
+        {
+            HWND window_handle = glfwGetWin32Window(m_Window);
+            ApplyDarkNativeTitleBar(window_handle);
+        }
 #endif
+    }
 
-        glfwSetWindowSize(m_Window, 1280, 720);
-        m_Data.Width = 1280;
-        m_Data.Height = 720;
+    void WindowsWindow::MaximizeForEditor()
+    {
+        if (!m_Window)
+            return;
+
+        SetDecorated(true);
         glfwMaximizeWindow(m_Window);
 
         GLFWmonitor *primary_monitor = glfwGetPrimaryMonitor();

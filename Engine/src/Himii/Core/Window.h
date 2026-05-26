@@ -8,13 +8,12 @@
 
 namespace Himii
 {
-    struct WindowProps 
+    struct WindowProps
     {
         std::string Title;
         uint32_t Width;
         uint32_t Height;
         bool Decorated = true;
-        bool TransparentFramebuffer = false;
         bool Maximized = true;
         bool CenterOnScreen = false;
 
@@ -23,14 +22,13 @@ namespace Himii
         {
         }
     };
-    /// <summary>
-    /// 所有窗口类的基类，提供基础的接口API方法
-    /// </summary>
-    class Window {
-    public:
-        using EventCallbackFn = std::function<void(Event&)>;
 
-        virtual ~Window()=default;
+    class Window
+    {
+    public:
+        using EventCallbackFn = std::function<void(Event &)>;
+
+        virtual ~Window() = default;
 
         virtual void Update() = 0;
 
@@ -49,9 +47,10 @@ namespace Himii
 
         virtual void CenterOnScreen() {}
 
-        virtual void ApplyEditorPresentation() {}
+        virtual void MaximizeForEditor() {}
+
+        virtual void SetDecorated(bool decorated) {}
 
         static Scope<Window> Create(const WindowProps &props = WindowProps());
-
     };
 }

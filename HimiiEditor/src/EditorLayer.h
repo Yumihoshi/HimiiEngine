@@ -15,7 +15,6 @@
 #include "Himii/Scene/TileMapCoordinateUtility.h"
 #include "Himii/Renderer/EditorCamera.h"
 #include "commands/EditorCommandHistory.h"
-#include "EditorStartupIcon.h"
 
 namespace Himii
 {
@@ -75,7 +74,28 @@ namespace Himii
         void UI_Toolbar();
         void DrawMainMenuBar();
         void UpdateMainWindowTitle();
-        void FinishEditorStartup();
+        void DrawStartupSplash();
+        void AdvanceEditorStartupLoading();
+        void ApplySplashWindowSize();
+        void TransitionToEditorWindow();
+
+        enum class EditorStartupState {
+            Splash = 0,
+            Ready = 1
+        };
+
+        enum class EditorStartupLoadingStep {
+            ToolbarIcons = 0,
+            Skybox,
+            Fonts,
+            Scene,
+            Panels,
+            ProjectData,
+            Complete
+        };
+
+        static constexpr float MinimumSplashDisplaySeconds = 1.2f;
+        static constexpr uint32_t SplashStatusOverlayHeightPixels = 56;
 
     private:
         Ref<Scene> m_ActiveScene;
@@ -148,9 +168,11 @@ namespace Himii
         Ref<Texture2D> m_EngineSplashTexture;
         Ref<TextureCube> m_SkyboxTexture;
 
-        bool m_EditorStartupFinished = false;
-        uint32_t m_StartupFramesShown = 0;
-        bool m_StartupHeavyInitStarted = false;
+        EditorStartupState m_EditorStartupState = EditorStartupState::Splash;
+        EditorStartupLoadingStep m_StartupLoadingStep = EditorStartupLoadingStep::ToolbarIcons;
+        float m_StartupProgress = 0.0f;
+        std::string m_StartupStatusMessage;
+        float m_StartupSplashElapsedSeconds = 0.0f;
 
         SceneState m_SceneState = SceneState::Edit;
         std::string m_Clipboard;

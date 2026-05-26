@@ -26,7 +26,7 @@ namespace Himii
     class Application {
     public:
         Application(const std::string &name = "Himii", ApplicationCommandLineArgs args = ApplicationCommandLineArgs(),
-                    const WindowProps &window_props = WindowProps(), bool use_startup_phase = false);
+                    const WindowProps &window_props = WindowProps());
         virtual ~Application();
 
         void OnEvent(Event &e);
@@ -64,13 +64,6 @@ namespace Himii
             return m_LayerStack;
         }
 
-        void EndStartupPhase();
-
-        bool IsInStartupPhase() const
-        {
-            return m_InStartupPhase;
-        }
-        
         const std::filesystem::path& GetExecutableDir() const { return m_ExecutableDir; }
 
         const static std::filesystem::path &GetEngineDir()
@@ -86,7 +79,6 @@ namespace Himii
     private:
         bool m_Running = true;
         bool m_Minimized = false;
-        bool m_InStartupPhase = false;
         float m_LastFrameTime = 0.0f;
 
         LayerStack m_LayerStack;

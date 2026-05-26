@@ -26,7 +26,11 @@
 #include "Himii/Scene/TileSet.h"
 #include "Himii/Scene/TileMapCoordinateUtility.h"
 #include "Himii/Scene/TilemapColliderBuilder.h"
-#include "EditorStartupIcon.h"
+#include "Himii/ImGui/ImGuiLayer.h"
+#include "Himii/Renderer/Renderer.h"
+#include <algorithm>
+#include <array>
+#include <filesystem>
 #include <GLFW/glfw3.h>
 
 namespace Himii
@@ -40,82 +44,154 @@ namespace Himii
     {
         HIMII_PROFILE_FUNCTION();
 
-        m_EditorStartupFinished = false;
-        m_StartupFramesShown = 0;
-        m_StartupHeavyInitStarted = false;
+        m_EditorStartupState = EditorStartupState::Splash;
+        m_StartupLoadingStep = EditorStartupLoadingStep::ToolbarIcons;
+        m_StartupProgress = 0.0f;
+        m_StartupStatusMessage = "正在启动 Himii Editor…";
+        m_StartupSplashElapsedSeconds = 0.0f;
 
-        if (Application::Get().IsInStartupPhase())
-        {
-            StartupIconImage startup_icon_image = {};
-            if (EditorStartupIcon::LoadEngineIcon(startup_icon_image))
-            {
-                EditorStartupIcon::CropTransparentPixels(startup_icon_image);
-                m_EngineSplashTexture = EditorStartupIcon::CreateTexture(startup_icon_image);
+        const std::array<std::filesystem::path, 2> splash_image_candidates = {
+            "resources/splash/HimiiEngineSplash.png",
+            Application::Get().GetExecutableDir() / "resources/splash/HimiiEngineSplash.png",
+        };
 
-                const uint32_t window_width = EditorStartupIcon::GetStartupWindowWidth(startup_icon_image);
-                const uint32_t window_height = EditorStartupIcon::GetStartupWindowHeight(startup_icon_image);
-                Application::Get().GetWindow().SetClientSize(window_width, window_height);
-                Application::Get().GetWindow().CenterOnScreen();
-            }
-            else
-            {
-                HIMII_CORE_WARNING("Engine startup icon could not be loaded.");
-            }
-        }
-        else
+        for (const std::filesystem::path &candidate_path : splash_image_candidates)
         {
-            FinishEditorStartup();
+            if (!std::filesystem::exists(candidate_path))
+                continue;
+
+            m_EngineSplashTexture = Texture2D::Create(candidate_path.string());
+            if (m_EngineSplashTexture && m_EngineSplashTexture->IsLoaded())
+            {
+                HIMII_CORE_INFO("Engine splash image loaded: {0} ({1}x{2})", candidate_path.string(),
+                                m_EngineSplashTexture->GetWidth(), m_EngineSplashTexture->GetHeight());
+                break;
+            }
+
+            m_EngineSplashTexture = nullptr;
         }
+
+        if (!m_EngineSplashTexture || !m_EngineSplashTexture->IsLoaded())
+            HIMII_CORE_WARNING("Engine splash image could not be loaded from resources/splash/HimiiEngineSplash.png");
+
+        ApplySplashWindowSize();
     }
 
-    void EditorLayer::FinishEditorStartup()
+    void EditorLayer::ApplySplashWindowSize()
+    {
+        uint32_t image_width = 543;
+        uint32_t image_height = 304;
+
+        if (m_EngineSplashTexture && m_EngineSplashTexture->IsLoaded())
+        {
+            image_width = m_EngineSplashTexture->GetWidth();
+            image_height = m_EngineSplashTexture->GetHeight();
+        }
+
+        const uint32_t client_width = image_width;
+        const uint32_t client_height = image_height;
+
+        Window &window = Application::Get().GetWindow();
+        window.SetClientSize(client_width, client_height);
+        window.CenterOnScreen();
+    }
+
+    void EditorLayer::TransitionToEditorWindow()
+    {
+        Window &window = Application::Get().GetWindow();
+        window.MaximizeForEditor();
+        Renderer::OnWindowResize(window.GetWidth(), window.GetHeight());
+    }
+
+    void EditorLayer::AdvanceEditorStartupLoading()
     {
         HIMII_PROFILE_FUNCTION();
 
-        //编辑器资源引入
-        m_IconPlay = Texture2D::Create("resources/icons/play.png");
-        m_IconStop = Texture2D::Create("resources/icons/stop.png");
-        m_IconSimulate = Texture2D::Create("resources/icons/simulate.png");
-
-        std::vector<std::string> skyboxFaces = {"resources/skybox/right.bmp", "resources/skybox/left.bmp",
-                                                "resources/skybox/top.bmp",   "resources/skybox/bottom.bmp",
-                                                "resources/skybox/front.bmp", "resources/skybox/back.bmp"};
-        m_SkyboxTexture = TextureCube::Create(skyboxFaces);
-
-        Font::InitDefault("assets/fonts/msyh.ttc");
-        HIMII_CORE_INFO("Default font loaded successfully!");
-
-        //初始化
-        m_EditorScene = CreateRef<Scene>();
-        m_EditorScene->SetSkybox(m_SkyboxTexture);
-        m_ActiveScene = m_EditorScene;
-
-        // 创建离屏帧缓冲，尺寸先用窗口大小，后续由 EditorLayer 面板驱动调整
-        FramebufferSpecification fbSpec{1280, 720};
-        fbSpec.Attachments = {FramebufferFormat::RGBA8, FramebufferFormat::RED_INTEGER, FramebufferFormat::Depth};
-        m_Framebuffer = Framebuffer::Create(fbSpec);
-
-        m_EditorCamera = EditorCamera(45.0f, 1.778f, 0.1f, 1000.0f);
-
-        m_SceneHierarchyPanel.SetContext(m_ActiveScene);
-        m_SceneHierarchyPanel.SetCommandHistory(&m_CommandHistory);
-
-        if (GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow()))
-            EditorExternalFileDrop::Install(window);
-
-        m_ContentBrowserPanel.SetOnScriptChanged([this]() { RequestScriptCompile(); });
-
-        LoadRecentProjects();
-        EditorSettings::Get().Load();
-
-        auto commandLineArgs = Application::Get().GetCommandLineArgs();
-        if (commandLineArgs.Count > 1)
+        switch (m_StartupLoadingStep)
         {
-            OpenProject(commandLineArgs.Args[1]);
-        }
+            case EditorStartupLoadingStep::ToolbarIcons:
+            {
+                m_StartupStatusMessage = "正在加载编辑器图标…";
+                m_IconPlay = Texture2D::Create("resources/icons/play.png");
+                m_IconStop = Texture2D::Create("resources/icons/stop.png");
+                m_IconSimulate = Texture2D::Create("resources/icons/simulate.png");
+                m_StartupProgress = 0.15f;
+                m_StartupLoadingStep = EditorStartupLoadingStep::Skybox;
+                break;
+            }
+            case EditorStartupLoadingStep::Skybox:
+            {
+                m_StartupStatusMessage = "正在加载天空盒…";
+                std::vector<std::string> skybox_faces = {
+                    "resources/skybox/right.bmp",  "resources/skybox/left.bmp",  "resources/skybox/top.bmp",
+                    "resources/skybox/bottom.bmp", "resources/skybox/front.bmp", "resources/skybox/back.bmp"};
+                m_SkyboxTexture = TextureCube::Create(skybox_faces);
+                m_StartupProgress = 0.30f;
+                m_StartupLoadingStep = EditorStartupLoadingStep::Fonts;
+                break;
+            }
+            case EditorStartupLoadingStep::Fonts:
+            {
+                m_StartupStatusMessage = "正在加载字体…";
+                Font::InitDefault("assets/fonts/msyh.ttc");
+                if (ImGuiLayer *imgui_layer = Application::Get().GetImGuiLayer())
+                    imgui_layer->LoadEditorFonts();
+                HIMII_CORE_INFO("Default font loaded successfully!");
+                m_StartupProgress = 0.45f;
+                m_StartupLoadingStep = EditorStartupLoadingStep::Scene;
+                break;
+            }
+            case EditorStartupLoadingStep::Scene:
+            {
+                m_StartupStatusMessage = "正在初始化场景…";
+                m_EditorScene = CreateRef<Scene>();
+                m_EditorScene->SetSkybox(m_SkyboxTexture);
+                m_ActiveScene = m_EditorScene;
 
-        UpdateMainWindowTitle();
-        m_EditorStartupFinished = true;
+                FramebufferSpecification framebuffer_specification{1280, 720};
+                framebuffer_specification.Attachments = {FramebufferFormat::RGBA8, FramebufferFormat::RED_INTEGER,
+                                                         FramebufferFormat::Depth};
+                m_Framebuffer = Framebuffer::Create(framebuffer_specification);
+
+                m_EditorCamera = EditorCamera(45.0f, 1.778f, 0.1f, 1000.0f);
+                m_StartupProgress = 0.60f;
+                m_StartupLoadingStep = EditorStartupLoadingStep::Panels;
+                break;
+            }
+            case EditorStartupLoadingStep::Panels:
+            {
+                m_StartupStatusMessage = "正在初始化面板…";
+                m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+                m_SceneHierarchyPanel.SetCommandHistory(&m_CommandHistory);
+
+                if (GLFWwindow *window =
+                        static_cast<GLFWwindow *>(Application::Get().GetWindow().GetNativeWindow()))
+                    EditorExternalFileDrop::Install(window);
+
+                m_ContentBrowserPanel.SetOnScriptChanged([this]() { RequestScriptCompile(); });
+                m_StartupProgress = 0.75f;
+                m_StartupLoadingStep = EditorStartupLoadingStep::ProjectData;
+                break;
+            }
+            case EditorStartupLoadingStep::ProjectData:
+            {
+                m_StartupStatusMessage = "正在加载项目列表与设置…";
+                LoadRecentProjects();
+                EditorSettings::Get().Load();
+
+                auto command_line_arguments = Application::Get().GetCommandLineArgs();
+                if (command_line_arguments.Count > 1)
+                    OpenProject(command_line_arguments.Args[1]);
+
+                UpdateMainWindowTitle();
+                m_StartupStatusMessage = "加载完成";
+                m_StartupProgress = 1.0f;
+                m_StartupLoadingStep = EditorStartupLoadingStep::Complete;
+                break;
+            }
+            case EditorStartupLoadingStep::Complete:
+                break;
+        }
     }
 
     void EditorLayer::OnDetach()
@@ -127,20 +203,16 @@ namespace Himii
     {
         HIMII_PROFILE_FUNCTION();
 
-        if (!m_EditorStartupFinished)
+        if (m_EditorStartupState == EditorStartupState::Splash)
         {
-            Application &application = Application::Get();
-            const uint32_t window_width = application.GetWindow().GetWidth();
-            const uint32_t window_height = application.GetWindow().GetHeight();
+            m_StartupSplashElapsedSeconds += ts.GetSeconds();
 
-            EditorStartupIcon::DrawStartupFrame(m_EngineSplashTexture, window_width, window_height);
-            ++m_StartupFramesShown;
-
-            if (!m_StartupHeavyInitStarted && m_StartupFramesShown >= 2)
+            if (m_StartupLoadingStep != EditorStartupLoadingStep::Complete)
+                AdvanceEditorStartupLoading();
+            else if (m_StartupSplashElapsedSeconds >= MinimumSplashDisplaySeconds)
             {
-                m_StartupHeavyInitStarted = true;
-                FinishEditorStartup();
-                application.EndStartupPhase();
+                m_EditorStartupState = EditorStartupState::Ready;
+                TransitionToEditorWindow();
             }
 
             return;
@@ -263,6 +335,12 @@ namespace Himii
     void EditorLayer::OnImGuiRender()
     {
         HIMII_PROFILE_FUNCTION();
+
+        if (m_EditorStartupState == EditorStartupState::Splash)
+        {
+            DrawStartupSplash();
+            return;
+        }
 
         if (!Project::GetActive())
         {
@@ -1387,6 +1465,77 @@ namespace Himii
 
         std::ofstream fout("recent_projects.yaml");
         fout << out.c_str();
+    }
+
+    void EditorLayer::DrawStartupSplash()
+    {
+        ImGuiViewport *viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(viewport->Pos);
+        ImGui::SetNextWindowSize(viewport->Size);
+        ImGui::SetNextWindowViewport(viewport->ID);
+
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
+                                        ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+                                        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
+                                        ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoInputs |
+                                        ImGuiWindowFlags_NoBackground;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+        ImGui::Begin("Startup Splash", nullptr, window_flags);
+        ImGui::PopStyleVar(3);
+
+        ImDrawList *draw_list = ImGui::GetWindowDrawList();
+        const ImVec2 window_position = ImGui::GetWindowPos();
+        const ImVec2 window_size = ImGui::GetWindowSize();
+        const ImVec2 window_max = {window_position.x + window_size.x, window_position.y + window_size.y};
+
+        if (m_EngineSplashTexture && m_EngineSplashTexture->IsLoaded() &&
+            m_EngineSplashTexture->GetRendererID() != 0)
+        {
+            const auto &texture_uv_corners = SpriteSheetUtility::FullTextureImGuiUvCorners;
+            draw_list->AddImage((ImTextureID)(intptr_t)m_EngineSplashTexture->GetRendererID(), window_position,
+                                window_max,
+                                ImVec2(texture_uv_corners.TopLeft.x, texture_uv_corners.TopLeft.y),
+                                ImVec2(texture_uv_corners.BottomRight.x, texture_uv_corners.BottomRight.y));
+
+            const float overlay_height = (float)SplashStatusOverlayHeightPixels;
+            const ImVec2 overlay_min = {window_position.x, window_max.y - overlay_height};
+            const ImVec2 overlay_max = window_max;
+            draw_list->AddRectFilled(overlay_min, overlay_max, IM_COL32(0, 0, 0, 160));
+
+            const float horizontal_padding = 16.0f;
+            const ImVec2 status_position = {overlay_min.x + horizontal_padding, overlay_min.y + 10.0f};
+            draw_list->AddText(status_position, IM_COL32(255, 255, 255, 255),
+                               m_StartupStatusMessage.c_str());
+
+            const float progress_bar_height = 6.0f;
+            const float progress_bar_bottom_padding = 12.0f;
+            const ImVec2 progress_bar_min = {overlay_min.x + horizontal_padding,
+                                             overlay_max.y - progress_bar_bottom_padding - progress_bar_height};
+            const ImVec2 progress_bar_max = {overlay_max.x - horizontal_padding,
+                                             overlay_max.y - progress_bar_bottom_padding};
+            draw_list->AddRectFilled(progress_bar_min, progress_bar_max, IM_COL32(48, 48, 48, 255));
+
+            const float progress_clamped = std::clamp(m_StartupProgress, 0.0f, 1.0f);
+            const ImVec2 progress_fill_max = {
+                progress_bar_min.x + (progress_bar_max.x - progress_bar_min.x) * progress_clamped,
+                progress_bar_max.y};
+            draw_list->AddRectFilled(progress_bar_min, progress_fill_max, IM_COL32(230, 170, 50, 255));
+        }
+        else
+        {
+            draw_list->AddRectFilled(window_position, window_max, IM_COL32(20, 20, 20, 255));
+            const char *fallback_title = "Himii Engine";
+            const ImVec2 title_size = ImGui::CalcTextSize(fallback_title);
+            const ImVec2 title_position = {window_position.x + (window_size.x - title_size.x) * 0.5f,
+                                           window_position.y + (window_size.y - title_size.y) * 0.5f};
+            draw_list->AddText(title_position, IM_COL32(255, 255, 255, 255), fallback_title);
+        }
+
+        ImGui::End();
     }
 
     void EditorLayer::DrawProjectHub()

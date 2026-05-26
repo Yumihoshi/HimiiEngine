@@ -3,6 +3,7 @@
 #include "EditorExternalFileDrop.h"
 #include "Himii/Project/Project.h"
 #include "Himii/Asset/AssetManager.h"
+#include "Himii/Asset/SpriteSheetUtility.h"
 #include "Himii/Utils/PlatformUtils.h"
 #include "Himii/Core/Log.h"
 
@@ -22,6 +23,66 @@ namespace Himii
                        [](unsigned char character) { return static_cast<char>(std::tolower(character)); });
         return extension == ".png" || extension == ".jpg" || extension == ".jpeg" || extension == ".bmp"
                || extension == ".tga";
+    }
+
+    bool ContentBrowserPanel::ShouldHideFromContentBrowser(const std::filesystem::path& path)
+    {
+        std::string extension = path.extension().string();
+        std::transform(extension.begin(), extension.end(), extension.begin(),
+                       [](unsigned char character) { return static_cast<char>(std::tolower(character)); });
+        return extension == ".meta";
+    }
+
+    Ref<Texture2D> ContentBrowserPanel::GetOrLoadImageThumbnail(
+            const std::filesystem::path& relativePath)
+    {
+        const std::string cacheKey = relativePath.generic_string();
+        const auto cacheIterator = m_ImageThumbnailCache.find(cacheKey);
+        if (cacheIterator != m_ImageThumbnailCache.end())
+            return cacheIterator->second;
+
+        auto assetManager = Project::GetAssetManager();
+        if (!assetManager)
+            return nullptr;
+
+        const AssetHandle textureHandle = assetManager->ImportAsset(relativePath);
+        if (textureHandle == 0)
+            return nullptr;
+
+        Ref<Asset> asset = assetManager->GetAsset(textureHandle);
+        if (!asset)
+            return nullptr;
+
+        Ref<Texture2D> texture = std::static_pointer_cast<Texture2D>(asset);
+        m_ImageThumbnailCache.emplace(cacheKey, texture);
+        return texture;
+    }
+
+    static void DrawAspectFitThumbnail(const Ref<Texture2D>& texture, const ImVec2& boxMin, float boxSize)
+    {
+        if (!texture)
+            return;
+
+        const uint32_t textureWidth = texture->GetWidth();
+        const uint32_t textureHeight = texture->GetHeight();
+        if (textureWidth == 0 || textureHeight == 0)
+            return;
+
+        const float sourceWidth = static_cast<float>(textureWidth);
+        const float sourceHeight = static_cast<float>(textureHeight);
+        const float scale = std::min(boxSize / sourceWidth, boxSize / sourceHeight);
+        const float displayWidth = sourceWidth * scale;
+        const float displayHeight = sourceHeight * scale;
+
+        const ImVec2 imageMin(boxMin.x + (boxSize - displayWidth) * 0.5f,
+                              boxMin.y + (boxSize - displayHeight) * 0.5f);
+        const ImVec2 imageMax(imageMin.x + displayWidth, imageMin.y + displayHeight);
+
+        const auto& textureUvCorners = SpriteSheetUtility::FullTextureImGuiUvCorners;
+        ImGui::GetWindowDrawList()->AddImage(
+                (ImTextureID)(intptr_t)texture->GetRendererID(), imageMin, imageMax,
+                ImVec2(textureUvCorners.TopLeft.x, textureUvCorners.TopLeft.y),
+                ImVec2(textureUvCorners.BottomRight.x, textureUvCorners.BottomRight.y));
     }
 
     static std::filesystem::path NormalizePath(const std::filesystem::path& path)
@@ -296,6 +357,9 @@ namespace Himii
                 for (auto& directoryEntry : std::filesystem::directory_iterator(m_CurrentDirectory))
                 {
                     const auto& path = directoryEntry.path();
+                    if (!directoryEntry.is_directory() && ShouldHideFromContentBrowser(path))
+                        continue;
+
                     auto relativePath = std::filesystem::relative(path, assetsPath);
                     std::string fileNameString = relativePath.filename().string();
 
@@ -307,10 +371,32 @@ namespace Himii
                     else if (path.extension() == ".himii")
                         icon = m_SceneIcon;
 
+                    Ref<Texture2D> imageThumbnail;
+                    if (!directoryEntry.is_directory() && IsImageFileExtension(path))
+                        imageThumbnail = GetOrLoadImageThumbnail(relativePath);
+
                     ImGui::PushID(fileNameString.c_str());
 
                     if (column > 0)
                         ImGui::SameLine(0.0f, padding);
+
+                    const bool isItemSelected = m_SelectedItemDisplayName == fileNameString;
+                    const float cellContentHeight =
+                            thumbnailSize + ImGui::GetStyle().ItemSpacing.y + ImGui::GetTextLineHeight();
+
+                    if (isItemSelected)
+                    {
+                        const ImVec2 highlightMin = ImGui::GetCursorScreenPos();
+                        const ImVec2 highlightMax(highlightMin.x + cellWidth,
+                                                  highlightMin.y + cellContentHeight);
+                        ImDrawList* drawList = ImGui::GetWindowDrawList();
+                        drawList->AddRectFilled(
+                                highlightMin, highlightMax,
+                                ImGui::GetColorU32(ImGuiCol_Header, 0.55f), 4.0f);
+                        drawList->AddRect(
+                                highlightMin, highlightMax,
+                                ImGui::GetColorU32(ImGuiCol_NavHighlight), 4.0f, 0, 1.5f);
+                    }
 
                     ImGui::BeginGroup();
 
@@ -318,10 +404,10 @@ namespace Himii
                     const float thumbnailOffsetX = (cellWidth - thumbnailSize) * 0.5f;
                     ImGui::SetCursorPosX(cellStartX + thumbnailOffsetX);
 
-                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-                    ImGui::ImageButton("##Thumbnail", (ImTextureID)icon->GetRendererID(),
-                                       {thumbnailSize, thumbnailSize}, {0, 1}, {1, 0});
-                    ImGui::PopStyleColor();
+                    ImGui::InvisibleButton("##Thumbnail", ImVec2(thumbnailSize, thumbnailSize));
+                    const ImVec2 thumbnailBoxMin = ImGui::GetItemRectMin();
+                    DrawAspectFitThumbnail(imageThumbnail ? imageThumbnail : icon, thumbnailBoxMin,
+                                           thumbnailSize);
 
                     if (ImGui::BeginDragDropSource())
                     {
@@ -439,10 +525,9 @@ namespace Himii
     }
     void ContentBrowserPanel::Refresh()
     {
+        m_ImageThumbnailCache.clear();
         if (Project::GetActive())
-        {
             m_CurrentDirectory = Project::GetAssetDirectory();
-        }
     }
 
     std::filesystem::path ContentBrowserPanel::ResolveUniqueDestination(

@@ -4,6 +4,7 @@
 
 #include <filesystem>
 #include <functional>
+#include <unordered_map>
 
 namespace Himii
 {
@@ -49,6 +50,10 @@ namespace Himii
         void DrawContentDetailBar(float barWidth);
         bool IsOnPathToCurrentDirectory(const std::filesystem::path& path) const;
         static std::string TruncateTextToWidth(const char* text, float maxWidth);
+        static bool ShouldHideFromContentBrowser(const std::filesystem::path& path);
+        Ref<Texture2D> GetOrLoadImageThumbnail(const std::filesystem::path& relativePath);
+
+        std::unordered_map<std::string, Ref<Texture2D>> m_ImageThumbnailCache;
 
         std::function<void()> m_OnScriptChanged;
         std::string m_SelectedItemDisplayName;

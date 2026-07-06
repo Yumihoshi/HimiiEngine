@@ -1,0 +1,191 @@
+{
+  "projectRoot": "D:/Himii-Engine",
+  "batchIndex": 13,
+  "totalBatches": 14,
+  "files": [
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLTextureCube.cpp",
+      "language": "cpp",
+      "sizeLines": 70,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLTextureCube.h",
+      "language": "c",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLUniformBuffer.cpp",
+      "language": "cpp",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLUniformBuffer.h",
+      "language": "c",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLVertexArray.cpp",
+      "language": "cpp",
+      "sizeLines": 138,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLVertexArray.h",
+      "language": "c",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/Windows/WindowsInput.cpp",
+      "language": "cpp",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/Windows/WindowsPlatformUtils.cpp",
+      "language": "cpp",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/Windows/WindowsWindow.cpp",
+      "language": "cpp",
+      "sizeLines": 368,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/Windows/WindowsWindow.h",
+      "language": "c",
+      "sizeLines": 65,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/AppIcon.rc",
+      "language": "rc",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/assets/fonts/msyh.ttc",
+      "language": "ttc",
+      "sizeLines": 94511,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/assets/shaders/FlatColor.glsl",
+      "language": "glsl",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/assets/shaders/Grid.glsl",
+      "language": "glsl",
+      "sizeLines": 146,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/assets/shaders/Renderer2D_Circle.glsl",
+      "language": "glsl",
+      "sizeLines": 66,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/assets/shaders/Renderer2D_Line.glsl",
+      "language": "glsl",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/assets/shaders/Renderer2D_Quad.glsl",
+      "language": "glsl",
+      "sizeLines": 97,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/assets/shaders/Renderer2D_Text.glsl",
+      "language": "glsl",
+      "sizeLines": 84,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/assets/shaders/Renderer3D_Cube.glsl",
+      "language": "glsl",
+      "sizeLines": 93,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/assets/shaders/Skybox.glsl",
+      "language": "glsl",
+      "sizeLines": 41,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/CMakeLists.txt",
+      "language": "txt",
+      "sizeLines": 72,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "HimiiEditor/resources/skybox/back.bmp",
+      "language": "bmp",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/resources/skybox/bottom.bmp",
+      "language": "bmp",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/resources/skybox/front.bmp",
+      "language": "bmp",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/resources/skybox/left.bmp",
+      "language": "bmp",
+      "sizeLines": 0,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Engine/src/Platform/OpenGL/OpenGLTextureCube.cpp": [
+      "Engine/src/Platform/OpenGL/OpenGLTextureCube.h"
+    ],
+    "Engine/src/Platform/OpenGL/OpenGLTextureCube.h": [],
+    "Engine/src/Platform/OpenGL/OpenGLUniformBuffer.cpp": [
+      "Engine/src/Platform/OpenGL/OpenGLUniformBuffer.h"
+    ],
+    "Engine/src/Platform/OpenGL/OpenGLUniformBuffer.h": [],
+    "Engine/src/Platform/OpenGL/OpenGLVertexArray.cpp": [],
+    "Engine/src/Platform/OpenGL/OpenGLVertexArray.h": [],
+    "Engine/src/Platform/Windows/WindowsInput.cpp": [],
+    "Engine/src/Platform/Windows/WindowsPlatformUtils.cpp": [],
+    "Engine/src/Platform/Windows/WindowsWindow.cpp": [
+      "Engine/src/Platform/Windows/WindowsWindow.h"
+    ],
+    "Engine/src/Platform/Windows/WindowsWindow.h": [],
+    "HimiiEditor/AppIcon.rc": [],
+    "HimiiEditor/assets/fonts/msyh.ttc": [],
+    "HimiiEditor/assets/shaders/FlatColor.glsl": [],
+    "HimiiEditor/assets/shaders/Grid.glsl": [],
+    "HimiiEditor/assets/shaders/Renderer2D_Circle.glsl": [],
+    "HimiiEditor/assets/shaders/Renderer2D_Line.glsl": [],
+    "HimiiEditor/assets/shaders/Renderer2D_Quad.glsl": [],
+    "HimiiEditor/assets/shaders/Renderer2D_Text.glsl": [],
+    "HimiiEditor/assets/shaders/Renderer3D_Cube.glsl": [],
+    "HimiiEditor/assets/shaders/Skybox.glsl": [],
+    "HimiiEditor/CMakeLists.txt": [],
+    "HimiiEditor/resources/skybox/back.bmp": [],
+    "HimiiEditor/resources/skybox/bottom.bmp": [],
+    "HimiiEditor/resources/skybox/front.bmp": [],
+    "HimiiEditor/resources/skybox/left.bmp": []
+  },
+  "neighborMap": {}
+}

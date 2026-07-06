@@ -209,7 +209,7 @@ namespace HimiiEngine
         }
 
         [UnmanagedCallersOnly]
-        public static void OnUpdateInstance(IntPtr handlePtr, float ts)
+        public static void OnUpdateInstance(IntPtr handlePtr, float timestep)
         {
             if (handlePtr == IntPtr.Zero) return;
 
@@ -217,7 +217,7 @@ namespace HimiiEngine
             {
                 GCHandle handle = GCHandle.FromIntPtr(handlePtr);
                 if (handle.IsAllocated && handle.Target is Entity entity)
-                    entity.OnUpdate(ts);
+                    entity.OnUpdate(timestep);
             }
             catch (Exception e)
             {
@@ -226,7 +226,7 @@ namespace HimiiEngine
         }
 
         [UnmanagedCallersOnly]
-        public static void OnCollisionEnter2DInstance(IntPtr handlePtr, ulong otherEntityID)
+        public static void OnFixedUpdateInstance(IntPtr handlePtr, float timestep)
         {
             if (handlePtr == IntPtr.Zero) return;
 
@@ -234,7 +234,24 @@ namespace HimiiEngine
             {
                 GCHandle handle = GCHandle.FromIntPtr(handlePtr);
                 if (handle.IsAllocated && handle.Target is Entity entity)
-                    entity.OnCollisionEnter2D(new Collision2DInfo { OtherEntityID = otherEntityID });
+                    entity.OnFixedUpdate(timestep);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"[C# Error] OnFixedUpdateInstance failed: {e.Message}");
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        public static void OnCollisionEnter2DInstance(IntPtr handlePtr, Collision2DInfo collision)
+        {
+            if (handlePtr == IntPtr.Zero) return;
+
+            try
+            {
+                GCHandle handle = GCHandle.FromIntPtr(handlePtr);
+                if (handle.IsAllocated && handle.Target is Entity entity)
+                    entity.OnCollisionEnter2D(collision);
             }
             catch (Exception e)
             {
@@ -253,9 +270,43 @@ namespace HimiiEngine
                 if (handle.IsAllocated && handle.Target is Entity entity)
                     entity.OnCollisionExit2D(new Collision2DInfo { OtherEntityID = otherEntityID });
             }
-            catch (Exception e)
+            catch (Exception exception)
             {
-                Console.WriteLine($"[C# Error] OnCollisionExit2DInstance failed: {e.Message}");
+                Console.WriteLine($"[C# Error] OnCollisionExit2DInstance failed: {exception.Message}");
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        public static void OnTriggerEnter2DInstance(IntPtr handlePtr, Collision2DInfo collision)
+        {
+            if (handlePtr == IntPtr.Zero) return;
+
+            try
+            {
+                GCHandle handle = GCHandle.FromIntPtr(handlePtr);
+                if (handle.IsAllocated && handle.Target is Entity entity)
+                    entity.OnTriggerEnter2D(collision);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine($"[C# Error] OnTriggerEnter2DInstance failed: {exception.Message}");
+            }
+        }
+
+        [UnmanagedCallersOnly]
+        public static void OnTriggerExit2DInstance(IntPtr handlePtr, ulong otherEntityID)
+        {
+            if (handlePtr == IntPtr.Zero) return;
+
+            try
+            {
+                GCHandle handle = GCHandle.FromIntPtr(handlePtr);
+                if (handle.IsAllocated && handle.Target is Entity entity)
+                    entity.OnTriggerExit2D(new Collision2DInfo { OtherEntityID = otherEntityID });
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine($"[C# Error] OnTriggerExit2DInstance failed: {exception.Message}");
             }
         }
     }

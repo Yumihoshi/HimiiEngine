@@ -12,6 +12,10 @@
 #include "Himii/Scene/ParticleEmitterAsset.h"
 #include "Himii/Scene/SpriteAnimation.h"
 #include "Himii/Scene/SpriteAnimationUtility.h"
+#include "Himii/Scene/Physics2DLayerSettings.h"
+#include "Himii/Scene/SortingLayerSettings.h"
+#include "Himii/Scene/PrefabSerializer.h"
+#include "Himii/Utils/PlatformUtils.h"
 #include "Himii/Asset/AssetSerializer.h"
 #include "Himii/Asset/AssetManager.h"
 #include "Himii/Asset/Sprite.h"
@@ -32,6 +36,53 @@
 namespace Himii
 {
     extern const std::filesystem::path s_AssetsPath;
+
+    static void DrawPhysicsLayerControl(int& layer)
+    {
+        layer = std::clamp(layer, 0, Physics2DLayerCount - 1);
+
+        Physics2DLayerSettings layerSettings;
+        if (Project::GetActive())
+            layerSettings = Project::GetConfig().Physics2DLayers;
+
+        const std::string& currentLabel = layerSettings.LayerNames[layer];
+        if (ImGui::BeginCombo("##PhysicsLayer", currentLabel.c_str()))
+        {
+            for (int layerIndex = 0; layerIndex < Physics2DLayerCount; ++layerIndex)
+            {
+                const bool isSelected = layerIndex == layer;
+                if (ImGui::Selectable(layerSettings.LayerNames[layerIndex].c_str(), isSelected))
+                    layer = layerIndex;
+                if (isSelected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+    }
+
+    static void DrawSortingLayerControl(int& sortingLayer)
+    {
+        sortingLayer = std::clamp(sortingLayer, 0, SortingLayerCount - 1);
+
+        SortingLayerSettings layerSettings;
+        if (Project::GetActive())
+            layerSettings = Project::GetConfig().SortingLayers;
+
+        const std::string& currentLabel = layerSettings.LayerNames[sortingLayer];
+        if (ImGui::BeginCombo("##SortingLayer", currentLabel.c_str()))
+        {
+            for (int layerIndex = 0; layerIndex < SortingLayerCount; ++layerIndex)
+            {
+                const bool isSelected = layerIndex == sortingLayer;
+                if (ImGui::Selectable(layerSettings.LayerNames[layerIndex].c_str(), isSelected))
+                    sortingLayer = layerIndex;
+                if (isSelected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+    }
+
     SceneHierarchyPanel::SceneHierarchyPanel()
     {
         // Load Component Icons
@@ -206,6 +257,24 @@ namespace Himii
         bool entityDeleted = false;
         if (ImGui::BeginPopupContextItem())
         {
+            if (ImGui::MenuItem("Save as Prefab..."))
+            {
+                std::string filePath = FileDialog::SaveFile("Himii Prefab (*.hprefab)\0*.hprefab\0");
+                if (!filePath.empty())
+                {
+                    if (PrefabSerializer::Save(entity, filePath))
+                    {
+                        if (Project::GetActive())
+                        {
+                            std::filesystem::path relativePath =
+                                    std::filesystem::relative(filePath, Project::GetAssetDirectory());
+                            if (auto assetManager = Project::GetAssetManager())
+                                assetManager->ImportAsset(relativePath);
+                        }
+                    }
+                }
+            }
+
             if (ImGui::MenuItem("Delete Entity"))
             {
                 entityDeleted = true;
@@ -652,11 +721,9 @@ namespace Himii
                     memset(buffer, 0, sizeof(buffer));
                     snprintf(buffer, sizeof(buffer), "%s", component.ClassName.c_str());
 
-                    bool isEdited = ImGui::InputText("##ClassName", buffer, sizeof(buffer));
-                    if (isEdited)
-                    {
+                    ImGui::InputText("##ClassName", buffer, sizeof(buffer));
+                    if (ImGui::IsItemDeactivatedAfterEdit())
                         component.ClassName = buffer;
-                    }
 
                     bool scriptClassExists = false;
                     if (!component.ClassName.empty())
@@ -693,7 +760,6 @@ namespace Himii
                             }
                         }
 
-                        if (!isEdited)
                         {
                              // Get fields from ScriptEngine (Populates ScriptComponent::Fields)
                              auto& fields = ScriptEngine::GetScriptFieldMap(entity);
@@ -1060,6 +1126,13 @@ namespace Himii
                     }
 
                     DrawFloatControl("Tiling Factor", component.TilingFactor, 0.1f, 0.0f, 100.0f);
+                    DrawCheckboxControl("Flip Horizontal", component.FlipHorizontal);
+                    ImGui::Text("Sorting Layer");
+                    ImGui::SameLine();
+                    DrawSortingLayerControl(component.SortingLayer);
+                    ImGui::Text("Sorting Order");
+                    ImGui::SameLine();
+                    ImGui::DragInt("##SortingOrder", &component.SortingOrder);
                 });
 
         DrawComponent<MeshComponent>(
@@ -1173,6 +1246,10 @@ namespace Himii
                     DrawFloatControl("Friction", component.Friction, 0.01f, 0.0f, 1.0f);
                     DrawFloatControl("Restitution", component.Restitution, 0.01f, 0.0f, 1.0f);
                     DrawFloatControl("Restitution Threshold", component.RestitutionThreshold, 0.1f);
+                    DrawCheckboxControl("Is Trigger", component.IsTrigger);
+                    ImGui::Text("Layer");
+                    ImGui::SameLine();
+                    DrawPhysicsLayerControl(component.Layer);
                 });
         DrawComponent<CircleCollider2DComponent>(
                 "Circle Collider2D", entity, m_ComponentIcons["Circle Collider2D"],
@@ -1198,6 +1275,10 @@ namespace Himii
                     DrawFloatControl("Friction", component.Friction, 0.01f, 0.0f, 1.0f);
                     DrawFloatControl("Restitution", component.Restitution, 0.01f, 0.0f, 1.0f);
                     DrawFloatControl("Restitution Threshold", component.RestitutionThreshold, 0.1f);
+                    DrawCheckboxControl("Is Trigger", component.IsTrigger);
+                    ImGui::Text("Layer");
+                    ImGui::SameLine();
+                    DrawPhysicsLayerControl(component.Layer);
                 });
         DrawComponent<SpriteAnimationComponent>(
                 "Sprite Animation", entity, m_ComponentIcons["Sprite Animation"],

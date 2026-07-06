@@ -80,6 +80,14 @@ namespace Himii {
 
     using ScriptFieldMap = std::unordered_map<std::string, ScriptFieldInstance>;
 
+    /// 与 C# Collision2DInfo 布局一致，供脚本碰撞回调使用。
+    struct Collision2DInterop
+    {
+        uint64_t OtherEntityID = 0;
+        glm::vec2 Normal{0.0f, 0.0f};
+        glm::vec2 Point{0.0f, 0.0f};
+    };
+
 	class ScriptEngine
 	{
 	public:
@@ -96,6 +104,7 @@ namespace Himii {
         static void OnRuntimeStop();
 
 		static void OnUpdateScript(Entity entity, Timestep ts);
+        static void OnFixedUpdateScript(Entity entity, Timestep ts);
         static float GetScriptDeltaTime();
 
 		static bool EntityClassExists(const std::string &fullClassName);
@@ -128,8 +137,10 @@ namespace Himii {
         static bool GetEntityField(void *instanceHandle, const std::string &fieldName, UUID &outEntityID);
         static void SetEntityField(void *instanceHandle, const std::string &fieldName, UUID entityID);
 
-        static void OnCollisionEnter2D(Entity entity, Entity other);
+        static void OnCollisionEnter2D(Entity entity, Entity other, const Collision2DInterop &collision);
         static void OnCollisionExit2D(Entity entity, Entity other);
+        static void OnTriggerEnter2D(Entity entity, Entity other, const Collision2DInterop &collision);
+        static void OnTriggerExit2D(Entity entity, Entity other);
 
         static void* GetEntityScriptInstance(UUID entityID);
 
@@ -138,6 +149,8 @@ namespace Himii {
 
 		static Scene* GetSceneContext();
         static bool IsRuntimeActive();
+        static void SetActiveSceneRelativePath(const std::string& relativePath);
+        static const std::string& GetActiveSceneRelativePath();
 
     private:
         static void InitInterop();
@@ -146,6 +159,7 @@ namespace Himii {
 
     private:
         static Scene* s_SceneContext;
+        static std::string s_ActiveSceneRelativePath;
         static std::unordered_map<UUID, void*> s_EntityInstanceMap;
 	};
 

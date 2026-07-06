@@ -1,0 +1,1366 @@
+{
+  "nodes": [
+    {
+      "id": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "type": "file",
+      "name": "TilemapColliderBuilder.cpp",
+      "filePath": "Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "summary": "实现 Tilemap 物理碰撞器的构建逻辑，包括可碰撞瓦片单元收集、贪心合并矩形优化、Box2D 碰撞形状创建以及构建报告日志输出。",
+      "tags": ["物理", "瓦片地图", "碰撞检测", "box2d"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.h",
+      "type": "file",
+      "name": "TilemapColliderBuilder.h",
+      "filePath": "Engine/src/Himii/Scene/TilemapColliderBuilder.h",
+      "summary": "定义 TilemapColliderBuilder 工具类和 TilemapColliderBuildReport 结构体，为瓦片地图提供碰撞器构建的接口声明。",
+      "tags": ["物理", "瓦片地图", "碰撞检测", "头文件"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp",
+      "type": "file",
+      "name": "TileMapCoordinateUtility.cpp",
+      "filePath": "Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp",
+      "summary": "实现瓦片坐标工具函数，提供瓦片坐标合法性校验、局部坐标与瓦片坐标相互转换以及编辑器网格边界计算。",
+      "tags": ["瓦片地图", "坐标转换", "工具函数"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:Engine/src/Himii/Scene/TileMapCoordinateUtility.h",
+      "type": "file",
+      "name": "TileMapCoordinateUtility.h",
+      "filePath": "Engine/src/Himii/Scene/TileMapCoordinateUtility.h",
+      "summary": "声明 TileMapCoordinateUtility 静态工具类和 TileMapEditorGridBounds 结构体，定义无效瓦片坐标常量。",
+      "tags": ["瓦片地图", "坐标转换", "工具函数", "头文件"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "type": "file",
+      "name": "TileMapData.cpp",
+      "filePath": "Engine/src/Himii/Scene/TileMapData.cpp",
+      "summary": "实现 TileMapData 核心数据类：基于 Chunk 分块的无限瓦片地图存储、瓦片读写、边界追踪和旧版稠密数据导入。",
+      "tags": ["瓦片地图", "数据存储", "chunk", "序列化"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:Engine/src/Himii/Scene/TileMapData.h",
+      "type": "file",
+      "name": "TileMapData.h",
+      "filePath": "Engine/src/Himii/Scene/TileMapData.h",
+      "summary": "声明 TileMapData 类及其 Chunk 内部分块存储机制，提供瓦片遍历、读写、边界追踪等操作接口。",
+      "tags": ["瓦片地图", "数据存储", "chunk", "头文件"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:Engine/src/Himii/Scene/TileSet.h",
+      "type": "file",
+      "name": "TileSet.h",
+      "filePath": "Engine/src/Himii/Scene/TileSet.h",
+      "summary": "定义 TileSet 资源类、TileDef 瓦片定义结构体和 TileAtlasSource 图集源，管理瓦片图集和瓦片属性（含碰撞标记）。",
+      "tags": ["瓦片地图", "图集", "资源管理", "头文件"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:Engine/src/Himii/Scripting/ScriptIDE.cpp",
+      "type": "file",
+      "name": "ScriptIDE.cpp",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDE.cpp",
+      "summary": "实现 ScriptIDETypeFromString 函数，将字符串转换为 ScriptIDEConfigType 枚举值。",
+      "tags": ["脚本系统", "ide", "配置"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:Engine/src/Himii/Scripting/ScriptIDE.h",
+      "type": "file",
+      "name": "ScriptIDE.h",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDE.h",
+      "summary": "定义 ScriptIDEConfigType 枚举和 ScriptIDEConfig 配置结构体，支持 VS/Rider/VSCode/自定义四种脚本 IDE 类型。",
+      "tags": ["脚本系统", "ide", "配置", "头文件"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "type": "file",
+      "name": "ScriptIDELauncher.cpp",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "summary": "实现脚本 IDE 启动器核心逻辑：自动发现 VS/Rider/VSCode 可执行路径、解析配置、展开参数模板并启动进程打开项目或脚本文件。",
+      "tags": ["脚本系统", "ide", "进程启动", "跨平台"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.h",
+      "type": "file",
+      "name": "ScriptIDELauncher.h",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDELauncher.h",
+      "summary": "声明 ScriptIDELauncher 静态类，提供 OpenProject、OpenScript 等入口用于启动外部代码编辑器。",
+      "tags": ["脚本系统", "ide", "进程启动", "头文件"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:Engine/src/Himii/Utils/PlatformUtils.h",
+      "type": "file",
+      "name": "PlatformUtils.h",
+      "filePath": "Engine/src/Himii/Utils/PlatformUtils.h",
+      "summary": "声明 FileDialog 类，提供跨平台的文件打开、保存和文件夹选择对话框接口。",
+      "tags": ["工具函数", "文件对话框", "跨平台", "头文件"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp",
+      "type": "file",
+      "name": "LinuxPlatformUtils.cpp",
+      "filePath": "Engine/src/Platform/Linux/LinuxPlatformUtils.cpp",
+      "summary": "Linux 平台文件对话框实现，使用 nativefiledialog 库将 Windows 风格的通配符过滤器转换为 NFD 格式。",
+      "tags": ["linux", "文件对话框", "跨平台", "nfd"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:RecordOrphanTileIdentifier",
+      "type": "function",
+      "name": "RecordOrphanTileIdentifier",
+      "filePath": "Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "lineRange": [46, 58],
+      "summary": "记录在 TileSet 中未找到对应 TileDef 的孤立瓦片标识符，用于碰撞器构建报告的诊断信息。",
+      "tags": ["瓦片地图", "碰撞检测", "诊断"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:CollectCollidableCells",
+      "type": "function",
+      "name": "CollectCollidableCells",
+      "filePath": "Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "lineRange": [60, 84],
+      "summary": "遍历 TileMapData 中的所有瓦片，筛选出设置了 Collidable 标记的 TileDef 并将对应坐标收集到可碰撞单元集合中。",
+      "tags": ["瓦片地图", "碰撞检测", "数据收集"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:HasCollidableCell",
+      "type": "function",
+      "name": "HasCollidableCell",
+      "filePath": "Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "lineRange": [86, 91],
+      "summary": "在可碰撞单元集合中查找指定瓦片坐标是否存在，用于贪心合并时的邻接检查。",
+      "tags": ["瓦片地图", "碰撞检测", "查询"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:MergeCollidableCellsGreedy",
+      "type": "function",
+      "name": "MergeCollidableCellsGreedy",
+      "filePath": "Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "lineRange": [93, 143],
+      "summary": "使用贪心算法将相邻的可碰撞瓦片单元合并为尽可能大的矩形区域，减少 Box2D 碰撞形状数量以提升物理性能。",
+      "tags": ["瓦片地图", "碰撞检测", "贪心算法", "优化"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:CreateShapeForTileCell",
+      "type": "function",
+      "name": "CreateShapeForTileCell",
+      "filePath": "Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "lineRange": [145, 166],
+      "summary": "为单个瓦片单元创建 Box2D 矩形碰撞形状，计算瓦片局部中心位置并通过 b2CreatePolygonShape 添加到物理体。",
+      "tags": ["物理", "box2d", "碰撞形状", "瓦片地图"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:CreateShapeForMergedRectangle",
+      "type": "function",
+      "name": "CreateShapeForMergedRectangle",
+      "filePath": "Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "lineRange": [168, 198],
+      "summary": "为贪心合并后的矩形瓦片区域创建单个 Box2D 包围盒碰撞形状，计算合并矩形的局部中心与半尺寸。",
+      "tags": ["物理", "box2d", "碰撞形状", "瓦片地图"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:ShouldCellCollide",
+      "type": "function",
+      "name": "ShouldCellCollide",
+      "filePath": "Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "lineRange": [201, 205],
+      "summary": "判断给定瓦片标识符对应的 TileDef 是否标记为可碰撞（Collidable）。",
+      "tags": ["瓦片地图", "碰撞检测", "查询"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:AnalyzeCollidableCells",
+      "type": "function",
+      "name": "AnalyzeCollidableCells",
+      "filePath": "Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "lineRange": [207, 216],
+      "summary": "分析 TileMapData 中可碰撞瓦片单元的统计信息，返回包含画布单元数、TileDef 命中数和碰撞单元数等的构建报告。",
+      "tags": ["瓦片地图", "碰撞检测", "分析"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:CreateColliderShapes",
+      "type": "function",
+      "name": "CreateColliderShapes",
+      "filePath": "Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "lineRange": [218, 270],
+      "summary": "核心入口函数：为瓦片地图创建 Box2D 静态物理体及碰撞形状，支持可选贪心合并优化以生成更紧凑的碰撞几何。",
+      "tags": ["物理", "box2d", "碰撞形状", "瓦片地图", "入口点"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:LogBuildReport",
+      "type": "function",
+      "name": "LogBuildReport",
+      "filePath": "Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "lineRange": [272, 318],
+      "summary": "格式化输出碰撞器构建报告到引擎日志，当存在孤立瓦片标识符或形状创建失败时发出警告。",
+      "tags": ["瓦片地图", "日志", "诊断"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Scene/TilemapColliderBuilder.h:TilemapColliderBuilder",
+      "type": "class",
+      "name": "TilemapColliderBuilder",
+      "filePath": "Engine/src/Himii/Scene/TilemapColliderBuilder.h",
+      "lineRange": [26, 44],
+      "summary": "静态工具类，提供瓦片地图 Box2D 碰撞器构建的完整流程：分析、创建碰撞形状和日志报告。",
+      "tags": ["物理", "box2d", "瓦片地图", "工具类"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp:IsValidTileCoordinate",
+      "type": "function",
+      "name": "IsValidTileCoordinate",
+      "filePath": "Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp",
+      "lineRange": [9, 12],
+      "summary": "检查瓦片坐标是否不等于预定义的无效坐标常量。",
+      "tags": ["瓦片地图", "坐标转换", "校验"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp:TileLocalBottomLeft",
+      "type": "function",
+      "name": "TileLocalBottomLeft",
+      "filePath": "Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp",
+      "lineRange": [14, 21],
+      "summary": "将瓦片坐标转换为该瓦片左下角在 TileMap 局部空间中的浮点位置。",
+      "tags": ["瓦片地图", "坐标转换"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp:TileLocalCenter",
+      "type": "function",
+      "name": "TileLocalCenter",
+      "filePath": "Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp",
+      "lineRange": [23, 28],
+      "summary": "将瓦片坐标转换为该瓦片中心点在 TileMap 局部空间中的位置，内部调用 TileLocalBottomLeft 并偏移半个 cellSize。",
+      "tags": ["瓦片地图", "坐标转换"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp:TileLocalToCoordinates",
+      "type": "function",
+      "name": "TileLocalToCoordinates",
+      "filePath": "Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp",
+      "lineRange": [30, 41],
+      "summary": "将 TileMap 局部空间中的世界坐标反向转换为瓦片坐标（整数格索引），使用 floor 取整。",
+      "tags": ["瓦片地图", "坐标转换", "反向映射"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp:GetEditorGridBounds",
+      "type": "function",
+      "name": "GetEditorGridBounds",
+      "filePath": "Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp",
+      "lineRange": [43, 61],
+      "summary": "计算编辑器网格的可见边界范围，对已绘制区域扩展 padding 余量以确保编辑操作便利。",
+      "tags": ["瓦片地图", "编辑器", "视口计算"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Scene/TileMapCoordinateUtility.h:TileMapCoordinateUtility",
+      "type": "class",
+      "name": "TileMapCoordinateUtility",
+      "filePath": "Engine/src/Himii/Scene/TileMapCoordinateUtility.h",
+      "lineRange": [20, 34],
+      "summary": "静态坐标工具类，封装瓦片坐标校验、局部空间坐标转换和编辑器网格边界计算等纯函数。",
+      "tags": ["瓦片地图", "坐标转换", "工具类"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TileMapData.cpp:GetWidth",
+      "type": "function",
+      "name": "GetWidth",
+      "filePath": "Engine/src/Himii/Scene/TileMapData.cpp",
+      "lineRange": [7, 12],
+      "summary": "返回 TileMapData 的有效瓦片宽度（maxTileX - minTileX + 1），无瓦片时返回 0。",
+      "tags": ["瓦片地图", "数据查询"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TileMapData.cpp:GetHeight",
+      "type": "function",
+      "name": "GetHeight",
+      "filePath": "Engine/src/Himii/Scene/TileMapData.cpp",
+      "lineRange": [14, 19],
+      "summary": "返回 TileMapData 的有效瓦片高度（maxTileY - minTileY + 1），无瓦片时返回 0。",
+      "tags": ["瓦片地图", "数据查询"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TileMapData.cpp:GetBounds",
+      "type": "function",
+      "name": "GetBounds",
+      "filePath": "Engine/src/Himii/Scene/TileMapData.cpp",
+      "lineRange": [21, 34],
+      "summary": "获取瓦片地图当前的有效边界范围（min/max 瓦片坐标），通过输出参数返回。",
+      "tags": ["瓦片地图", "数据查询"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TileMapData.cpp:Clear",
+      "type": "function",
+      "name": "Clear",
+      "filePath": "Engine/src/Himii/Scene/TileMapData.cpp",
+      "lineRange": [36, 41],
+      "summary": "清空所有 Chunk 数据并重置边界追踪状态。",
+      "tags": ["瓦片地图", "数据操作"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TileMapData.cpp:IsChunkEmpty",
+      "type": "function",
+      "name": "IsChunkEmpty",
+      "filePath": "Engine/src/Himii/Scene/TileMapData.cpp",
+      "lineRange": [56, 64],
+      "summary": "检查指定 Chunk 中的所有瓦片是否均为空（无效）标识符，用于判断是否可以释放该 Chunk。",
+      "tags": ["瓦片地图", "chunk管理", "内存优化"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TileMapData.cpp:RemoveChunkIfEmpty",
+      "type": "function",
+      "name": "RemoveChunkIfEmpty",
+      "filePath": "Engine/src/Himii/Scene/TileMapData.cpp",
+      "lineRange": [66, 74],
+      "summary": "按 Chunk 键查找并移除空 Chunk，用于擦除瓦片后的自动垃圾回收。",
+      "tags": ["瓦片地图", "chunk管理", "内存优化"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TileMapData.cpp:UpdateBoundsOnSet",
+      "type": "function",
+      "name": "UpdateBoundsOnSet",
+      "filePath": "Engine/src/Himii/Scene/TileMapData.cpp",
+      "lineRange": [76, 90],
+      "summary": "在设置瓦片时增量更新 m_MinTileX/Y 和 m_MaxTileX/Y 边界追踪变量，同时设置 m_HasBounds 标志。",
+      "tags": ["瓦片地图", "边界追踪"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TileMapData.cpp:RecomputeBounds",
+      "type": "function",
+      "name": "RecomputeBounds",
+      "filePath": "Engine/src/Himii/Scene/TileMapData.cpp",
+      "lineRange": [92, 101],
+      "summary": "全量遍历所有 Chunk 重新计算边界范围，用于删除瓦片后的边界修正（因减法操作无法增量追踪）。",
+      "tags": ["瓦片地图", "边界追踪"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TileMapData.cpp:SetTile",
+      "type": "function",
+      "name": "SetTile",
+      "filePath": "Engine/src/Himii/Scene/TileMapData.cpp",
+      "lineRange": [103, 141],
+      "summary": "核心瓦片写入方法：通过 ChunkKey 定位目标 Chunk，写入或清除瓦片标识符，并自动管理边界和空 Chunk 回收。",
+      "tags": ["瓦片地图", "数据写入", "chunk管理"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TileMapData.cpp:GetTile",
+      "type": "function",
+      "name": "GetTile",
+      "filePath": "Engine/src/Himii/Scene/TileMapData.cpp",
+      "lineRange": [143, 158],
+      "summary": "按瓦片坐标读取瓦片标识符，若 Chunk 不存在或索引无效则返回空标识符。",
+      "tags": ["瓦片地图", "数据读取"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scene/TileMapData.cpp:ImportLegacyDenseTiles",
+      "type": "function",
+      "name": "ImportLegacyDenseTiles",
+      "filePath": "Engine/src/Himii/Scene/TileMapData.cpp",
+      "lineRange": [160, 185],
+      "summary": "从旧版稠密瓦片数组格式导入数据并转换为 Chunk-based 存储，先清空再逐个 SetTile 完成迁移。",
+      "tags": ["瓦片地图", "数据迁移", "兼容性"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Scene/TileMapData.h:TileMapData",
+      "type": "class",
+      "name": "TileMapData",
+      "filePath": "Engine/src/Himii/Scene/TileMapData.h",
+      "lineRange": [15, 100],
+      "summary": "核心瓦片地图数据类，基于 Chunk 分块存储实现无限大地图，提供 ForEachTile 遍历、Chunk 懒创建和自动边界追踪。",
+      "tags": ["瓦片地图", "数据存储", "chunk", "核心类"],
+      "complexity": "moderate",
+      "languageNotes": "使用 unordered_map<ChunkKey, Chunk> 分块存储，Chunk 为 16x16 固定大小，支持惰性创建和自动垃圾回收。"
+    },
+    {
+      "id": "class:Engine/src/Himii/Scene/TileSet.h:TileSet",
+      "type": "class",
+      "name": "TileSet",
+      "filePath": "Engine/src/Himii/Scene/TileSet.h",
+      "lineRange": [53, 155],
+      "summary": "瓦片图集资源类，管理 TileAtlasSource 图集源集合和 TileDef 瓦片定义表，支持网格化自动生成 TileDef 和碰撞属性标记。",
+      "tags": ["瓦片地图", "图集", "资源管理", "核心类"],
+      "complexity": "moderate",
+      "languageNotes": "每个 TileDef 包含 SourceType（图集/独立纹理）、碰撞标记（Collidable）和色调（Tint）属性，支持运行时查找。"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptIDE.cpp:ScriptIDETypeFromString",
+      "type": "function",
+      "name": "ScriptIDETypeFromString",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDE.cpp",
+      "lineRange": [19, 27],
+      "summary": "将字符串标识符映射为 ScriptIDEConfigType 枚举值，支持 VS、Rider、VSCode 和 Custom。",
+      "tags": ["脚本系统", "ide", "字符串解析"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Scripting/ScriptIDE.h:ScriptIDEConfig",
+      "type": "class",
+      "name": "ScriptIDEConfig",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDE.h",
+      "lineRange": [16, 21],
+      "summary": "脚本 IDE 配置结构体，存储 IDE 类型、自定义可执行文件路径和命令行参数列表。",
+      "tags": ["脚本系统", "ide", "配置"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:ResolveConfig",
+      "type": "function",
+      "name": "ResolveConfig",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "lineRange": [15, 36],
+      "summary": "从项目配置和编辑器设置中解析 IDE 配置，若项目级自定义路径为空则回退到全局编辑器设置。",
+      "tags": ["脚本系统", "ide", "配置解析"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:GetSolutionPath",
+      "type": "function",
+      "name": "GetSolutionPath",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "lineRange": [38, 42],
+      "summary": "拼接项目目录和项目名称生成 .sln 解决方案文件路径。",
+      "tags": ["脚本系统", "ide", "路径工具"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:ExpandArgumentTemplate",
+      "type": "function",
+      "name": "ExpandArgumentTemplate",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "lineRange": [44, 70],
+      "summary": "执行命令行参数模板中的变量替换，将 {projectDir}、{projectName}、{solutionPath}、{file} 等占位符替换为实际值。",
+      "tags": ["脚本系统", "ide", "模板替换"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:LaunchProcess",
+      "type": "function",
+      "name": "LaunchProcess",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "lineRange": [72, 121],
+      "summary": "跨平台进程启动函数：Windows 上使用 CreateProcessA 创建独立进程，其他平台回退到 std::system 调用。",
+      "tags": ["脚本系统", "ide", "进程启动", "跨平台"],
+      "complexity": "moderate",
+      "languageNotes": "Windows 上通过 CreateProcessA 启动独立进程并立即关闭句柄以实现 fire-and-forget；非 Windows 平台使用 std::system 回退方案。"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:FindDevenvExecutable",
+      "type": "function",
+      "name": "FindDevenvExecutable",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "lineRange": [123, 168],
+      "summary": "在系统中自动发现 Visual Studio 的 devenv.exe 可执行文件路径，通过 vswhere 工具和常规安装路径查找。",
+      "tags": ["脚本系统", "ide", "visual-studio", "自动发现"],
+      "complexity": "moderate",
+      "languageNotes": "优先使用 vswhere.exe 定位 VS 安装路径，失败后回退到 Program Files 和 Program Files (x86) 固定路径查找。"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:FindVSCodeExecutable",
+      "type": "function",
+      "name": "FindVSCodeExecutable",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "lineRange": [170, 199],
+      "summary": "在系统中自动发现 VSCode 的 code 可执行文件路径，通过 where 命令和常规安装路径查找。",
+      "tags": ["脚本系统", "ide", "vscode", "自动发现"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:FindRiderExecutable",
+      "type": "function",
+      "name": "FindRiderExecutable",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "lineRange": [201, 245],
+      "summary": "在系统中自动发现 JetBrains Rider 的 rider64.exe 可执行文件，通过 where 命令、环境变量和 Toolbox 安装目录递归搜索。",
+      "tags": ["脚本系统", "ide", "rider", "自动发现"],
+      "complexity": "moderate",
+      "languageNotes": "使用 std::filesystem::recursive_directory_iterator 递归遍历 JetBrains Toolbox 安装目录以定位 rider64.exe。"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:LaunchVisualStudio",
+      "type": "function",
+      "name": "LaunchVisualStudio",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "lineRange": [247, 273],
+      "summary": "启动 Visual Studio 打开 .sln 解决方案文件，可选指定打开文件和行号跳转。",
+      "tags": ["脚本系统", "ide", "visual-studio", "进程启动"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:LaunchVSCode",
+      "type": "function",
+      "name": "LaunchVSCode",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "lineRange": [275, 297],
+      "summary": "启动 VSCode 打开项目文件夹，可选通过 --goto 参数跳转到指定文件和行号。",
+      "tags": ["脚本系统", "ide", "vscode", "进程启动"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:LaunchRider",
+      "type": "function",
+      "name": "LaunchRider",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "lineRange": [299, 327],
+      "summary": "启动 JetBrains Rider 打开 .sln 解决方案文件，可选通过 --line 参数跳转到指定行。",
+      "tags": ["脚本系统", "ide", "rider", "进程启动"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:LaunchCustom",
+      "type": "function",
+      "name": "LaunchCustom",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "lineRange": [329, 344],
+      "summary": "使用用户自定义的 IDE 可执行文件和参数模板启动外部编辑器，先展开参数模板再调用 LaunchProcess。",
+      "tags": ["脚本系统", "ide", "自定义", "进程启动"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:OpenProject",
+      "type": "function",
+      "name": "OpenProject",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "lineRange": [346, 365],
+      "summary": "顶层入口：根据解析的 IDE 配置分发到对应的启动函数（VS/Rider/VSCode/Custom）来打开脚本项目。",
+      "tags": ["脚本系统", "ide", "入口点", "分发"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:OpenScript",
+      "type": "function",
+      "name": "OpenScript",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "lineRange": [367, 393],
+      "summary": "顶层入口：在外部 IDE 中打开指定脚本文件并跳转到指定行号，先校验文件存在性再分发到对应启动器。",
+      "tags": ["脚本系统", "ide", "入口点", "分发"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Scripting/ScriptIDELauncher.h:ScriptIDELauncher",
+      "type": "class",
+      "name": "ScriptIDELauncher",
+      "filePath": "Engine/src/Himii/Scripting/ScriptIDELauncher.h",
+      "lineRange": [10, 40],
+      "summary": "静态 IDE 启动器类，封装 IDE 可执行路径自动发现、配置解析和项目/脚本文件打开的核心入口。",
+      "tags": ["脚本系统", "ide", "进程启动", "工具类"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Utils/PlatformUtils.h:FileDialog",
+      "type": "class",
+      "name": "FileDialog",
+      "filePath": "Engine/src/Himii/Utils/PlatformUtils.h",
+      "lineRange": [7, 17],
+      "summary": "跨平台文件对话框静态类，提供 OpenFile（选择打开文件）、SaveFile（选择保存路径）和 OpenFolder（选择文件夹）接口。",
+      "tags": ["工具函数", "文件对话框", "跨平台"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp:ParseWindowsFilter",
+      "type": "function",
+      "name": "ParseWindowsFilter",
+      "filePath": "Engine/src/Platform/Linux/LinuxPlatformUtils.cpp",
+      "lineRange": [18, 66],
+      "summary": "将 Windows 风格的 NFD 通配符过滤器字符串解析为 name/spec 配对列表，用于对接 Linux nativefiledialog 库。",
+      "tags": ["linux", "文件对话框", "过滤器", "解析"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp:OpenFile",
+      "type": "function",
+      "name": "OpenFile",
+      "filePath": "Engine/src/Platform/Linux/LinuxPlatformUtils.cpp",
+      "lineRange": [69, 100],
+      "summary": "Linux 平台实现：调用 NFD_OpenDialog 显示文件打开对话框，将 Windows 过滤器转为 NFD 格式后获取用户选择的文件路径。",
+      "tags": ["linux", "文件对话框", "nfd"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp:SaveFile",
+      "type": "function",
+      "name": "SaveFile",
+      "filePath": "Engine/src/Platform/Linux/LinuxPlatformUtils.cpp",
+      "lineRange": [102, 128],
+      "summary": "Linux 平台实现：调用 NFD_SaveDialog 显示文件保存对话框，返回用户选择的保存路径。",
+      "tags": ["linux", "文件对话框", "nfd"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp:OpenFolder",
+      "type": "function",
+      "name": "OpenFolder",
+      "filePath": "Engine/src/Platform/Linux/LinuxPlatformUtils.cpp",
+      "lineRange": [131, 154],
+      "summary": "Linux 平台实现：调用 NFD_PickFolder 显示文件夹选择对话框，返回用户选择的文件夹路径。",
+      "tags": ["linux", "文件对话框", "nfd"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:RecordOrphanTileIdentifier",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:RecordOrphanTileIdentifier",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:CollectCollidableCells",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:CollectCollidableCells",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:HasCollidableCell",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:HasCollidableCell",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:MergeCollidableCellsGreedy",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:MergeCollidableCellsGreedy",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:CreateShapeForTileCell",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:CreateShapeForTileCell",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:CreateShapeForMergedRectangle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:CreateShapeForMergedRectangle",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:ShouldCellCollide",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:ShouldCellCollide",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:AnalyzeCollidableCells",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:AnalyzeCollidableCells",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:CreateColliderShapes",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:CreateColliderShapes",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:LogBuildReport",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "target": "function:Engine/src/Himii/Scene/TilemapColliderBuilder.cpp:LogBuildReport",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.h",
+      "target": "class:Engine/src/Himii/Scene/TilemapColliderBuilder.h:TilemapColliderBuilder",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TilemapColliderBuilder.h",
+      "target": "class:Engine/src/Himii/Scene/TilemapColliderBuilder.h:TilemapColliderBuilder",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp:IsValidTileCoordinate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp:IsValidTileCoordinate",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp:TileLocalBottomLeft",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp:TileLocalBottomLeft",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp:TileLocalCenter",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp:TileLocalCenter",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp:TileLocalToCoordinates",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp:TileLocalToCoordinates",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp:GetEditorGridBounds",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp:GetEditorGridBounds",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapCoordinateUtility.h",
+      "target": "class:Engine/src/Himii/Scene/TileMapCoordinateUtility.h:TileMapCoordinateUtility",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapCoordinateUtility.h",
+      "target": "class:Engine/src/Himii/Scene/TileMapCoordinateUtility.h:TileMapCoordinateUtility",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:GetWidth",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:GetWidth",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:GetHeight",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:GetHeight",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:GetBounds",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:GetBounds",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:Clear",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:Clear",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:IsChunkEmpty",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:IsChunkEmpty",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:RemoveChunkIfEmpty",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:RemoveChunkIfEmpty",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:UpdateBoundsOnSet",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:UpdateBoundsOnSet",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:RecomputeBounds",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:RecomputeBounds",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:SetTile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:SetTile",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:GetTile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:GetTile",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:ImportLegacyDenseTiles",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.cpp",
+      "target": "function:Engine/src/Himii/Scene/TileMapData.cpp:ImportLegacyDenseTiles",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.h",
+      "target": "class:Engine/src/Himii/Scene/TileMapData.h:TileMapData",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileMapData.h",
+      "target": "class:Engine/src/Himii/Scene/TileMapData.h:TileMapData",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileSet.h",
+      "target": "class:Engine/src/Himii/Scene/TileSet.h:TileSet",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scene/TileSet.h",
+      "target": "class:Engine/src/Himii/Scene/TileSet.h:TileSet",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDE.cpp",
+      "target": "file:Engine/src/Himii/Scripting/ScriptIDE.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDE.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDE.cpp:ScriptIDETypeFromString",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDE.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDE.cpp:ScriptIDETypeFromString",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDE.h",
+      "target": "class:Engine/src/Himii/Scripting/ScriptIDE.h:ScriptIDEConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDE.h",
+      "target": "class:Engine/src/Himii/Scripting/ScriptIDE.h:ScriptIDEConfig",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:ResolveConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:ResolveConfig",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:GetSolutionPath",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:GetSolutionPath",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:ExpandArgumentTemplate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:ExpandArgumentTemplate",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:LaunchProcess",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:LaunchProcess",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:FindDevenvExecutable",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:FindDevenvExecutable",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:FindVSCodeExecutable",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:FindVSCodeExecutable",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:FindRiderExecutable",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:FindRiderExecutable",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:LaunchVisualStudio",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:LaunchVisualStudio",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:LaunchVSCode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:LaunchVSCode",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:LaunchRider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:LaunchRider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:LaunchCustom",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:LaunchCustom",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:OpenProject",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:OpenProject",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:OpenScript",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptIDELauncher.cpp:OpenScript",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.h",
+      "target": "class:Engine/src/Himii/Scripting/ScriptIDELauncher.h:ScriptIDELauncher",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptIDELauncher.h",
+      "target": "class:Engine/src/Himii/Scripting/ScriptIDELauncher.h:ScriptIDELauncher",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Utils/PlatformUtils.h",
+      "target": "class:Engine/src/Himii/Utils/PlatformUtils.h:FileDialog",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Utils/PlatformUtils.h",
+      "target": "class:Engine/src/Himii/Utils/PlatformUtils.h:FileDialog",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp",
+      "target": "function:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp:ParseWindowsFilter",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp",
+      "target": "function:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp:ParseWindowsFilter",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp",
+      "target": "function:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp:OpenFile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp",
+      "target": "function:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp:OpenFile",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp",
+      "target": "function:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp:SaveFile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp",
+      "target": "function:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp:SaveFile",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp",
+      "target": "function:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp:OpenFolder",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp",
+      "target": "function:Engine/src/Platform/Linux/LinuxPlatformUtils.cpp:OpenFolder",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

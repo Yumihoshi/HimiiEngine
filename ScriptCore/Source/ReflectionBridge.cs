@@ -13,31 +13,42 @@ namespace HimiiEngine
                 BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
         }
 
-        private static bool HasSerializeFieldAttribute(FieldInfo field)
+        private static bool IsMarkedWithSerializeField(FieldInfo field)
         {
-            foreach (object attribute in field.GetCustomAttributes(inherit: true))
-            {
-                Type attributeType = attribute.GetType();
-                string attributeName = attributeType.Name;
-                if (attributeName != "SerializeField" && attributeName != "SerializeFieldAttribute")
-                    continue;
+            // typeof(SerializeField) 在 GameAssembly 与 ScriptCore 分属不同 ALC 时可能失败，
+            // 因此用 CustomAttributeData 的 FullName 做跨上下文匹配。
+            if (field.IsDefined(typeof(SerializeField), inherit: true))
+                return true;
 
-                string namespaceName = attributeType.Namespace ?? string.Empty;
-                if (namespaceName == "HimiiEngine" || namespaceName == "Himii")
+            foreach (CustomAttributeData attributeData in field.CustomAttributes)
+            {
+                string attributeFullName = attributeData.AttributeType.FullName ?? string.Empty;
+                if (attributeFullName == "HimiiEngine.SerializeField")
                     return true;
             }
 
             return false;
         }
 
+        private static bool ShouldSerializeField(FieldInfo field)
+        {
+            if (field.IsStatic || field.IsInitOnly)
+                return false;
+
+            if (field.IsDefined(typeof(NonSerializedAttribute), inherit: true))
+                return false;
+
+            if (field.IsPublic)
+                return true;
+
+            return IsMarkedWithSerializeField(field);
+        }
+
         private static IEnumerable<FieldInfo> GetSerializedFields(Type type)
         {
-            foreach (FieldInfo field in type.GetFields(BindingFlags.Public | BindingFlags.Instance))
-                yield return field;
-
-            foreach (FieldInfo field in type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance))
+            foreach (FieldInfo field in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
             {
-                if (HasSerializeFieldAttribute(field))
+                if (ShouldSerializeField(field))
                     yield return field;
             }
         }

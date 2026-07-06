@@ -27,6 +27,22 @@ namespace HimiiEngine
         internal delegate void Rigidbody2DGetVelocityDelegate(ulong entityID, out Vector2 velocity);
         internal delegate void Rigidbody2DSetVelocityDelegate(ulong entityID, ref Vector2 velocity);
 
+        internal delegate void Collider2DGetOffsetDelegate(ulong entityID, out Vector2 offset);
+        internal delegate void Collider2DSetOffsetDelegate(ulong entityID, ref Vector2 offset);
+        internal delegate void BoxCollider2DGetSizeDelegate(ulong entityID, out Vector2 size);
+        internal delegate void BoxCollider2DSetSizeDelegate(ulong entityID, ref Vector2 size);
+        internal delegate float Collider2DGetFloatDelegate(ulong entityID);
+        internal delegate void Collider2DSetFloatDelegate(ulong entityID, float value);
+        internal delegate float InputGetAxisDelegate();
+        internal delegate int Rigidbody2DGetBodyTypeDelegate(ulong entityID);
+        internal delegate void Rigidbody2DSetBodyTypeDelegate(ulong entityID, int bodyType);
+        internal delegate byte Rigidbody2DGetFixedRotationDelegate(ulong entityID);
+        internal delegate void Rigidbody2DSetFixedRotationDelegate(ulong entityID, byte fixedRotation);
+        internal delegate byte Collider2DGetBoolDelegate(ulong entityID);
+        internal delegate void Collider2DSetBoolDelegate(ulong entityID, byte value);
+        internal delegate int Collider2DGetIntDelegate(ulong entityID);
+        internal delegate void Collider2DSetIntDelegate(ulong entityID, int value);
+
         internal delegate void TilemapGetSizeDelegate(ulong entityID, out uint width, out uint height);
         internal delegate void TilemapSetSizeDelegate(ulong entityID, uint width, uint height);
         internal delegate ushort TilemapGetTileDelegate(ulong entityID, int x, int y);
@@ -37,7 +53,9 @@ namespace HimiiEngine
         internal delegate void Physics2DRaycastDelegate(ref Vector2 start, ref Vector2 end, out RaycastHit2D hit);
 
         internal delegate float TimeGetDeltaTimeDelegate();
-        internal delegate void SceneManagerLoadSceneDelegate(IntPtr scenePath);
+        internal delegate byte SceneManagerLoadSceneDelegate(IntPtr scenePath);
+        internal delegate IntPtr SceneManagerGetActiveScenePathDelegate();
+        internal delegate ulong SceneInstantiatePrefabDelegate(IntPtr prefabPath);
 
         internal delegate void SpriteRendererGetColorDelegate(ulong entityID, out Vector4 color);
         internal delegate void SpriteRendererSetColorDelegate(ulong entityID, ref Vector4 color);
@@ -45,6 +63,17 @@ namespace HimiiEngine
         internal delegate void SpriteRendererSetHandleDelegate(ulong entityID, ulong handle);
         internal delegate byte SpriteRendererGetFlipHorizontalDelegate(ulong entityID);
         internal delegate void SpriteRendererSetFlipHorizontalDelegate(ulong entityID, byte flipHorizontal);
+        internal delegate int SpriteRendererGetSortingLayerDelegate(ulong entityID);
+        internal delegate void SpriteRendererSetSortingLayerDelegate(ulong entityID, int sortingLayer);
+        internal delegate int SpriteRendererGetSortingOrderDelegate(ulong entityID);
+        internal delegate void SpriteRendererSetSortingOrderDelegate(ulong entityID, int sortingOrder);
+
+        internal delegate float CameraGetOrthographicSizeDelegate(ulong entityID);
+        internal delegate void CameraSetOrthographicSizeDelegate(ulong entityID, float orthographicSize);
+        internal delegate void CameraGetBackgroundColorDelegate(ulong entityID, out Vector4 color);
+        internal delegate void CameraSetBackgroundColorDelegate(ulong entityID, ref Vector4 color);
+        internal delegate byte CameraGetPrimaryDelegate(ulong entityID);
+        internal delegate void CameraSetPrimaryDelegate(ulong entityID, byte primary);
 
         internal delegate byte SpriteAnimationGetPlayingDelegate(ulong entityID);
         internal delegate void SpriteAnimationSetPlayingDelegate(ulong entityID, byte playing);
@@ -79,6 +108,28 @@ namespace HimiiEngine
         internal static Rigidbody2DGetVelocityDelegate Rigidbody2D_GetLinearVelocity;
         internal static Rigidbody2DSetVelocityDelegate Rigidbody2D_SetLinearVelocity;
 
+        internal static Collider2DGetOffsetDelegate BoxCollider2D_GetOffset;
+        internal static Collider2DSetOffsetDelegate BoxCollider2D_SetOffset;
+        internal static BoxCollider2DGetSizeDelegate BoxCollider2D_GetSize;
+        internal static BoxCollider2DSetSizeDelegate BoxCollider2D_SetSize;
+        internal static Collider2DGetFloatDelegate BoxCollider2D_GetDensity;
+        internal static Collider2DSetFloatDelegate BoxCollider2D_SetDensity;
+        internal static Collider2DGetFloatDelegate BoxCollider2D_GetFriction;
+        internal static Collider2DSetFloatDelegate BoxCollider2D_SetFriction;
+        internal static Collider2DGetFloatDelegate BoxCollider2D_GetRestitution;
+        internal static Collider2DSetFloatDelegate BoxCollider2D_SetRestitution;
+
+        internal static Collider2DGetOffsetDelegate CircleCollider2D_GetOffset;
+        internal static Collider2DSetOffsetDelegate CircleCollider2D_SetOffset;
+        internal static Collider2DGetFloatDelegate CircleCollider2D_GetRadius;
+        internal static Collider2DSetFloatDelegate CircleCollider2D_SetRadius;
+        internal static Collider2DGetFloatDelegate CircleCollider2D_GetDensity;
+        internal static Collider2DSetFloatDelegate CircleCollider2D_SetDensity;
+        internal static Collider2DGetFloatDelegate CircleCollider2D_GetFriction;
+        internal static Collider2DSetFloatDelegate CircleCollider2D_SetFriction;
+        internal static Collider2DGetFloatDelegate CircleCollider2D_GetRestitution;
+        internal static Collider2DSetFloatDelegate CircleCollider2D_SetRestitution;
+
         internal static TilemapGetSizeDelegate Tilemap_GetSize;
         internal static TilemapSetSizeDelegate Tilemap_SetSize;
         internal static TilemapGetTileDelegate Tilemap_GetTile;
@@ -89,6 +140,8 @@ namespace HimiiEngine
 
         internal static TimeGetDeltaTimeDelegate Time_GetDeltaTime;
         internal static SceneManagerLoadSceneDelegate SceneManager_LoadScene;
+        internal static SceneManagerGetActiveScenePathDelegate SceneManager_GetActiveScenePath;
+        internal static SceneInstantiatePrefabDelegate Scene_InstantiatePrefab;
 
         internal static SpriteRendererGetColorDelegate SpriteRenderer_GetColor;
         internal static SpriteRendererSetColorDelegate SpriteRenderer_SetColor;
@@ -98,6 +151,17 @@ namespace HimiiEngine
         internal static SpriteRendererSetHandleDelegate SpriteRenderer_SetTextureHandle;
         internal static SpriteRendererGetFlipHorizontalDelegate SpriteRenderer_GetFlipHorizontal;
         internal static SpriteRendererSetFlipHorizontalDelegate SpriteRenderer_SetFlipHorizontal;
+        internal static SpriteRendererGetSortingLayerDelegate SpriteRenderer_GetSortingLayer;
+        internal static SpriteRendererSetSortingLayerDelegate SpriteRenderer_SetSortingLayer;
+        internal static SpriteRendererGetSortingOrderDelegate SpriteRenderer_GetSortingOrder;
+        internal static SpriteRendererSetSortingOrderDelegate SpriteRenderer_SetSortingOrder;
+
+        internal static CameraGetOrthographicSizeDelegate Camera_GetOrthographicSize;
+        internal static CameraSetOrthographicSizeDelegate Camera_SetOrthographicSize;
+        internal static CameraGetBackgroundColorDelegate Camera_GetBackgroundColor;
+        internal static CameraSetBackgroundColorDelegate Camera_SetBackgroundColor;
+        internal static CameraGetPrimaryDelegate Camera_GetPrimary;
+        internal static CameraSetPrimaryDelegate Camera_SetPrimary;
 
         internal static SpriteAnimationGetPlayingDelegate SpriteAnimation_GetPlaying;
         internal static SpriteAnimationSetPlayingDelegate SpriteAnimation_SetPlaying;
@@ -107,6 +171,26 @@ namespace HimiiEngine
         internal static SpriteAnimationPlayDelegate SpriteAnimation_Play;
         internal static SpriteAnimationGetCurrentAnimationNameDelegate SpriteAnimation_GetCurrentAnimationName;
         internal static SpriteAnimationSetCurrentAnimationNameDelegate SpriteAnimation_SetCurrentAnimationName;
+
+        internal static InputGetKeyDelegate Input_IsKeyPressed;
+        internal static InputGetKeyDelegate Input_IsKeyReleased;
+        internal static InputGetAxisDelegate Input_GetAxisHorizontal;
+        internal static InputGetAxisDelegate Input_GetAxisVertical;
+
+        internal static Rigidbody2DGetBodyTypeDelegate Rigidbody2D_GetBodyType;
+        internal static Rigidbody2DSetBodyTypeDelegate Rigidbody2D_SetBodyType;
+        internal static Rigidbody2DGetFixedRotationDelegate Rigidbody2D_GetFixedRotation;
+        internal static Rigidbody2DSetFixedRotationDelegate Rigidbody2D_SetFixedRotation;
+
+        internal static Collider2DGetBoolDelegate BoxCollider2D_GetIsTrigger;
+        internal static Collider2DSetBoolDelegate BoxCollider2D_SetIsTrigger;
+        internal static Collider2DGetIntDelegate BoxCollider2D_GetLayer;
+        internal static Collider2DSetIntDelegate BoxCollider2D_SetLayer;
+
+        internal static Collider2DGetBoolDelegate CircleCollider2D_GetIsTrigger;
+        internal static Collider2DSetBoolDelegate CircleCollider2D_SetIsTrigger;
+        internal static Collider2DGetIntDelegate CircleCollider2D_GetLayer;
+        internal static Collider2DSetIntDelegate CircleCollider2D_SetLayer;
 
         [UnmanagedCallersOnly]
         public static void Initialize(IntPtr functionTablePtr)
@@ -136,6 +220,28 @@ namespace HimiiEngine
             Rigidbody2D_GetLinearVelocity = Marshal.GetDelegateForFunctionPointer<Rigidbody2DGetVelocityDelegate>(funcs.Rigidbody2D_GetLinearVelocity);
             Rigidbody2D_SetLinearVelocity = Marshal.GetDelegateForFunctionPointer<Rigidbody2DSetVelocityDelegate>(funcs.Rigidbody2D_SetLinearVelocity);
 
+            BoxCollider2D_GetOffset = Marshal.GetDelegateForFunctionPointer<Collider2DGetOffsetDelegate>(funcs.BoxCollider2D_GetOffset);
+            BoxCollider2D_SetOffset = Marshal.GetDelegateForFunctionPointer<Collider2DSetOffsetDelegate>(funcs.BoxCollider2D_SetOffset);
+            BoxCollider2D_GetSize = Marshal.GetDelegateForFunctionPointer<BoxCollider2DGetSizeDelegate>(funcs.BoxCollider2D_GetSize);
+            BoxCollider2D_SetSize = Marshal.GetDelegateForFunctionPointer<BoxCollider2DSetSizeDelegate>(funcs.BoxCollider2D_SetSize);
+            BoxCollider2D_GetDensity = Marshal.GetDelegateForFunctionPointer<Collider2DGetFloatDelegate>(funcs.BoxCollider2D_GetDensity);
+            BoxCollider2D_SetDensity = Marshal.GetDelegateForFunctionPointer<Collider2DSetFloatDelegate>(funcs.BoxCollider2D_SetDensity);
+            BoxCollider2D_GetFriction = Marshal.GetDelegateForFunctionPointer<Collider2DGetFloatDelegate>(funcs.BoxCollider2D_GetFriction);
+            BoxCollider2D_SetFriction = Marshal.GetDelegateForFunctionPointer<Collider2DSetFloatDelegate>(funcs.BoxCollider2D_SetFriction);
+            BoxCollider2D_GetRestitution = Marshal.GetDelegateForFunctionPointer<Collider2DGetFloatDelegate>(funcs.BoxCollider2D_GetRestitution);
+            BoxCollider2D_SetRestitution = Marshal.GetDelegateForFunctionPointer<Collider2DSetFloatDelegate>(funcs.BoxCollider2D_SetRestitution);
+
+            CircleCollider2D_GetOffset = Marshal.GetDelegateForFunctionPointer<Collider2DGetOffsetDelegate>(funcs.CircleCollider2D_GetOffset);
+            CircleCollider2D_SetOffset = Marshal.GetDelegateForFunctionPointer<Collider2DSetOffsetDelegate>(funcs.CircleCollider2D_SetOffset);
+            CircleCollider2D_GetRadius = Marshal.GetDelegateForFunctionPointer<Collider2DGetFloatDelegate>(funcs.CircleCollider2D_GetRadius);
+            CircleCollider2D_SetRadius = Marshal.GetDelegateForFunctionPointer<Collider2DSetFloatDelegate>(funcs.CircleCollider2D_SetRadius);
+            CircleCollider2D_GetDensity = Marshal.GetDelegateForFunctionPointer<Collider2DGetFloatDelegate>(funcs.CircleCollider2D_GetDensity);
+            CircleCollider2D_SetDensity = Marshal.GetDelegateForFunctionPointer<Collider2DSetFloatDelegate>(funcs.CircleCollider2D_SetDensity);
+            CircleCollider2D_GetFriction = Marshal.GetDelegateForFunctionPointer<Collider2DGetFloatDelegate>(funcs.CircleCollider2D_GetFriction);
+            CircleCollider2D_SetFriction = Marshal.GetDelegateForFunctionPointer<Collider2DSetFloatDelegate>(funcs.CircleCollider2D_SetFriction);
+            CircleCollider2D_GetRestitution = Marshal.GetDelegateForFunctionPointer<Collider2DGetFloatDelegate>(funcs.CircleCollider2D_GetRestitution);
+            CircleCollider2D_SetRestitution = Marshal.GetDelegateForFunctionPointer<Collider2DSetFloatDelegate>(funcs.CircleCollider2D_SetRestitution);
+
             Tilemap_GetSize = Marshal.GetDelegateForFunctionPointer<TilemapGetSizeDelegate>(funcs.Tilemap_GetSize);
             Tilemap_SetSize = Marshal.GetDelegateForFunctionPointer<TilemapSetSizeDelegate>(funcs.Tilemap_SetSize);
             Tilemap_GetTile = Marshal.GetDelegateForFunctionPointer<TilemapGetTileDelegate>(funcs.Tilemap_GetTile);
@@ -148,6 +254,11 @@ namespace HimiiEngine
             Time_GetDeltaTime = Marshal.GetDelegateForFunctionPointer<TimeGetDeltaTimeDelegate>(funcs.Time_GetDeltaTime);
             SceneManager_LoadScene =
                 Marshal.GetDelegateForFunctionPointer<SceneManagerLoadSceneDelegate>(funcs.SceneManager_LoadScene);
+            SceneManager_GetActiveScenePath =
+                Marshal.GetDelegateForFunctionPointer<SceneManagerGetActiveScenePathDelegate>(
+                    funcs.SceneManager_GetActiveScenePath);
+            Scene_InstantiatePrefab =
+                Marshal.GetDelegateForFunctionPointer<SceneInstantiatePrefabDelegate>(funcs.Scene_InstantiatePrefab);
 
             SpriteRenderer_GetColor =
                 Marshal.GetDelegateForFunctionPointer<SpriteRendererGetColorDelegate>(funcs.SpriteRenderer_GetColor);
@@ -168,6 +279,36 @@ namespace HimiiEngine
                 Marshal.GetDelegateForFunctionPointer<SpriteRendererSetFlipHorizontalDelegate>(
                     funcs.SpriteRenderer_SetFlipHorizontal);
 
+            SpriteRenderer_GetSortingLayer =
+                Marshal.GetDelegateForFunctionPointer<SpriteRendererGetSortingLayerDelegate>(
+                    funcs.SpriteRenderer_GetSortingLayer);
+            SpriteRenderer_SetSortingLayer =
+                Marshal.GetDelegateForFunctionPointer<SpriteRendererSetSortingLayerDelegate>(
+                    funcs.SpriteRenderer_SetSortingLayer);
+            SpriteRenderer_GetSortingOrder =
+                Marshal.GetDelegateForFunctionPointer<SpriteRendererGetSortingOrderDelegate>(
+                    funcs.SpriteRenderer_GetSortingOrder);
+            SpriteRenderer_SetSortingOrder =
+                Marshal.GetDelegateForFunctionPointer<SpriteRendererSetSortingOrderDelegate>(
+                    funcs.SpriteRenderer_SetSortingOrder);
+
+            Camera_GetOrthographicSize =
+                Marshal.GetDelegateForFunctionPointer<CameraGetOrthographicSizeDelegate>(
+                    funcs.Camera_GetOrthographicSize);
+            Camera_SetOrthographicSize =
+                Marshal.GetDelegateForFunctionPointer<CameraSetOrthographicSizeDelegate>(
+                    funcs.Camera_SetOrthographicSize);
+            Camera_GetBackgroundColor =
+                Marshal.GetDelegateForFunctionPointer<CameraGetBackgroundColorDelegate>(
+                    funcs.Camera_GetBackgroundColor);
+            Camera_SetBackgroundColor =
+                Marshal.GetDelegateForFunctionPointer<CameraSetBackgroundColorDelegate>(
+                    funcs.Camera_SetBackgroundColor);
+            Camera_GetPrimary =
+                Marshal.GetDelegateForFunctionPointer<CameraGetPrimaryDelegate>(funcs.Camera_GetPrimary);
+            Camera_SetPrimary =
+                Marshal.GetDelegateForFunctionPointer<CameraSetPrimaryDelegate>(funcs.Camera_SetPrimary);
+
             SpriteAnimation_GetPlaying =
                 Marshal.GetDelegateForFunctionPointer<SpriteAnimationGetPlayingDelegate>(funcs.SpriteAnimation_GetPlaying);
             SpriteAnimation_SetPlaying =
@@ -186,6 +327,26 @@ namespace HimiiEngine
             SpriteAnimation_SetCurrentAnimationName =
                 Marshal.GetDelegateForFunctionPointer<SpriteAnimationSetCurrentAnimationNameDelegate>(
                     funcs.SpriteAnimation_SetCurrentAnimationName);
+
+            Input_IsKeyPressed = Marshal.GetDelegateForFunctionPointer<InputGetKeyDelegate>(funcs.Input_IsKeyPressed);
+            Input_IsKeyReleased = Marshal.GetDelegateForFunctionPointer<InputGetKeyDelegate>(funcs.Input_IsKeyReleased);
+            Input_GetAxisHorizontal = Marshal.GetDelegateForFunctionPointer<InputGetAxisDelegate>(funcs.Input_GetAxisHorizontal);
+            Input_GetAxisVertical = Marshal.GetDelegateForFunctionPointer<InputGetAxisDelegate>(funcs.Input_GetAxisVertical);
+
+            Rigidbody2D_GetBodyType = Marshal.GetDelegateForFunctionPointer<Rigidbody2DGetBodyTypeDelegate>(funcs.Rigidbody2D_GetBodyType);
+            Rigidbody2D_SetBodyType = Marshal.GetDelegateForFunctionPointer<Rigidbody2DSetBodyTypeDelegate>(funcs.Rigidbody2D_SetBodyType);
+            Rigidbody2D_GetFixedRotation = Marshal.GetDelegateForFunctionPointer<Rigidbody2DGetFixedRotationDelegate>(funcs.Rigidbody2D_GetFixedRotation);
+            Rigidbody2D_SetFixedRotation = Marshal.GetDelegateForFunctionPointer<Rigidbody2DSetFixedRotationDelegate>(funcs.Rigidbody2D_SetFixedRotation);
+
+            BoxCollider2D_GetIsTrigger = Marshal.GetDelegateForFunctionPointer<Collider2DGetBoolDelegate>(funcs.BoxCollider2D_GetIsTrigger);
+            BoxCollider2D_SetIsTrigger = Marshal.GetDelegateForFunctionPointer<Collider2DSetBoolDelegate>(funcs.BoxCollider2D_SetIsTrigger);
+            BoxCollider2D_GetLayer = Marshal.GetDelegateForFunctionPointer<Collider2DGetIntDelegate>(funcs.BoxCollider2D_GetLayer);
+            BoxCollider2D_SetLayer = Marshal.GetDelegateForFunctionPointer<Collider2DSetIntDelegate>(funcs.BoxCollider2D_SetLayer);
+
+            CircleCollider2D_GetIsTrigger = Marshal.GetDelegateForFunctionPointer<Collider2DGetBoolDelegate>(funcs.CircleCollider2D_GetIsTrigger);
+            CircleCollider2D_SetIsTrigger = Marshal.GetDelegateForFunctionPointer<Collider2DSetBoolDelegate>(funcs.CircleCollider2D_SetIsTrigger);
+            CircleCollider2D_GetLayer = Marshal.GetDelegateForFunctionPointer<Collider2DGetIntDelegate>(funcs.CircleCollider2D_GetLayer);
+            CircleCollider2D_SetLayer = Marshal.GetDelegateForFunctionPointer<Collider2DSetIntDelegate>(funcs.CircleCollider2D_SetLayer);
 
             Console.WriteLine("[C#] InternalCalls initialized.");
         }

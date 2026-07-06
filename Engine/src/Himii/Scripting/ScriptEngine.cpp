@@ -38,6 +38,7 @@ namespace Himii
     static hostfxr_handle cxt = nullptr;
 
     Scene *ScriptEngine::s_SceneContext = nullptr;
+    std::string ScriptEngine::s_ActiveSceneRelativePath;
     static float s_ScriptDeltaTime = 0.0f;
     std::unordered_map<UUID, void *> ScriptEngine::s_EntityInstanceMap;
 
@@ -48,7 +49,11 @@ namespace Himii
     typedef void(CORECLR_DELEGATE_CALLTYPE *ReleaseInstanceFn)(void *handle);
     typedef void(CORECLR_DELEGATE_CALLTYPE *OnDestroyInstanceFn)(void *handle);
     typedef void(CORECLR_DELEGATE_CALLTYPE *OnUpdateInstanceFn)(void *handle, float ts);
-    typedef void(CORECLR_DELEGATE_CALLTYPE *OnCollision2DInstanceFn)(void *handle, uint64_t otherEntityID);
+    typedef void(CORECLR_DELEGATE_CALLTYPE *OnFixedUpdateInstanceFn)(void *handle, float ts);
+    typedef void(CORECLR_DELEGATE_CALLTYPE *OnCollisionEnter2DInstanceFn)(void *handle, Collision2DInterop collision);
+    typedef void(CORECLR_DELEGATE_CALLTYPE *OnCollisionExit2DInstanceFn)(void *handle, uint64_t otherEntityID);
+    typedef void(CORECLR_DELEGATE_CALLTYPE *OnTriggerEnter2DInstanceFn)(void *handle, Collision2DInterop collision);
+    typedef void(CORECLR_DELEGATE_CALLTYPE *OnTriggerExit2DInstanceFn)(void *handle, uint64_t otherEntityID);
 
     typedef const char *(CORECLR_DELEGATE_CALLTYPE *GetFieldsFn)(void *handle);
     typedef int(CORECLR_DELEGATE_CALLTYPE *GetFloatFn)(void *handle, const char *name, float *out);
@@ -78,8 +83,11 @@ namespace Himii
     static ReleaseInstanceFn s_ReleaseInstance = nullptr;
     static OnDestroyInstanceFn s_OnDestroyInstance = nullptr;
     static OnUpdateInstanceFn s_OnUpdateInstance = nullptr;
-    static OnCollision2DInstanceFn s_OnCollisionEnter2D = nullptr;
-    static OnCollision2DInstanceFn s_OnCollisionExit2D = nullptr;
+    static OnFixedUpdateInstanceFn s_OnFixedUpdateInstance = nullptr;
+    static OnCollisionEnter2DInstanceFn s_OnCollisionEnter2D = nullptr;
+    static OnCollisionExit2DInstanceFn s_OnCollisionExit2D = nullptr;
+    static OnTriggerEnter2DInstanceFn s_OnTriggerEnter2D = nullptr;
+    static OnTriggerExit2DInstanceFn s_OnTriggerExit2D = nullptr;
 
     // Reflection
     static GetFieldsFn s_GetFields = nullptr;
@@ -196,6 +204,9 @@ namespace Himii
 
     void ScriptEngine::Shutdown()
     {
+        ReleaseAllInstances();
+        s_SceneContext = nullptr;
+
         if (cxt)
         {
             close_fptr(cxt);
@@ -256,12 +267,24 @@ namespace Himii
                                                (void **)&s_OnUpdateInstance);
 
         load_assembly_and_get_function_pointer(filepath.c_str(), STR("HimiiEngine.ScriptManager, ScriptCore"),
+                                               STR("OnFixedUpdateInstance"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
+                                               (void **)&s_OnFixedUpdateInstance);
+
+        load_assembly_and_get_function_pointer(filepath.c_str(), STR("HimiiEngine.ScriptManager, ScriptCore"),
                                                STR("OnCollisionEnter2DInstance"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
                                                (void **)&s_OnCollisionEnter2D);
 
         load_assembly_and_get_function_pointer(filepath.c_str(), STR("HimiiEngine.ScriptManager, ScriptCore"),
                                                STR("OnCollisionExit2DInstance"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
                                                (void **)&s_OnCollisionExit2D);
+
+        load_assembly_and_get_function_pointer(filepath.c_str(), STR("HimiiEngine.ScriptManager, ScriptCore"),
+                                               STR("OnTriggerEnter2DInstance"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
+                                               (void **)&s_OnTriggerEnter2D);
+
+        load_assembly_and_get_function_pointer(filepath.c_str(), STR("HimiiEngine.ScriptManager, ScriptCore"),
+                                               STR("OnTriggerExit2DInstance"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
+                                               (void **)&s_OnTriggerExit2D);
 
         // [NEW] Load Reflection Bridge functions
         const char_t *bridge_type = STR("HimiiEngine.ReflectionBridge, ScriptCore");
@@ -474,6 +497,18 @@ namespace Himii
             s_OnUpdateInstance(handle, ts.GetSeconds());
     }
 
+    void ScriptEngine::OnFixedUpdateScript(Entity entity, Timestep ts)
+    {
+        s_ScriptDeltaTime = ts.GetSeconds();
+
+        if (!entity.HasComponent<ScriptComponent>())
+            return;
+
+        void *handle = GetEntityScriptInstance(entity.GetUUID());
+        if (handle && s_OnFixedUpdateInstance)
+            s_OnFixedUpdateInstance(handle, ts.GetSeconds());
+    }
+
     float ScriptEngine::GetScriptDeltaTime()
     {
         return s_ScriptDeltaTime;
@@ -495,6 +530,16 @@ namespace Himii
     Scene *ScriptEngine::GetSceneContext()
     {
         return s_SceneContext;
+    }
+
+    void ScriptEngine::SetActiveSceneRelativePath(const std::string& relativePath)
+    {
+        s_ActiveSceneRelativePath = relativePath;
+    }
+
+    const std::string& ScriptEngine::GetActiveSceneRelativePath()
+    {
+        return s_ActiveSceneRelativePath;
     }
 
     // [NEW] Maps C# fields to C++ ScriptFieldMap
@@ -801,14 +846,14 @@ namespace Himii
             s_SetEntityID(instanceHandle, fieldName.c_str(), entityID);
     }
 
-    void ScriptEngine::OnCollisionEnter2D(Entity entity, Entity other)
+    void ScriptEngine::OnCollisionEnter2D(Entity entity, Entity other, const Collision2DInterop &collision)
     {
         if (!entity || !other || !entity.HasComponent<ScriptComponent>())
             return;
 
         void *handle = GetEntityScriptInstance(entity.GetUUID());
         if (handle && s_OnCollisionEnter2D)
-            s_OnCollisionEnter2D(handle, other.GetUUID());
+            s_OnCollisionEnter2D(handle, collision);
     }
 
     void ScriptEngine::OnCollisionExit2D(Entity entity, Entity other)
@@ -819,6 +864,26 @@ namespace Himii
         void *handle = GetEntityScriptInstance(entity.GetUUID());
         if (handle && s_OnCollisionExit2D)
             s_OnCollisionExit2D(handle, other.GetUUID());
+    }
+
+    void ScriptEngine::OnTriggerEnter2D(Entity entity, Entity other, const Collision2DInterop &collision)
+    {
+        if (!entity || !other || !entity.HasComponent<ScriptComponent>())
+            return;
+
+        void *handle = GetEntityScriptInstance(entity.GetUUID());
+        if (handle && s_OnTriggerEnter2D)
+            s_OnTriggerEnter2D(handle, collision);
+    }
+
+    void ScriptEngine::OnTriggerExit2D(Entity entity, Entity other)
+    {
+        if (!entity || !other || !entity.HasComponent<ScriptComponent>())
+            return;
+
+        void *handle = GetEntityScriptInstance(entity.GetUUID());
+        if (handle && s_OnTriggerExit2D)
+            s_OnTriggerExit2D(handle, other.GetUUID());
     }
 
     void *ScriptEngine::GetEntityScriptInstance(UUID entityID)

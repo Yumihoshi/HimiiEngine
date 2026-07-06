@@ -22,11 +22,54 @@
 #include "ScriptableEntity.h"
 
 #include <glm/glm.hpp>
+#include <vector>
+#include <algorithm>
 
 #include "Entity.h"
 
 namespace Himii
 {
+    struct SpriteDrawSortEntry
+    {
+        entt::entity EntityHandle{};
+        TransformComponent* Transform = nullptr;
+        SpriteRendererComponent* Sprite = nullptr;
+    };
+
+    static void DrawSpriteRenderersSorted(Scene* scene, entt::registry& registry, AssetManager* assetManager)
+    {
+        if (!assetManager)
+            return;
+
+        std::vector<SpriteDrawSortEntry> drawEntries;
+        auto view = registry.view<TransformComponent, SpriteRendererComponent>();
+        for (auto entityHandle : view)
+        {
+            drawEntries.push_back({
+                entityHandle,
+                &view.get<TransformComponent>(entityHandle),
+                &view.get<SpriteRendererComponent>(entityHandle)
+            });
+        }
+
+        std::stable_sort(drawEntries.begin(), drawEntries.end(),
+                         [](const SpriteDrawSortEntry& left, const SpriteDrawSortEntry& right)
+                         {
+                             if (left.Sprite->SortingLayer != right.Sprite->SortingLayer)
+                                 return left.Sprite->SortingLayer < right.Sprite->SortingLayer;
+                             return left.Sprite->SortingOrder < right.Sprite->SortingOrder;
+                         });
+
+        for (const SpriteDrawSortEntry& entry : drawEntries)
+        {
+            Entity sceneEntity = {entry.EntityHandle, scene};
+            const SpriteResolved resolved =
+                ResolveSpriteRendererDrawable(sceneEntity, *entry.Sprite, assetManager);
+            Renderer2D::DrawSprite(entry.Transform->GetTransform(), *entry.Sprite, resolved,
+                                   static_cast<int>(entry.EntityHandle));
+        }
+    }
+
     Scene::Scene()
     {
     }
@@ -49,6 +92,17 @@ namespace Himii
         return *reinterpret_cast<b2BodyId *>(&val);
     }
 
+    static b2Filter BuildColliderShapeFilter(int layerIndex)
+    {
+        if (Project::GetActive())
+            return Project::GetConfig().Physics2DLayers.BuildShapeFilter(layerIndex);
+
+        b2Filter filter = b2DefaultFilter();
+        filter.categoryBits = 1u;
+        filter.maskBits = 0xFFFFFFFFu;
+        return filter;
+    }
+
     static void AttachBoxColliderToBody(b2BodyId bodyId,
                                         const BoxCollider2DComponent& boxCollider,
                                         const TransformComponent& transform)
@@ -58,6 +112,8 @@ namespace Himii
 
         b2ShapeDef shapeDef = b2DefaultShapeDef();
         shapeDef.enableContactEvents = true;
+        shapeDef.isSensor = boxCollider.IsTrigger;
+        shapeDef.filter = BuildColliderShapeFilter(boxCollider.Layer);
         shapeDef.density = boxCollider.Density;
         shapeDef.material.friction = boxCollider.Friction;
         shapeDef.material.restitution = boxCollider.Restitution;
@@ -84,6 +140,8 @@ namespace Himii
 
         b2ShapeDef shapeDef = b2DefaultShapeDef();
         shapeDef.enableContactEvents = true;
+        shapeDef.isSensor = circleCollider.IsTrigger;
+        shapeDef.filter = BuildColliderShapeFilter(circleCollider.Layer);
         shapeDef.density = circleCollider.Density;
         shapeDef.material.friction = circleCollider.Friction;
         shapeDef.material.restitution = circleCollider.Restitution;
@@ -279,6 +337,16 @@ namespace Himii
         }
     }
 
+    void Scene::RunScriptFixedUpdate(Timestep ts)
+    {
+        auto view = m_Registry.view<ScriptComponent>();
+        for (auto entityHandle : view)
+        {
+            Entity entity = {entityHandle, this};
+            ScriptEngine::OnFixedUpdateScript(entity, ts);
+        }
+    }
+
     void Scene::OnUpdateRuntime(Timestep ts)
     {
         {
@@ -335,6 +403,8 @@ namespace Himii
             }
         }
 
+        RunScriptFixedUpdate(ts);
+
         // 粒子发射器：按资源与 Transform 发射，再统一更新粒子系统
         if (Project::GetActive())
         {
@@ -388,17 +458,7 @@ namespace Himii
             Renderer2D::BeginScene(*mainCamera, cameraTransform);
             {
                 auto assetManager = Project::TryGetAssetManager();
-                auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
-                view.each([&](entt::entity entity, TransformComponent &transform, SpriteRendererComponent &sprite)
-                          {
-                              if (!assetManager)
-                                  return;
-
-                              Entity sceneEntity = {entity, this};
-                              const SpriteResolved resolved =
-                                  ResolveSpriteRendererDrawable(sceneEntity, sprite, assetManager.get());
-                              Himii::Renderer2D::DrawSprite(transform.GetTransform(), sprite, resolved, (int)entity);
-                          });
+                DrawSpriteRenderersSorted(this, m_Registry, assetManager.get());
             }
             {
                 if (Project::GetActive())
@@ -577,6 +637,7 @@ namespace Himii
         }
 
         UpdateSpriteAnimations(ts, false);
+        RunScriptFixedUpdate(ts);
         RenderScene(camera);
     }
 
@@ -753,6 +814,29 @@ namespace Himii
         return {};
     }
 
+    void Scene::SyncEntityTransformToPhysics(Entity entity)
+    {
+        if (!b2World_IsValid(m_Box2DWorld))
+            return;
+
+        if (!entity || !entity.HasComponent<Rigidbody2DComponent>())
+            return;
+
+        auto& rigidbody2D = entity.GetComponent<Rigidbody2DComponent>();
+        if (!rigidbody2D.RuntimeBody)
+            return;
+
+        b2BodyId bodyId = ToBodyId(rigidbody2D.RuntimeBody);
+        if (!b2Body_IsValid(bodyId))
+            return;
+
+        const auto& transform = entity.GetComponent<TransformComponent>();
+        b2Body_SetTransform(
+                bodyId,
+                {transform.Position.x, transform.Position.y},
+                b2MakeRot(transform.Rotation.z));
+    }
+
     void Scene::OnPhysics2DStart()
     {
         b2WorldDef worldDef = b2DefaultWorldDef();
@@ -918,8 +1002,41 @@ namespace Himii
             Entity entityB = GetEntityFromShape(ev.shapeIdB);
             if (entityA && entityB)
             {
-                ScriptEngine::OnCollisionEnter2D(entityA, entityB);
-                ScriptEngine::OnCollisionEnter2D(entityB, entityA);
+                const bool isTriggerContact =
+                        b2Shape_IsSensor(ev.shapeIdA) || b2Shape_IsSensor(ev.shapeIdB);
+
+                auto buildCollisionInterop = [&](Entity self, Entity other) -> Collision2DInterop
+                {
+                    Collision2DInterop collisionInterop;
+                    collisionInterop.OtherEntityID = other.GetUUID();
+
+                    const Entity shapeOwnerA = GetEntityFromShape(ev.shapeIdA);
+                    const b2Vec2 &manifoldNormal = ev.manifold.normal;
+                    if (shapeOwnerA == self)
+                        collisionInterop.Normal = glm::vec2{-manifoldNormal.x, -manifoldNormal.y};
+                    else
+                        collisionInterop.Normal = glm::vec2{manifoldNormal.x, manifoldNormal.y};
+
+                    collisionInterop.Point = glm::vec2{0.0f, 0.0f};
+                    if (ev.manifold.pointCount > 0)
+                    {
+                        const b2Vec2 &contactPoint = ev.manifold.points[0].point;
+                        collisionInterop.Point = glm::vec2{contactPoint.x, contactPoint.y};
+                    }
+
+                    return collisionInterop;
+                };
+
+                if (isTriggerContact)
+                {
+                    ScriptEngine::OnTriggerEnter2D(entityA, entityB, buildCollisionInterop(entityA, entityB));
+                    ScriptEngine::OnTriggerEnter2D(entityB, entityA, buildCollisionInterop(entityB, entityA));
+                }
+                else
+                {
+                    ScriptEngine::OnCollisionEnter2D(entityA, entityB, buildCollisionInterop(entityA, entityB));
+                    ScriptEngine::OnCollisionEnter2D(entityB, entityA, buildCollisionInterop(entityB, entityA));
+                }
             }
         }
 
@@ -933,8 +1050,19 @@ namespace Himii
             Entity entityB = GetEntityFromShape(ev.shapeIdB);
             if (entityA && entityB)
             {
-                ScriptEngine::OnCollisionExit2D(entityA, entityB);
-                ScriptEngine::OnCollisionExit2D(entityB, entityA);
+                const bool isTriggerContact =
+                        b2Shape_IsSensor(ev.shapeIdA) || b2Shape_IsSensor(ev.shapeIdB);
+
+                if (isTriggerContact)
+                {
+                    ScriptEngine::OnTriggerExit2D(entityA, entityB);
+                    ScriptEngine::OnTriggerExit2D(entityB, entityA);
+                }
+                else
+                {
+                    ScriptEngine::OnCollisionExit2D(entityA, entityB);
+                    ScriptEngine::OnCollisionExit2D(entityB, entityA);
+                }
             }
         }
     }
@@ -946,17 +1074,7 @@ namespace Himii
         // Draw Sprites
         {
             auto assetManager = Project::TryGetAssetManager();
-            auto view = m_Registry.view<TransformComponent, SpriteRendererComponent>();
-            view.each([&](entt::entity entity, TransformComponent &transform, SpriteRendererComponent &sprite)
-                      {
-                          if (!assetManager)
-                              return;
-
-                          Entity sceneEntity = {entity, this};
-                          const SpriteResolved resolved =
-                              ResolveSpriteRendererDrawable(sceneEntity, sprite, assetManager.get());
-                          Himii::Renderer2D::DrawSprite(transform.GetTransform(), sprite, resolved, (int)entity);
-                      });
+            DrawSpriteRenderersSorted(this, m_Registry, assetManager.get());
         }
         
         // Draw Tilemaps

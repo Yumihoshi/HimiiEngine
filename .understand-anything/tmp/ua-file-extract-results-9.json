@@ -1,0 +1,819 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 4,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "Engine/src/Himii/Project/Project.cpp",
+      "language": "cpp",
+      "fileCategory": "code",
+      "totalLines": 239,
+      "nonEmptyLines": 200,
+      "functions": [
+        {
+          "name": "ResolveScriptCoreAssemblyPath",
+          "startLine": 11,
+          "endLine": 26,
+          "params": []
+        },
+        {
+          "name": "CopyIfExists",
+          "startLine": 28,
+          "endLine": 38,
+          "params": [
+            "sourcePath",
+            "destinationPath"
+          ]
+        },
+        {
+          "name": "CopyScriptingApiSourcesToProject",
+          "startLine": 40,
+          "endLine": 66,
+          "params": [
+            "projectDir"
+          ]
+        },
+        {
+          "name": "SyncScriptCoreToProjectDirectory",
+          "startLine": 69,
+          "endLine": 89,
+          "params": [
+            "projectDir"
+          ]
+        },
+        {
+          "name": "New",
+          "startLine": 91,
+          "endLine": 97,
+          "params": []
+        },
+        {
+          "name": "Load",
+          "startLine": 99,
+          "endLine": 113,
+          "params": [
+            "path"
+          ]
+        },
+        {
+          "name": "SaveActive",
+          "startLine": 115,
+          "endLine": 127,
+          "params": [
+            "path"
+          ]
+        },
+        {
+          "name": "CreateProjectFiles",
+          "startLine": 129,
+          "endLine": 237,
+          "params": [
+            "name",
+            "projectDir"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ResolveScriptCoreAssemblyPath",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "CopyIfExists",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "CopyScriptingApiSourcesToProject",
+          "line": 40,
+          "isDefault": false
+        },
+        {
+          "name": "SyncScriptCoreToProjectDirectory",
+          "line": 69,
+          "isDefault": false
+        },
+        {
+          "name": "New",
+          "line": 91,
+          "isDefault": false
+        },
+        {
+          "name": "Load",
+          "line": 99,
+          "isDefault": false
+        },
+        {
+          "name": "SaveActive",
+          "line": 115,
+          "isDefault": false
+        },
+        {
+          "name": "CreateProjectFiles",
+          "line": 129,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ResolveScriptCoreAssemblyPath",
+          "callee": "GetExecutableDir",
+          "lineNumber": 13
+        },
+        {
+          "caller": "ResolveScriptCoreAssemblyPath",
+          "callee": "Application::Get",
+          "lineNumber": 13
+        },
+        {
+          "caller": "ResolveScriptCoreAssemblyPath",
+          "callee": "std::filesystem::exists",
+          "lineNumber": 16
+        },
+        {
+          "caller": "ResolveScriptCoreAssemblyPath",
+          "callee": "Application::GetEngineDir",
+          "lineNumber": 19
+        },
+        {
+          "caller": "CopyIfExists",
+          "callee": "std::filesystem::exists",
+          "lineNumber": 30
+        },
+        {
+          "caller": "CopyIfExists",
+          "callee": "std::filesystem::copy_file",
+          "lineNumber": 34
+        },
+        {
+          "caller": "CopyIfExists",
+          "callee": "HIMII_CORE_WARNING",
+          "lineNumber": 37
+        },
+        {
+          "caller": "CopyIfExists",
+          "callee": "string",
+          "lineNumber": 37
+        },
+        {
+          "caller": "CopyIfExists",
+          "callee": "message",
+          "lineNumber": 37
+        },
+        {
+          "caller": "CopyScriptingApiSourcesToProject",
+          "callee": "Application::GetEngineDir",
+          "lineNumber": 42
+        },
+        {
+          "caller": "CopyScriptingApiSourcesToProject",
+          "callee": "std::filesystem::exists",
+          "lineNumber": 44
+        },
+        {
+          "caller": "CopyScriptingApiSourcesToProject",
+          "callee": "HIMII_CORE_WARNING",
+          "lineNumber": 46
+        },
+        {
+          "caller": "CopyScriptingApiSourcesToProject",
+          "callee": "string",
+          "lineNumber": 46
+        },
+        {
+          "caller": "CopyScriptingApiSourcesToProject",
+          "callee": "std::filesystem::create_directories",
+          "lineNumber": 52
+        },
+        {
+          "caller": "CopyScriptingApiSourcesToProject",
+          "callee": "HIMII_CORE_WARNING",
+          "lineNumber": 55
+        },
+        {
+          "caller": "CopyScriptingApiSourcesToProject",
+          "callee": "string",
+          "lineNumber": 55
+        },
+        {
+          "caller": "CopyScriptingApiSourcesToProject",
+          "callee": "message",
+          "lineNumber": 55
+        },
+        {
+          "caller": "CopyScriptingApiSourcesToProject",
+          "callee": "std::filesystem::directory_iterator",
+          "lineNumber": 59
+        },
+        {
+          "caller": "CopyScriptingApiSourcesToProject",
+          "callee": "is_regular_file",
+          "lineNumber": 61
+        },
+        {
+          "caller": "CopyScriptingApiSourcesToProject",
+          "callee": "extension",
+          "lineNumber": 61
+        },
+        {
+          "caller": "CopyScriptingApiSourcesToProject",
+          "callee": "path",
+          "lineNumber": 61
+        },
+        {
+          "caller": "CopyScriptingApiSourcesToProject",
+          "callee": "CopyIfExists",
+          "lineNumber": 64
+        },
+        {
+          "caller": "CopyScriptingApiSourcesToProject",
+          "callee": "path",
+          "lineNumber": 64
+        },
+        {
+          "caller": "CopyScriptingApiSourcesToProject",
+          "callee": "filename",
+          "lineNumber": 64
+        },
+        {
+          "caller": "CopyScriptingApiSourcesToProject",
+          "callee": "path",
+          "lineNumber": 64
+        },
+        {
+          "caller": "SyncScriptCoreToProjectDirectory",
+          "callee": "ResolveScriptCoreAssemblyPath",
+          "lineNumber": 71
+        },
+        {
+          "caller": "SyncScriptCoreToProjectDirectory",
+          "callee": "std::filesystem::exists",
+          "lineNumber": 72
+        },
+        {
+          "caller": "SyncScriptCoreToProjectDirectory",
+          "callee": "HIMII_CORE_WARNING",
+          "lineNumber": 74
+        },
+        {
+          "caller": "SyncScriptCoreToProjectDirectory",
+          "callee": "CopyIfExists",
+          "lineNumber": 78
+        },
+        {
+          "caller": "SyncScriptCoreToProjectDirectory",
+          "callee": "replace_extension",
+          "lineNumber": 81
+        },
+        {
+          "caller": "SyncScriptCoreToProjectDirectory",
+          "callee": "CopyIfExists",
+          "lineNumber": 82
+        },
+        {
+          "caller": "SyncScriptCoreToProjectDirectory",
+          "callee": "replace_extension",
+          "lineNumber": 85
+        },
+        {
+          "caller": "SyncScriptCoreToProjectDirectory",
+          "callee": "CopyIfExists",
+          "lineNumber": 86
+        },
+        {
+          "caller": "SyncScriptCoreToProjectDirectory",
+          "callee": "CopyScriptingApiSourcesToProject",
+          "lineNumber": 88
+        },
+        {
+          "caller": "New",
+          "callee": "CreateRef<Project>",
+          "lineNumber": 93
+        },
+        {
+          "caller": "New",
+          "callee": "CreateRef<AssetManager>",
+          "lineNumber": 94
+        },
+        {
+          "caller": "New",
+          "callee": "DeserializeAssetRegistry",
+          "lineNumber": 95
+        },
+        {
+          "caller": "Load",
+          "callee": "CreateRef<Project>",
+          "lineNumber": 101
+        },
+        {
+          "caller": "Load",
+          "callee": "CreateRef<AssetManager>",
+          "lineNumber": 102
+        },
+        {
+          "caller": "Load",
+          "callee": "Deserialize",
+          "lineNumber": 104
+        },
+        {
+          "caller": "Load",
+          "callee": "parent_path",
+          "lineNumber": 106
+        },
+        {
+          "caller": "Load",
+          "callee": "DeserializeAssetRegistry",
+          "lineNumber": 108
+        },
+        {
+          "caller": "SaveActive",
+          "callee": "Serialize",
+          "lineNumber": 118
+        },
+        {
+          "caller": "SaveActive",
+          "callee": "parent_path",
+          "lineNumber": 120
+        },
+        {
+          "caller": "SaveActive",
+          "callee": "SerializeAssetRegistry",
+          "lineNumber": 122
+        },
+        {
+          "caller": "CreateProjectFiles",
+          "callee": "std::filesystem::exists",
+          "lineNumber": 131
+        },
+        {
+          "caller": "CreateProjectFiles",
+          "callee": "std::filesystem::create_directories",
+          "lineNumber": 132
+        },
+        {
+          "caller": "CreateProjectFiles",
+          "callee": "std::filesystem::create_directories",
+          "lineNumber": 135
+        },
+        {
+          "caller": "CreateProjectFiles",
+          "callee": "std::filesystem::create_directories",
+          "lineNumber": 136
+        },
+        {
+          "caller": "CreateProjectFiles",
+          "callee": "std::filesystem::create_directories",
+          "lineNumber": 137
+        },
+        {
+          "caller": "CreateProjectFiles",
+          "callee": "SyncScriptCoreToProjectDirectory",
+          "lineNumber": 139
+        },
+        {
+          "caller": "CreateProjectFiles",
+          "callee": "str",
+          "lineNumber": 171
+        },
+        {
+          "caller": "CreateProjectFiles",
+          "callee": "close",
+          "lineNumber": 172
+        },
+        {
+          "caller": "CreateProjectFiles",
+          "callee": "std::filesystem::exists",
+          "lineNumber": 175
+        },
+        {
+          "caller": "CreateProjectFiles",
+          "callee": "is_open",
+          "lineNumber": 178
+        },
+        {
+          "caller": "CreateProjectFiles",
+          "callee": "HIMII_CORE_INFO",
+          "lineNumber": 196
+        },
+        {
+          "caller": "CreateProjectFiles",
+          "callee": "string",
+          "lineNumber": 196
+        },
+        {
+          "caller": "CreateProjectFiles",
+          "callee": "is_open",
+          "lineNumber": 232
+        },
+        {
+          "caller": "CreateProjectFiles",
+          "callee": "str",
+          "lineNumber": 234
+        },
+        {
+          "caller": "CreateProjectFiles",
+          "callee": "close",
+          "lineNumber": 235
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 8,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Project/Project.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 92,
+      "nonEmptyLines": 77,
+      "functions": [
+        {
+          "name": "GetAssetDirectory",
+          "startLine": 32,
+          "endLine": 36,
+          "params": []
+        },
+        {
+          "name": "GetAssetFileSystemPath",
+          "startLine": 39,
+          "endLine": 43,
+          "params": [
+            "path"
+          ]
+        },
+        {
+          "name": "GetActive",
+          "startLine": 50,
+          "endLine": 53,
+          "params": []
+        },
+        {
+          "name": "GetAssetManager",
+          "startLine": 55,
+          "endLine": 59,
+          "params": []
+        },
+        {
+          "name": "TryGetAssetManager",
+          "startLine": 61,
+          "endLine": 66,
+          "params": []
+        },
+        {
+          "name": "GetAssetRegistryPath",
+          "startLine": 68,
+          "endLine": 73,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "ProjectConfig",
+          "startLine": 11,
+          "endLine": 22,
+          "methods": [],
+          "properties": [
+            "Name",
+            "StartScene",
+            "AssetDirectory",
+            "ScriptModulePath",
+            "Is2D",
+            "ScriptIDEOverride",
+            "CustomScriptIDEPath",
+            "CustomScriptIDEArguments"
+          ]
+        },
+        {
+          "name": "Project",
+          "startLine": 24,
+          "endLine": 91,
+          "methods": [
+            "GetAssetDirectory",
+            "GetAssetFileSystemPath",
+            "GetActive",
+            "GetAssetManager",
+            "TryGetAssetManager",
+            "GetAssetRegistryPath",
+            "New",
+            "Load",
+            "SaveActive",
+            "CreateProjectFiles",
+            "SyncScriptCoreToProjectDirectory"
+          ],
+          "properties": [
+            "m_Config",
+            "m_ProjectDirectory",
+            "m_AssetManager",
+            "s_ActiveProject"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ProjectConfig",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "GetAssetDirectory",
+          "line": 32,
+          "isDefault": false
+        },
+        {
+          "name": "GetAssetFileSystemPath",
+          "line": 39,
+          "isDefault": false
+        },
+        {
+          "name": "GetActive",
+          "line": 50,
+          "isDefault": false
+        },
+        {
+          "name": "GetAssetManager",
+          "line": 55,
+          "isDefault": false
+        },
+        {
+          "name": "TryGetAssetManager",
+          "line": 61,
+          "isDefault": false
+        },
+        {
+          "name": "GetAssetRegistryPath",
+          "line": 68,
+          "isDefault": false
+        },
+        {
+          "name": "New",
+          "line": 75,
+          "isDefault": false
+        },
+        {
+          "name": "Load",
+          "line": 76,
+          "isDefault": false
+        },
+        {
+          "name": "SaveActive",
+          "line": 77,
+          "isDefault": false
+        },
+        {
+          "name": "CreateProjectFiles",
+          "line": 79,
+          "isDefault": false
+        },
+        {
+          "name": "SyncScriptCoreToProjectDirectory",
+          "line": 82,
+          "isDefault": false
+        },
+        {
+          "name": "Project",
+          "line": 24,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "GetAssetDirectory",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 34
+        },
+        {
+          "caller": "GetAssetDirectory",
+          "callee": "GetProjectDirectory",
+          "lineNumber": 35
+        },
+        {
+          "caller": "GetAssetFileSystemPath",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 41
+        },
+        {
+          "caller": "GetAssetFileSystemPath",
+          "callee": "GetAssetDirectory",
+          "lineNumber": 42
+        },
+        {
+          "caller": "GetAssetManager",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 57
+        },
+        {
+          "caller": "GetAssetRegistryPath",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 70
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 13,
+        "functionCount": 6,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Project/ProjectSerializer.cpp",
+      "language": "cpp",
+      "fileCategory": "code",
+      "totalLines": 83,
+      "nonEmptyLines": 68,
+      "functions": [
+        {
+          "name": "ProjectSerializer",
+          "startLine": 10,
+          "endLine": 12,
+          "params": [
+            "project"
+          ]
+        },
+        {
+          "name": "Serialize",
+          "startLine": 14,
+          "endLine": 41,
+          "params": [
+            "filepath"
+          ]
+        },
+        {
+          "name": "Deserialize",
+          "startLine": 43,
+          "endLine": 82,
+          "params": [
+            "filepath"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ProjectSerializer",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "Serialize",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "Deserialize",
+          "line": 43,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "Serialize",
+          "callee": "string",
+          "lineNumber": 25
+        },
+        {
+          "caller": "Serialize",
+          "callee": "string",
+          "lineNumber": 26
+        },
+        {
+          "caller": "Serialize",
+          "callee": "string",
+          "lineNumber": 27
+        },
+        {
+          "caller": "Serialize",
+          "callee": "ScriptIDETypeToString",
+          "lineNumber": 29
+        },
+        {
+          "caller": "Serialize",
+          "callee": "c_str",
+          "lineNumber": 38
+        },
+        {
+          "caller": "Deserialize",
+          "callee": "YAML::LoadFile",
+          "lineNumber": 50
+        },
+        {
+          "caller": "Deserialize",
+          "callee": "string",
+          "lineNumber": 50
+        },
+        {
+          "caller": "Deserialize",
+          "callee": "HIMII_CORE_ERROR",
+          "lineNumber": 54
+        },
+        {
+          "caller": "Deserialize",
+          "callee": "string",
+          "lineNumber": 54
+        },
+        {
+          "caller": "Deserialize",
+          "callee": "what",
+          "lineNumber": 54
+        },
+        {
+          "caller": "Deserialize",
+          "callee": "as<std::string>",
+          "lineNumber": 62
+        },
+        {
+          "caller": "Deserialize",
+          "callee": "as<std::string>",
+          "lineNumber": 63
+        },
+        {
+          "caller": "Deserialize",
+          "callee": "as<std::string>",
+          "lineNumber": 64
+        },
+        {
+          "caller": "Deserialize",
+          "callee": "as<std::string>",
+          "lineNumber": 65
+        },
+        {
+          "caller": "Deserialize",
+          "callee": "as<bool>",
+          "lineNumber": 68
+        },
+        {
+          "caller": "Deserialize",
+          "callee": "ScriptIDETypeFromString",
+          "lineNumber": 71
+        },
+        {
+          "caller": "Deserialize",
+          "callee": "as<std::string>",
+          "lineNumber": 71
+        },
+        {
+          "caller": "Deserialize",
+          "callee": "as<std::string>",
+          "lineNumber": 76
+        },
+        {
+          "caller": "Deserialize",
+          "callee": "as<std::string>",
+          "lineNumber": 79
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Project/ProjectSerializer.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 19,
+      "nonEmptyLines": 13,
+      "classes": [
+        {
+          "name": "ProjectSerializer",
+          "startLine": 8,
+          "endLine": 17,
+          "methods": [
+            "Serialize",
+            "Deserialize"
+          ],
+          "properties": [
+            "m_Project"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Serialize",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "Deserialize",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "ProjectSerializer",
+          "line": 8,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 3,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    }
+  ]
+}

@@ -79,6 +79,46 @@ namespace HimiiEngine
             get => InternalCalls.SpriteRenderer_GetFlipHorizontal(Entity.ID) != 0;
             set => InternalCalls.SpriteRenderer_SetFlipHorizontal(Entity.ID, value ? (byte)1 : (byte)0);
         }
+
+        /// <summary>Sorting Layer 索引（数值越小越先绘制，位于后方）。</summary>
+        public int SortingLayer
+        {
+            get => InternalCalls.SpriteRenderer_GetSortingLayer?.Invoke(Entity.ID) ?? 0;
+            set => InternalCalls.SpriteRenderer_SetSortingLayer?.Invoke(Entity.ID, value);
+        }
+
+        /// <summary>同一 Sorting Layer 内的绘制顺序。</summary>
+        public int SortingOrder
+        {
+            get => InternalCalls.SpriteRenderer_GetSortingOrder?.Invoke(Entity.ID) ?? 0;
+            set => InternalCalls.SpriteRenderer_SetSortingOrder?.Invoke(Entity.ID, value);
+        }
+    }
+
+    public class Camera : Component
+    {
+        public float OrthographicSize
+        {
+            get => InternalCalls.Camera_GetOrthographicSize?.Invoke(Entity.ID) ?? 10.0f;
+            set => InternalCalls.Camera_SetOrthographicSize?.Invoke(Entity.ID, value);
+        }
+
+        public Vector4 BackgroundColor
+        {
+            get
+            {
+                Vector4 result = default;
+                InternalCalls.Camera_GetBackgroundColor?.Invoke(Entity.ID, out result);
+                return result;
+            }
+            set => InternalCalls.Camera_SetBackgroundColor?.Invoke(Entity.ID, ref value);
+        }
+
+        public bool Primary
+        {
+            get => InternalCalls.Camera_GetPrimary?.Invoke(Entity.ID) != 0;
+            set => InternalCalls.Camera_SetPrimary?.Invoke(Entity.ID, value ? (byte)1 : (byte)0);
+        }
     }
 
     public class SpriteAnimation : Component
@@ -145,6 +185,18 @@ namespace HimiiEngine
 
     public class Rigidbody2D : Component
     {
+        public Rigidbody2DBodyType BodyType
+        {
+            get => (Rigidbody2DBodyType)(InternalCalls.Rigidbody2D_GetBodyType?.Invoke(Entity.ID) ?? 0);
+            set => InternalCalls.Rigidbody2D_SetBodyType?.Invoke(Entity.ID, (int)value);
+        }
+
+        public bool FixedRotation
+        {
+            get => InternalCalls.Rigidbody2D_GetFixedRotation?.Invoke(Entity.ID) != 0;
+            set => InternalCalls.Rigidbody2D_SetFixedRotation?.Invoke(Entity.ID, value ? (byte)1 : (byte)0);
+        }
+
         public Vector2 Velocity
         {
             get
@@ -163,6 +215,108 @@ namespace HimiiEngine
         public void ApplyImpulse(Vector2 impulse, bool wake)
         {
             InternalCalls.Rigidbody2D_ApplyLinearImpulseToCenter(Entity.ID, ref impulse, wake);
+        }
+    }
+
+    public class BoxCollider2D : Component
+    {
+        public Vector2 Offset
+        {
+            get
+            {
+                InternalCalls.BoxCollider2D_GetOffset(Entity.ID, out Vector2 result);
+                return result;
+            }
+            set => InternalCalls.BoxCollider2D_SetOffset(Entity.ID, ref value);
+        }
+
+        public Vector2 Size
+        {
+            get
+            {
+                InternalCalls.BoxCollider2D_GetSize(Entity.ID, out Vector2 result);
+                return result;
+            }
+            set => InternalCalls.BoxCollider2D_SetSize(Entity.ID, ref value);
+        }
+
+        public float Density
+        {
+            get => InternalCalls.BoxCollider2D_GetDensity(Entity.ID);
+            set => InternalCalls.BoxCollider2D_SetDensity(Entity.ID, value);
+        }
+
+        public float Friction
+        {
+            get => InternalCalls.BoxCollider2D_GetFriction(Entity.ID);
+            set => InternalCalls.BoxCollider2D_SetFriction(Entity.ID, value);
+        }
+
+        public float Restitution
+        {
+            get => InternalCalls.BoxCollider2D_GetRestitution(Entity.ID);
+            set => InternalCalls.BoxCollider2D_SetRestitution(Entity.ID, value);
+        }
+
+        public bool IsTrigger
+        {
+            get => InternalCalls.BoxCollider2D_GetIsTrigger?.Invoke(Entity.ID) != 0;
+            set => InternalCalls.BoxCollider2D_SetIsTrigger?.Invoke(Entity.ID, value ? (byte)1 : (byte)0);
+        }
+
+        public int Layer
+        {
+            get => InternalCalls.BoxCollider2D_GetLayer?.Invoke(Entity.ID) ?? 0;
+            set => InternalCalls.BoxCollider2D_SetLayer?.Invoke(Entity.ID, value);
+        }
+    }
+
+    public class CircleCollider2D : Component
+    {
+        public Vector2 Offset
+        {
+            get
+            {
+                InternalCalls.CircleCollider2D_GetOffset(Entity.ID, out Vector2 result);
+                return result;
+            }
+            set => InternalCalls.CircleCollider2D_SetOffset(Entity.ID, ref value);
+        }
+
+        public float Radius
+        {
+            get => InternalCalls.CircleCollider2D_GetRadius(Entity.ID);
+            set => InternalCalls.CircleCollider2D_SetRadius(Entity.ID, value);
+        }
+
+        public float Density
+        {
+            get => InternalCalls.CircleCollider2D_GetDensity(Entity.ID);
+            set => InternalCalls.CircleCollider2D_SetDensity(Entity.ID, value);
+        }
+
+        public float Friction
+        {
+            get => InternalCalls.CircleCollider2D_GetFriction(Entity.ID);
+            set => InternalCalls.CircleCollider2D_SetFriction(Entity.ID, value);
+        }
+
+        public float Restitution
+        {
+            get => InternalCalls.CircleCollider2D_GetRestitution(Entity.ID);
+            set => InternalCalls.CircleCollider2D_SetRestitution(Entity.ID, value);
+        }
+
+        public bool IsTrigger
+        {
+            get => InternalCalls.CircleCollider2D_GetIsTrigger?.Invoke(Entity.ID) != 0;
+            set => InternalCalls.CircleCollider2D_SetIsTrigger?.Invoke(Entity.ID, value ? (byte)1 : (byte)0);
+        }
+
+        public int Layer
+        {
+            get => InternalCalls.CircleCollider2D_GetLayer?.Invoke(Entity.ID) ?? 0;
+            set => InternalCalls.CircleCollider2D_SetLayer?.Invoke(Entity.ID, value);
         }
     }
 }

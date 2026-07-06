@@ -29,6 +29,37 @@ namespace Himii
                 out << YAML::Key << "ScriptIDE" << YAML::Value << ScriptIDETypeToString(config.ScriptIDEOverride);
                 out << YAML::Key << "CustomScriptIDEPath" << YAML::Value << config.CustomScriptIDEPath;
                 out << YAML::Key << "CustomScriptIDEArguments" << YAML::Value << config.CustomScriptIDEArguments;
+
+                out << YAML::Key << "Physics2DLayers" << YAML::Value;
+                {
+                    out << YAML::BeginMap;
+                    out << YAML::Key << "LayerNames" << YAML::Value << YAML::BeginSeq;
+                    for (int layerIndex = 0; layerIndex < Physics2DLayerCount; ++layerIndex)
+                        out << YAML::Value << config.Physics2DLayers.LayerNames[layerIndex];
+                    out << YAML::EndSeq;
+
+                    out << YAML::Key << "CollisionMatrix" << YAML::Value << YAML::BeginSeq;
+                    for (int row = 0; row < Physics2DLayerCount; ++row)
+                    {
+                        out << YAML::BeginSeq;
+                        for (int column = 0; column < Physics2DLayerCount; ++column)
+                            out << YAML::Value << config.Physics2DLayers.CollisionMatrix[row][column];
+                        out << YAML::EndSeq;
+                    }
+                    out << YAML::EndSeq;
+                    out << YAML::EndMap;
+                }
+
+                out << YAML::Key << "SortingLayers" << YAML::Value;
+                {
+                    out << YAML::BeginMap;
+                    out << YAML::Key << "LayerNames" << YAML::Value << YAML::BeginSeq;
+                    for (int layerIndex = 0; layerIndex < SortingLayerCount; ++layerIndex)
+                        out << YAML::Value << config.SortingLayers.LayerNames[layerIndex];
+                    out << YAML::EndSeq;
+                    out << YAML::EndMap;
+                }
+
                 out << YAML::EndMap; // Project
             }
             out << YAML::EndMap; // Root
@@ -77,7 +108,43 @@ namespace Himii
 
         if (projectNode["CustomScriptIDEArguments"])
             config.CustomScriptIDEArguments = projectNode["CustomScriptIDEArguments"].as<std::string>();
-        
+
+        if (auto physicsLayersNode = projectNode["Physics2DLayers"])
+        {
+            if (auto layerNamesNode = physicsLayersNode["LayerNames"])
+            {
+                for (size_t layerIndex = 0;
+                     layerIndex < layerNamesNode.size() && layerIndex < Physics2DLayerCount;
+                     ++layerIndex)
+                {
+                    config.Physics2DLayers.LayerNames[layerIndex] = layerNamesNode[layerIndex].as<std::string>();
+                }
+            }
+
+            if (auto collisionMatrixNode = physicsLayersNode["CollisionMatrix"])
+            {
+                for (size_t row = 0; row < collisionMatrixNode.size() && row < Physics2DLayerCount; ++row)
+                {
+                    const auto rowNode = collisionMatrixNode[row];
+                    for (size_t column = 0; column < rowNode.size() && column < Physics2DLayerCount; ++column)
+                        config.Physics2DLayers.CollisionMatrix[row][column] = rowNode[column].as<bool>();
+                }
+            }
+        }
+
+        if (auto sortingLayersNode = projectNode["SortingLayers"])
+        {
+            if (auto layerNamesNode = sortingLayersNode["LayerNames"])
+            {
+                for (size_t layerIndex = 0;
+                     layerIndex < layerNamesNode.size() && layerIndex < SortingLayerCount;
+                     ++layerIndex)
+                {
+                    config.SortingLayers.LayerNames[layerIndex] = layerNamesNode[layerIndex].as<std::string>();
+                }
+            }
+        }
+
         return true;
     }
 }

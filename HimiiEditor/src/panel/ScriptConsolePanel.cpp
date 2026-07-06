@@ -5,20 +5,62 @@
 #include "Himii/Project/Project.h"
 
 #include <imgui.h>
-#include <regex>
 #include <sstream>
 
 namespace Himii
 {
     static bool TryParseCompilerLocation(const std::string& line, std::filesystem::path& outPath, int& outLine)
     {
-        static const std::regex pattern(R"((.+?)\((\d+)(?:,\d+)?\):\s*(?:error|warning))");
-        std::smatch match;
-        if (!std::regex_search(line, match, pattern))
+        const size_t messagePosition = [&]() -> size_t
+        {
+            const size_t errorPosition = line.find(": error");
+            if (errorPosition != std::string::npos)
+                return errorPosition;
+
+            const size_t warningPosition = line.find(": warning");
+            if (warningPosition != std::string::npos)
+                return warningPosition;
+
+            return std::string::npos;
+        }();
+
+        if (messagePosition == std::string::npos)
             return false;
 
-        outPath = match[1].str();
-        outLine = std::stoi(match[2].str());
+        const size_t closeParenthesis = line.rfind(')', messagePosition);
+        if (closeParenthesis == std::string::npos)
+            return false;
+
+        const size_t openParenthesis = line.rfind('(', closeParenthesis);
+        if (openParenthesis == std::string::npos || openParenthesis >= closeParenthesis)
+            return false;
+
+        std::string lineNumberText = line.substr(openParenthesis + 1, closeParenthesis - openParenthesis - 1);
+        const size_t commaPosition = lineNumberText.find(',');
+        if (commaPosition != std::string::npos)
+            lineNumberText = lineNumberText.substr(0, commaPosition);
+
+        if (lineNumberText.empty())
+            return false;
+
+        try
+        {
+            outLine = std::stoi(lineNumberText);
+        }
+        catch (...)
+        {
+            return false;
+        }
+
+        outPath = line.substr(0, openParenthesis);
+        std::string pathText = outPath.string();
+        while (!pathText.empty() && (pathText.front() == ' ' || pathText.front() == '\t'))
+            pathText.erase(pathText.begin());
+
+        if (pathText.empty())
+            return false;
+
+        outPath = pathText;
         return true;
     }
 

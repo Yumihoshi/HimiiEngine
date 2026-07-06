@@ -70,7 +70,7 @@ Entities:
 
 - 与编辑器 Inspector 中 `ScriptComponent::Fields` 一致。
 - `Type` 为 `ScriptFieldType` 整型；`Data` 类型随字段变化（标量、向量、UUID、字符串等）。
-- 游戏脚本 **public 实例字段** 与 **`[SerializeField]` private 字段**（`HimiiEngine.SerializeField`）参与反射与保存。
+- 游戏脚本 **public 实例字段** 与 **`[SerializeField]` private 字段**（`HimiiEngine.SerializeField`，定义于 ScriptCore）参与反射与保存；`static` / `readonly` / `[NonSerialized]` 字段不参与。
 
 ## 动画资产（`.anim`）
 

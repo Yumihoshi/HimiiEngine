@@ -1,0 +1,2298 @@
+{
+  "nodes": [
+    {
+      "id": "file:HimiiEditor/src/CamerController.h",
+      "type": "file",
+      "name": "CamerController.h",
+      "filePath": "HimiiEditor/src/CamerController.h",
+      "summary": "定义编辑器摄像机控制器类 CameraController，通过键盘输入（WASD/QE）控制摄像机在场景中的移动和旋转，挂载为脚本组件运行。",
+      "tags": [
+        "camera",
+        "editor",
+        "input-handling",
+        "component"
+      ],
+      "complexity": "simple",
+      "languageNotes": "使用 Himii 引擎的 Native Script 组件模式，通过 GetComponent 访问 TransformComponent。"
+    },
+    {
+      "id": "function:HimiiEditor/src/CamerController.h:OnUpdate",
+      "type": "function",
+      "name": "OnUpdate",
+      "filePath": "HimiiEditor/src/CamerController.h",
+      "lineRange": [
+        20,
+        30
+      ],
+      "summary": "编辑器主更新循环：处理启动过渡、脚本编译状态、视口渲染（绑定帧缓冲、清除、2D/3D覆盖层绘制）、鼠标拾取和 Tilemap 编辑叠加层。",
+      "tags": [
+        "editor",
+        "update-loop",
+        "viewport",
+        "rendering",
+        "tilemap"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:HimiiEditor/src/CamerController.h:CameraController",
+      "type": "class",
+      "name": "CameraController",
+      "filePath": "HimiiEditor/src/CamerController.h",
+      "lineRange": [
+        6,
+        35
+      ],
+      "summary": "编辑器摄像机控制器，作为 Native Script 组件响应 OnCreate/OnDestroy/OnUpdate 生命周期，处理键盘输入驱动摄像机移动。",
+      "tags": [
+        "camera",
+        "editor",
+        "input-handling",
+        "script-component"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:HimiiEditor/src/EditorExternalFileDrop.cpp",
+      "type": "file",
+      "name": "EditorExternalFileDrop.cpp",
+      "filePath": "HimiiEditor/src/EditorExternalFileDrop.cpp",
+      "summary": "实现编辑器外部文件拖放功能，将拖入窗口的文件路径存储到内部队列中供 EditorLayer 消费处理。",
+      "tags": [
+        "file-drop",
+        "editor",
+        "glfw-integration",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorExternalFileDrop.cpp:Install",
+      "type": "function",
+      "name": "Install",
+      "filePath": "HimiiEditor/src/EditorExternalFileDrop.cpp",
+      "lineRange": [
+        8,
+        22
+      ],
+      "summary": "安装 GLFW 文件拖放回调，将拖入窗口的外部文件路径存入内部队列。",
+      "tags": [
+        "file-drop",
+        "glfw",
+        "callback"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorExternalFileDrop.cpp:ConsumePendingPaths",
+      "type": "function",
+      "name": "ConsumePendingPaths",
+      "filePath": "HimiiEditor/src/EditorExternalFileDrop.cpp",
+      "lineRange": [
+        24,
+        29
+      ],
+      "summary": "消费并清空待处理的拖放文件路径队列，返回移动语义的路径列表。",
+      "tags": [
+        "file-drop",
+        "queue",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:HimiiEditor/src/EditorExternalFileDrop.h",
+      "type": "file",
+      "name": "EditorExternalFileDrop.h",
+      "filePath": "HimiiEditor/src/EditorExternalFileDrop.h",
+      "summary": "声明编辑器外部文件拖放接口类，封装 GLFW 的 drop callback，提供 Install 和 ConsumePendingPaths 两个静态方法。",
+      "tags": [
+        "file-drop",
+        "editor",
+        "interface",
+        "glfw-integration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:HimiiEditor/src/EditorExternalFileDrop.h:EditorExternalFileDrop",
+      "type": "class",
+      "name": "EditorExternalFileDrop",
+      "filePath": "HimiiEditor/src/EditorExternalFileDrop.h",
+      "lineRange": [
+        11,
+        16
+      ],
+      "summary": "编辑器外部文件拖放静态工具类，管理 GLFW drop callback 和拖放路径队列。",
+      "tags": [
+        "file-drop",
+        "static-class",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:HimiiEditor/src/EditorLayer.cpp",
+      "type": "file",
+      "name": "EditorLayer.cpp",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "summary": "编辑器核心层的完整实现，管理启动画面、项目中心、主菜单栏、视口渲染、ImGuizmo 变换工具、Tilemap 编辑、场景播放/模拟、脚本编译、撤销/重做、文件拖放和布局持久化等全部编辑器功能。",
+      "tags": [
+        "editor",
+        "entry-point",
+        "ui-layer",
+        "viewport",
+        "tilemap-editor",
+        "scene-management"
+      ],
+      "complexity": "complex",
+      "languageNotes": "2511 行超大型文件，包含 49 个成员函数，深度集成 ImGui 停靠布局、ImGuizmo 操纵器和 Renderer2D/Renderer3D 覆盖层绘制。"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:EditorLayer",
+      "type": "function",
+      "name": "EditorLayer",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        39,
+        42
+      ],
+      "summary": "成员函数 EditorLayer 的实现。",
+      "tags": [
+        "method"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:OnAttach",
+      "type": "function",
+      "name": "OnAttach",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        44,
+        78
+      ],
+      "summary": "编辑器层附加到应用时初始化，加载启动画面纹理并应用初始窗口尺寸。",
+      "tags": [
+        "editor",
+        "initialization",
+        "splash-screen"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:ApplySplashWindowSize",
+      "type": "function",
+      "name": "ApplySplashWindowSize",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        80,
+        97
+      ],
+      "summary": "根据启动画面纹理尺寸调整窗口大小为合适比例，并居中显示。",
+      "tags": [
+        "editor",
+        "splash-screen",
+        "window-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:TransitionToEditorWindow",
+      "type": "function",
+      "name": "TransitionToEditorWindow",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        99,
+        104
+      ],
+      "summary": "成员函数 TransitionToEditorWindow 的实现。",
+      "tags": [
+        "method"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:AdvanceEditorStartupLoading",
+      "type": "function",
+      "name": "AdvanceEditorStartupLoading",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        106,
+        195
+      ],
+      "summary": "执行编辑器启动加载流程：加载图标纹理、字体、天空盒、创建帧缓冲和编辑器摄像机、安装文件拖放、加载最近项目。",
+      "tags": [
+        "editor",
+        "startup",
+        "initialization",
+        "resource-loading"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:OnDetach",
+      "type": "function",
+      "name": "OnDetach",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        197,
+        200
+      ],
+      "summary": "成员函数 OnDetach 的实现。",
+      "tags": [
+        "method"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:OnUpdate",
+      "type": "function",
+      "name": "OnUpdate",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        202,
+        336
+      ],
+      "summary": "编辑器主更新循环：处理启动过渡、脚本编译状态、视口渲染（绑定帧缓冲、清除、2D/3D覆盖层绘制）、鼠标拾取和 Tilemap 编辑叠加层。",
+      "tags": [
+        "editor",
+        "update-loop",
+        "viewport",
+        "rendering",
+        "tilemap"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:OnImGuiRender",
+      "type": "function",
+      "name": "OnImGuiRender",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        337,
+        735
+      ],
+      "summary": "编辑器 ImGui 渲染入口：绘制启动画面/项目中心、主停靠空间、菜单栏、统计面板、视口窗口（含 ImGuizmo 操纵器）、Tilemap 编辑交互和工具栏。",
+      "tags": [
+        "editor",
+        "imgui",
+        "docking",
+        "viewport",
+        "guizmo",
+        "tilemap"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:OnEvent",
+      "type": "function",
+      "name": "OnEvent",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        737,
+        746
+      ],
+      "summary": "编辑器事件分发器，将 KeyPressed 和 MouseButtonPressed 事件路由到对应处理函数。",
+      "tags": [
+        "editor",
+        "event-dispatching",
+        "input"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:OnKeyPressed",
+      "type": "function",
+      "name": "OnKeyPressed",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        749,
+        857
+      ],
+      "summary": "处理键盘快捷键：Ctrl+N 新建场景、Ctrl+O 打开场景、Ctrl+Shift+S 另存为、Ctrl+S 保存项目、Ctrl+D 复制实体、Delete 删除实体、Ctrl+Z/Ctrl+Y 撤销/重做、Gizmo 操作切换。",
+      "tags": [
+        "editor",
+        "keyboard-shortcuts",
+        "input-handling"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:OnMouseButtonPressed",
+      "type": "function",
+      "name": "OnMouseButtonPressed",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        859,
+        876
+      ],
+      "summary": "处理鼠标点击事件，支持 Tilemap 绘制模式下的实体选择和点击拾取。",
+      "tags": [
+        "editor",
+        "mouse-input",
+        "tilemap",
+        "entity-selection"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:UpdateTilemapHoverFromInput",
+      "type": "function",
+      "name": "UpdateTilemapHoverFromInput",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        878,
+        906
+      ],
+      "summary": "根据鼠标在视口中的位置计算 Tilemap 悬停的 Tile 坐标，考虑摄像机投影和实体变换。",
+      "tags": [
+        "tilemap",
+        "hover",
+        "coordinate-transform",
+        "editor"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:OnOverlayRender",
+      "type": "function",
+      "name": "OnOverlayRender",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        908,
+        1082
+      ],
+      "summary": "渲染编辑器叠加层：2D/3D 网格、碰撞体可视化（Box/Circle/Tilemap）、精灵轮廓、选中实体高亮和 Tilemap 编辑叠加层。",
+      "tags": [
+        "editor",
+        "overlay",
+        "rendering",
+        "collision-visualization",
+        "debug-draw"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:CreateProject",
+      "type": "function",
+      "name": "CreateProject",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1084,
+        1146
+      ],
+      "summary": "创建新项目：生成目录结构、项目文件、默认场景（含摄像机实体），根据 2D/3D 模式设置投影类型。",
+      "tags": [
+        "editor",
+        "project-creation",
+        "scene-setup"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:OpenProject",
+      "type": "function",
+      "name": "OpenProject",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1148,
+        1202
+      ],
+      "summary": "打开已有项目：加载项目配置、同步 ScriptCore、处理最近项目列表、加载启动场景或创建新场景。",
+      "tags": [
+        "editor",
+        "project-management",
+        "scene-loading"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:UpdateEditorCameraForActiveProject",
+      "type": "function",
+      "name": "UpdateEditorCameraForActiveProject",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1204,
+        1209
+      ],
+      "summary": "成员函数 UpdateEditorCameraForActiveProject 的实现。",
+      "tags": [
+        "method"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:UpdateMainWindowTitle",
+      "type": "function",
+      "name": "UpdateMainWindowTitle",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1211,
+        1218
+      ],
+      "summary": "成员函数 UpdateMainWindowTitle 的实现。",
+      "tags": [
+        "method"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:DrawMainMenuBar",
+      "type": "function",
+      "name": "DrawMainMenuBar",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1220,
+        1278
+      ],
+      "summary": "绘制编辑器主菜单栏：文件菜单（保存/构建）、编辑菜单、场景菜单（新建/打开/另存为/关闭）、脚本菜单（编译/重新加载/打开 C# 项目）、视图菜单（切换面板可见性）。",
+      "tags": [
+        "editor",
+        "menu-bar",
+        "imgui",
+        "ui"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:BuildProject",
+      "type": "function",
+      "name": "BuildProject",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1280,
+        1404
+      ],
+      "summary": "构建项目：收集引擎 DLL、项目 DLL、资产文件等依赖，复制到用户指定的输出目录完成打包。",
+      "tags": [
+        "editor",
+        "build",
+        "packaging",
+        "deployment"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:OpenCSProject",
+      "type": "function",
+      "name": "OpenCSProject",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1406,
+        1416
+      ],
+      "summary": "使用 ScriptIDELauncher 在外部 IDE（如 Visual Studio）中打开当前项目的 C# 脚本解决方案。",
+      "tags": [
+        "editor",
+        "scripting",
+        "ide-integration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:NewScene",
+      "type": "function",
+      "name": "NewScene",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1418,
+        1432
+      ],
+      "summary": "创建新场景：重置选中实体、创建空白场景并设置天空盒和编辑器上下文。",
+      "tags": [
+        "editor",
+        "scene-management",
+        "initialization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:LoadRecentProjects",
+      "type": "function",
+      "name": "LoadRecentProjects",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1434,
+        1468
+      ],
+      "summary": "从 YAML 文件加载最近打开的项目列表，按时间戳排序并过滤已不存在的路径。",
+      "tags": [
+        "editor",
+        "project-management",
+        "yaml",
+        "recent-files"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:SaveRecentProjects",
+      "type": "function",
+      "name": "SaveRecentProjects",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1470,
+        1488
+      ],
+      "summary": "将最近项目列表（最多 10 个）序列化为 YAML 格式并写入磁盘。",
+      "tags": [
+        "editor",
+        "project-management",
+        "yaml",
+        "serialization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:DrawStartupSplash",
+      "type": "function",
+      "name": "DrawStartupSplash",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1490,
+        1559
+      ],
+      "summary": "绘制编辑器启动画面：全屏窗口显示引擎 Logo 纹理和带进度条的加载状态文本。",
+      "tags": [
+        "editor",
+        "splash-screen",
+        "imgui",
+        "startup"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:DrawProjectHub",
+      "type": "function",
+      "name": "DrawProjectHub",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1561,
+        1667
+      ],
+      "summary": "绘制项目中心界面：提供新建项目（名称、路径、2D/3D 模式选择）和打开已有项目（含最近项目列表）的功能。",
+      "tags": [
+        "editor",
+        "project-hub",
+        "imgui",
+        "ui"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:OpenScene()",
+      "type": "function",
+      "name": "OpenScene()",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1669,
+        1677
+      ],
+      "summary": "通过文件对话框选择并打开 .himii 场景文件，反序列化后设置为当前编辑上下文。",
+      "tags": [
+        "editor",
+        "scene-loading",
+        "serialization",
+        "file-dialog"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:OpenScene(path)",
+      "type": "function",
+      "name": "OpenScene(path)",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1679,
+        1703
+      ],
+      "summary": "通过文件对话框选择并打开 .himii 场景文件，反序列化后设置为当前编辑上下文。",
+      "tags": [
+        "editor",
+        "scene-loading",
+        "serialization",
+        "file-dialog"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:SaveScene",
+      "type": "function",
+      "name": "SaveScene",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1705,
+        1715
+      ],
+      "summary": "保存当前场景到已有路径，若无路径则触发另存为流程。",
+      "tags": [
+        "editor",
+        "scene-saving",
+        "serialization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:SaveProject",
+      "type": "function",
+      "name": "SaveProject",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1717,
+        1753
+      ],
+      "summary": "保存项目：写入项目配置、场景、纹理元数据、TileMap 资产和动画资产，输出日志记录各步骤。",
+      "tags": [
+        "editor",
+        "project-saving",
+        "serialization",
+        "asset-management"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:SaveSceneAs",
+      "type": "function",
+      "name": "SaveSceneAs",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1755,
+        1764
+      ],
+      "summary": "通过文件对话框选择路径后将当前场景另存为新的 .himii 文件。",
+      "tags": [
+        "editor",
+        "scene-saving",
+        "serialization",
+        "file-dialog"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:SerializeScene",
+      "type": "function",
+      "name": "SerializeScene",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1766,
+        1770
+      ],
+      "summary": "成员函数 SerializeScene 的实现。",
+      "tags": [
+        "method"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:OnScenePlay",
+      "type": "function",
+      "name": "OnScenePlay",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1772,
+        1782
+      ],
+      "summary": "处理场景播放按钮：若脚本正在编译则先请求编译，否则启动场景运行时。",
+      "tags": [
+        "editor",
+        "scene-playback",
+        "scripting",
+        "runtime"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:StartScenePlay",
+      "type": "function",
+      "name": "StartScenePlay",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1784,
+        1798
+      ],
+      "summary": "启动场景运行时模式：停止当前运行、清空控制台日志、复制场景并在副本上调用 OnRuntimeStart。",
+      "tags": [
+        "editor",
+        "scene-runtime",
+        "simulation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:OnSceneSimulate",
+      "type": "function",
+      "name": "OnSceneSimulate",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1800,
+        1812
+      ],
+      "summary": "启动场景物理模拟模式：停止当前运行、复制场景并在副本上调用 OnSimulationStart。",
+      "tags": [
+        "editor",
+        "scene-simulation",
+        "physics"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:OnSceneStop",
+      "type": "function",
+      "name": "OnSceneStop",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1814,
+        1828
+      ],
+      "summary": "停止场景运行/模拟：重置选中实体、调用 OnRuntimeStop/OnSimulationStop 并将编辑上下文切回编辑器场景。",
+      "tags": [
+        "editor",
+        "scene-lifecycle",
+        "runtime"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:OnDuplicateEntity",
+      "type": "function",
+      "name": "OnDuplicateEntity",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1830,
+        1841
+      ],
+      "summary": "复制当前选中的实体，使用场景的 DuplicateEntity 方法创建副本并选中。",
+      "tags": [
+        "editor",
+        "entity",
+        "duplication"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:RequestScriptCompile",
+      "type": "function",
+      "name": "RequestScriptCompile",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1843,
+        1856
+      ],
+      "summary": "请求脚本编译：检查活动项目是否存在且未在编译中，停止场景运行后通过 ScriptEngine 发起编译。",
+      "tags": [
+        "editor",
+        "scripting",
+        "compilation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:CompileAndReloadScripts",
+      "type": "function",
+      "name": "CompileAndReloadScripts",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1858,
+        1871
+      ],
+      "summary": "强制重新编译并热重载脚本：停止场景运行、同步 ScriptCore 到项目目录后触发 ScriptEngine 编译。",
+      "tags": [
+        "editor",
+        "scripting",
+        "compilation",
+        "hot-reload"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:UI_Toolbar",
+      "type": "function",
+      "name": "UI_Toolbar",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        1873,
+        2005
+      ],
+      "summary": "绘制编辑器顶部工具栏：包含场景播放/停止/模拟按钮、Gizmo 操作模式切换（平移/旋转/缩放/通用）和工具图标。",
+      "tags": [
+        "editor",
+        "toolbar",
+        "imgui",
+        "guizmo",
+        "play-controls"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:IsTilemapMoveEntityActive",
+      "type": "function",
+      "name": "IsTilemapMoveEntityActive",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        2007,
+        2013
+      ],
+      "summary": "成员函数 IsTilemapMoveEntityActive 的实现。",
+      "tags": [
+        "method"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:UpdateTilemapPaintSession",
+      "type": "function",
+      "name": "UpdateTilemapPaintSession",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        2015,
+        2058
+      ],
+      "summary": "更新 Tilemap 绘制会话状态：检查选中实体是否有 TilemapComponent，验证资产有效性并管理绘制会话生命周期。",
+      "tags": [
+        "tilemap",
+        "editor",
+        "painting",
+        "session-management"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:IsTilemapEditContextActive",
+      "type": "function",
+      "name": "IsTilemapEditContextActive",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        2060,
+        2081
+      ],
+      "summary": "检查 Tilemap 编辑上下文是否激活：验证选中实体、Tilemap 组件和资产管理器的有效性。",
+      "tags": [
+        "tilemap",
+        "editor",
+        "context-validation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:IsTilemapPaintActive",
+      "type": "function",
+      "name": "IsTilemapPaintActive",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        2083,
+        2089
+      ],
+      "summary": "成员函数 IsTilemapPaintActive 的实现。",
+      "tags": [
+        "method"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:TryGetTilemapPaintContext",
+      "type": "function",
+      "name": "TryGetTilemapPaintContext",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        2091,
+        2112
+      ],
+      "summary": "尝试获取 Tilemap 绘制上下文：返回实体引用、地图数据和变换组件的输出参数，失败时返回 false。",
+      "tags": [
+        "tilemap",
+        "editor",
+        "context-resolution"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:HandleTilemapScenePaint",
+      "type": "function",
+      "name": "HandleTilemapScenePaint",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        2114,
+        2224
+      ],
+      "summary": "处理 Tilemap 场景绘制交互：响应键盘工具切换（铅笔/橡皮/填充/框选）、鼠标点击/拖拽绘制和框选应用。",
+      "tags": [
+        "tilemap",
+        "editor",
+        "painting",
+        "interaction"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:ResetTilemapBoxSelection",
+      "type": "function",
+      "name": "ResetTilemapBoxSelection",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        2226,
+        2233
+      ],
+      "summary": "成员函数 ResetTilemapBoxSelection 的实现。",
+      "tags": [
+        "method"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:DrawTilemapBoxSelectionOverlay",
+      "type": "function",
+      "name": "DrawTilemapBoxSelectionOverlay",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        2235,
+        2295
+      ],
+      "summary": "绘制 Tilemap 框选覆盖层：显示框选区域边界和填充色，支持铅笔/橡皮/填充工具的视觉预览。",
+      "tags": [
+        "tilemap",
+        "editor",
+        "overlay",
+        "box-selection",
+        "debug-draw"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:DrawTilemapGhostPreviewInViewport",
+      "type": "function",
+      "name": "DrawTilemapGhostPreviewInViewport",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        2297,
+        2390
+      ],
+      "summary": "在视口中绘制 Tilemap 幽灵预览：根据当前选中 Tile 和工具模式在视口内显示半透明瓦片预览及 UV 贴图。",
+      "tags": [
+        "tilemap",
+        "editor",
+        "preview",
+        "ghost",
+        "viewport"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayer.cpp:DrawTilemapEditOverlay",
+      "type": "function",
+      "name": "DrawTilemapEditOverlay",
+      "filePath": "HimiiEditor/src/EditorLayer.cpp",
+      "lineRange": [
+        2392,
+        2509
+      ],
+      "summary": "绘制 Tilemap 编辑叠加层：渲染编辑网格边界、悬停高亮、框选覆盖层和当前选中 Tile 的纹理预览。",
+      "tags": [
+        "tilemap",
+        "editor",
+        "overlay",
+        "debug-draw",
+        "grid"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:HimiiEditor/src/EditorLayoutDefaults.cpp",
+      "type": "file",
+      "name": "EditorLayoutDefaults.cpp",
+      "filePath": "HimiiEditor/src/EditorLayoutDefaults.cpp",
+      "summary": "实现编辑器默认停靠布局的构建逻辑，在首次启动或布局文件缺失时自动生成包含视口、场景层级、属性面板等窗口的默认布局。",
+      "tags": [
+        "editor",
+        "layout",
+        "docking",
+        "initialization"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayoutDefaults.cpp:GetEditorLayoutIniPath",
+      "type": "function",
+      "name": "GetEditorLayoutIniPath",
+      "filePath": "HimiiEditor/src/EditorLayoutDefaults.cpp",
+      "lineRange": [
+        14,
+        17
+      ],
+      "summary": "获取编辑器布局 INI 文件的路径。",
+      "tags": [
+        "editor",
+        "layout",
+        "file-path",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayoutDefaults.cpp:IniHasEditorDockLayout",
+      "type": "function",
+      "name": "IniHasEditorDockLayout",
+      "filePath": "HimiiEditor/src/EditorLayoutDefaults.cpp",
+      "lineRange": [
+        19,
+        32
+      ],
+      "summary": "检查 INI 文件中是否已包含停靠布局配置。",
+      "tags": [
+        "editor",
+        "layout",
+        "validation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/EditorLayoutDefaults.cpp:ApplyDefaultDockLayoutIfNeeded",
+      "type": "function",
+      "name": "ApplyDefaultDockLayoutIfNeeded",
+      "filePath": "HimiiEditor/src/EditorLayoutDefaults.cpp",
+      "lineRange": [
+        49,
+        104
+      ],
+      "summary": "按需构建编辑器默认停靠布局。",
+      "tags": [
+        "editor",
+        "layout",
+        "docking",
+        "initialization"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:HimiiEditor/src/EditorLayoutDefaults.h",
+      "type": "file",
+      "name": "EditorLayoutDefaults.h",
+      "filePath": "HimiiEditor/src/EditorLayoutDefaults.h",
+      "summary": "声明编辑器默认布局工具函数的头文件，包括 ApplyDefaultDockLayoutIfNeeded 和布局检测辅助函数。",
+      "tags": [
+        "editor",
+        "layout",
+        "docking",
+        "interface"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:HimiiEditor/src/TilemapEditorUtility.cpp",
+      "type": "file",
+      "name": "TilemapEditorUtility.cpp",
+      "filePath": "HimiiEditor/src/TilemapEditorUtility.cpp",
+      "summary": "实现 Tilemap 编辑器的数学工具函数集，包括视口鼠标坐标到世界坐标的投影变换、Tile 坐标计算和图集 UV 映射等。",
+      "tags": [
+        "tilemap",
+        "utility",
+        "math",
+        "coordinate-transform",
+        "editor"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "使用 glm 数学库进行逆矩阵投影变换和射线-平面求交计算。"
+    },
+    {
+      "id": "function:HimiiEditor/src/TilemapEditorUtility.cpp:GetMapLocalOrigin",
+      "type": "function",
+      "name": "GetMapLocalOrigin",
+      "filePath": "HimiiEditor/src/TilemapEditorUtility.cpp",
+      "lineRange": [
+        11,
+        17
+      ],
+      "summary": "计算 Tilemap 地图的本地原点世界坐标。",
+      "tags": [
+        "tilemap",
+        "coordinate-transform",
+        "math"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/TilemapEditorUtility.cpp:LocalPositionToTileCoordinates",
+      "type": "function",
+      "name": "LocalPositionToTileCoordinates",
+      "filePath": "HimiiEditor/src/TilemapEditorUtility.cpp",
+      "lineRange": [
+        19,
+        23
+      ],
+      "summary": "将世界空间本地位置转换为 Tile 坐标。",
+      "tags": [
+        "tilemap",
+        "coordinate-transform",
+        "math"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/TilemapEditorUtility.cpp:ViewportMouseToWorld",
+      "type": "function",
+      "name": "ViewportMouseToWorld",
+      "filePath": "HimiiEditor/src/TilemapEditorUtility.cpp",
+      "lineRange": [
+        25,
+        33
+      ],
+      "summary": "将视口鼠标坐标转换为世界坐标（Z=0 平面）。",
+      "tags": [
+        "tilemap",
+        "coordinate-transform",
+        "viewport",
+        "math"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/TilemapEditorUtility.cpp:ViewportMouseToWorldOnPlane",
+      "type": "function",
+      "name": "ViewportMouseToWorldOnPlane",
+      "filePath": "HimiiEditor/src/TilemapEditorUtility.cpp",
+      "lineRange": [
+        35,
+        61
+      ],
+      "summary": "将视口鼠标坐标通过逆投影矩阵转换为指定平面世界坐标。",
+      "tags": [
+        "tilemap",
+        "coordinate-transform",
+        "ray-plane-intersection",
+        "math"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/TilemapEditorUtility.cpp:WorldToViewportScreen",
+      "type": "function",
+      "name": "WorldToViewportScreen",
+      "filePath": "HimiiEditor/src/TilemapEditorUtility.cpp",
+      "lineRange": [
+        63,
+        75
+      ],
+      "summary": "将世界坐标映射到视口屏幕坐标。",
+      "tags": [
+        "tilemap",
+        "coordinate-transform",
+        "viewport",
+        "math"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/TilemapEditorUtility.cpp:AtlasCoordsToImGuiImageUVs",
+      "type": "function",
+      "name": "AtlasCoordsToImGuiImageUVs",
+      "filePath": "HimiiEditor/src/TilemapEditorUtility.cpp",
+      "lineRange": [
+        77,
+        88
+      ],
+      "summary": "将图集网格坐标转换为 ImGui Image UV 坐标。",
+      "tags": [
+        "tilemap",
+        "atlas",
+        "uv-mapping",
+        "imgui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/TilemapEditorUtility.cpp:AtlasCoordsToImGuiQuadUVs",
+      "type": "function",
+      "name": "AtlasCoordsToImGuiQuadUVs",
+      "filePath": "HimiiEditor/src/TilemapEditorUtility.cpp",
+      "lineRange": [
+        90,
+        100
+      ],
+      "summary": "将图集网格坐标转换为 ImGui 四边形四角 UV 坐标。",
+      "tags": [
+        "tilemap",
+        "atlas",
+        "uv-mapping",
+        "imgui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:HimiiEditor/src/TilemapEditorUtility.h",
+      "type": "file",
+      "name": "TilemapEditorUtility.h",
+      "filePath": "HimiiEditor/src/TilemapEditorUtility.h",
+      "summary": "声明 TilemapEditorUtility 工具类，提供视口坐标转换、Tile 坐标计算和图集 UV 映射等静态方法。",
+      "tags": [
+        "tilemap",
+        "utility",
+        "math",
+        "interface",
+        "editor"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:HimiiEditor/src/TilemapEditorUtility.h:TilemapEditorUtility",
+      "type": "class",
+      "name": "TilemapEditorUtility",
+      "filePath": "HimiiEditor/src/TilemapEditorUtility.h",
+      "lineRange": [
+        10,
+        45
+      ],
+      "summary": "Tilemap 编辑器数学工具类，封装视口坐标变换、Tile 坐标计算和图集 UV 映射的静态方法。",
+      "tags": [
+        "tilemap",
+        "utility",
+        "math",
+        "static-class"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:HimiiEditor/src/CamerController.h",
+      "target": "function:HimiiEditor/src/CamerController.h:OnUpdate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/CamerController.h",
+      "target": "class:HimiiEditor/src/CamerController.h:CameraController",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/CamerController.h",
+      "target": "class:HimiiEditor/src/CamerController.h:CameraController",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorExternalFileDrop.cpp",
+      "target": "file:HimiiEditor/src/EditorExternalFileDrop.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorExternalFileDrop.cpp",
+      "target": "function:HimiiEditor/src/EditorExternalFileDrop.cpp:Install",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorExternalFileDrop.cpp",
+      "target": "function:HimiiEditor/src/EditorExternalFileDrop.cpp:Install",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorExternalFileDrop.cpp",
+      "target": "function:HimiiEditor/src/EditorExternalFileDrop.cpp:ConsumePendingPaths",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorExternalFileDrop.cpp",
+      "target": "function:HimiiEditor/src/EditorExternalFileDrop.cpp:ConsumePendingPaths",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorExternalFileDrop.h",
+      "target": "class:HimiiEditor/src/EditorExternalFileDrop.h:EditorExternalFileDrop",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorExternalFileDrop.h",
+      "target": "class:HimiiEditor/src/EditorExternalFileDrop.h:EditorExternalFileDrop",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "file:HimiiEditor/src/CamerController.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "file:HimiiEditor/src/commands/EditorCommands.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "file:HimiiEditor/src/EditorExternalFileDrop.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "file:HimiiEditor/src/EditorLayer.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "file:HimiiEditor/src/EditorLayoutDefaults.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "file:HimiiEditor/src/TilemapEditorUtility.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:EditorLayer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:EditorLayer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnAttach",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnAttach",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:ApplySplashWindowSize",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:ApplySplashWindowSize",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:TransitionToEditorWindow",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:TransitionToEditorWindow",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:AdvanceEditorStartupLoading",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:AdvanceEditorStartupLoading",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnDetach",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnDetach",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnUpdate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnUpdate",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnImGuiRender",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnImGuiRender",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnEvent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnEvent",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnKeyPressed",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnKeyPressed",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnMouseButtonPressed",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnMouseButtonPressed",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:UpdateTilemapHoverFromInput",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:UpdateTilemapHoverFromInput",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnOverlayRender",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnOverlayRender",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:CreateProject",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:CreateProject",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OpenProject",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OpenProject",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:UpdateEditorCameraForActiveProject",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:UpdateEditorCameraForActiveProject",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:UpdateMainWindowTitle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:UpdateMainWindowTitle",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:DrawMainMenuBar",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:DrawMainMenuBar",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:BuildProject",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:BuildProject",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OpenCSProject",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OpenCSProject",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:NewScene",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:NewScene",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:LoadRecentProjects",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:LoadRecentProjects",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:SaveRecentProjects",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:SaveRecentProjects",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:DrawStartupSplash",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:DrawStartupSplash",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:DrawProjectHub",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:DrawProjectHub",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OpenScene()",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OpenScene()",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OpenScene(path)",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OpenScene(path)",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:SaveScene",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:SaveScene",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:SaveProject",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:SaveProject",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:SaveSceneAs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:SaveSceneAs",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:SerializeScene",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:SerializeScene",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnScenePlay",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnScenePlay",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:StartScenePlay",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:StartScenePlay",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnSceneSimulate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnSceneSimulate",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnSceneStop",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnSceneStop",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnDuplicateEntity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:OnDuplicateEntity",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:RequestScriptCompile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:RequestScriptCompile",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:CompileAndReloadScripts",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:CompileAndReloadScripts",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:UI_Toolbar",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:UI_Toolbar",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:IsTilemapMoveEntityActive",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:IsTilemapMoveEntityActive",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:UpdateTilemapPaintSession",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:UpdateTilemapPaintSession",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:IsTilemapEditContextActive",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:IsTilemapEditContextActive",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:IsTilemapPaintActive",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:IsTilemapPaintActive",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:TryGetTilemapPaintContext",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:TryGetTilemapPaintContext",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:HandleTilemapScenePaint",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:HandleTilemapScenePaint",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:ResetTilemapBoxSelection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:ResetTilemapBoxSelection",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:DrawTilemapBoxSelectionOverlay",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:DrawTilemapBoxSelectionOverlay",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:DrawTilemapGhostPreviewInViewport",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:DrawTilemapGhostPreviewInViewport",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:DrawTilemapEditOverlay",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "function:HimiiEditor/src/EditorLayer.cpp:DrawTilemapEditOverlay",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayoutDefaults.cpp",
+      "target": "file:HimiiEditor/src/EditorLayoutDefaults.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayoutDefaults.cpp",
+      "target": "function:HimiiEditor/src/EditorLayoutDefaults.cpp:GetEditorLayoutIniPath",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayoutDefaults.cpp",
+      "target": "function:HimiiEditor/src/EditorLayoutDefaults.cpp:GetEditorLayoutIniPath",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayoutDefaults.cpp",
+      "target": "function:HimiiEditor/src/EditorLayoutDefaults.cpp:IniHasEditorDockLayout",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayoutDefaults.cpp",
+      "target": "function:HimiiEditor/src/EditorLayoutDefaults.cpp:ApplyDefaultDockLayoutIfNeeded",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayoutDefaults.cpp",
+      "target": "function:HimiiEditor/src/EditorLayoutDefaults.cpp:ApplyDefaultDockLayoutIfNeeded",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/TilemapEditorUtility.cpp",
+      "target": "file:HimiiEditor/src/TilemapEditorUtility.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/TilemapEditorUtility.cpp",
+      "target": "function:HimiiEditor/src/TilemapEditorUtility.cpp:GetMapLocalOrigin",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/TilemapEditorUtility.cpp",
+      "target": "function:HimiiEditor/src/TilemapEditorUtility.cpp:GetMapLocalOrigin",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/TilemapEditorUtility.cpp",
+      "target": "function:HimiiEditor/src/TilemapEditorUtility.cpp:LocalPositionToTileCoordinates",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/TilemapEditorUtility.cpp",
+      "target": "function:HimiiEditor/src/TilemapEditorUtility.cpp:LocalPositionToTileCoordinates",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/TilemapEditorUtility.cpp",
+      "target": "function:HimiiEditor/src/TilemapEditorUtility.cpp:ViewportMouseToWorld",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/TilemapEditorUtility.cpp",
+      "target": "function:HimiiEditor/src/TilemapEditorUtility.cpp:ViewportMouseToWorld",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/TilemapEditorUtility.cpp",
+      "target": "function:HimiiEditor/src/TilemapEditorUtility.cpp:ViewportMouseToWorldOnPlane",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/TilemapEditorUtility.cpp",
+      "target": "function:HimiiEditor/src/TilemapEditorUtility.cpp:ViewportMouseToWorldOnPlane",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/TilemapEditorUtility.cpp",
+      "target": "function:HimiiEditor/src/TilemapEditorUtility.cpp:WorldToViewportScreen",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/TilemapEditorUtility.cpp",
+      "target": "function:HimiiEditor/src/TilemapEditorUtility.cpp:WorldToViewportScreen",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/TilemapEditorUtility.cpp",
+      "target": "function:HimiiEditor/src/TilemapEditorUtility.cpp:AtlasCoordsToImGuiImageUVs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/TilemapEditorUtility.cpp",
+      "target": "function:HimiiEditor/src/TilemapEditorUtility.cpp:AtlasCoordsToImGuiImageUVs",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/TilemapEditorUtility.cpp",
+      "target": "function:HimiiEditor/src/TilemapEditorUtility.cpp:AtlasCoordsToImGuiQuadUVs",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/TilemapEditorUtility.cpp",
+      "target": "function:HimiiEditor/src/TilemapEditorUtility.cpp:AtlasCoordsToImGuiQuadUVs",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/TilemapEditorUtility.h",
+      "target": "class:HimiiEditor/src/TilemapEditorUtility.h:TilemapEditorUtility",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/TilemapEditorUtility.h",
+      "target": "class:HimiiEditor/src/TilemapEditorUtility.h:TilemapEditorUtility",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/EditorLayer.cpp:AdvanceEditorStartupLoading",
+      "target": "function:HimiiEditor/src/EditorExternalFileDrop.cpp:Install",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/EditorLayer.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/EditorLayoutDefaults.cpp:ApplyDefaultDockLayoutIfNeeded",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/EditorLayer.cpp:UpdateTilemapHoverFromInput",
+      "target": "function:HimiiEditor/src/TilemapEditorUtility.cpp:ViewportMouseToWorldOnPlane",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/EditorLayer.cpp:UpdateTilemapHoverFromInput",
+      "target": "function:HimiiEditor/src/TilemapEditorUtility.cpp:LocalPositionToTileCoordinates",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/EditorLayer.cpp:HandleTilemapScenePaint",
+      "target": "function:HimiiEditor/src/TilemapEditorUtility.cpp:ViewportMouseToWorldOnPlane",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/EditorLayer.cpp:HandleTilemapScenePaint",
+      "target": "function:HimiiEditor/src/TilemapEditorUtility.cpp:LocalPositionToTileCoordinates",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/EditorLayer.cpp:DrawTilemapGhostPreviewInViewport",
+      "target": "function:HimiiEditor/src/TilemapEditorUtility.cpp:WorldToViewportScreen",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "class:HimiiEditor/src/CamerController.h:CameraController",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "class:HimiiEditor/src/commands/EditorCommands.h:ModifyTransformCommand",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "class:HimiiEditor/src/commands/EditorCommands.h:ModifyUITransformCommand",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "class:HimiiEditor/src/commands/EditorCommands.h:DeleteEntityCommand",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.cpp",
+      "target": "class:HimiiEditor/src/commands/EditorCommandHistory.h:EditorCommandHistory",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    }
+  ]
+}

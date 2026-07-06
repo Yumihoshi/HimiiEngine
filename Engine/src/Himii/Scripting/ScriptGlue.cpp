@@ -7,12 +7,14 @@
 #include "Himii/Scene/Components.h"
 #include "Himii/Scene/TileMapData.h"
 #include "Himii/Scene/SceneSerializer.h"
+#include "Himii/Scene/PrefabSerializer.h"
 #include "Himii/Scene/SpriteAnimationUtility.h"
 #include "Himii/Project/Project.h"
 #include "Himii/Asset/AssetManager.h"
 #include "Himii/Core/Input.h"
 #include "Himii/Core/KeyCodes.h"
 #include "Himii/Core/Log.h"
+#include <box2d/box2d.h>
 #include <iostream>
 
 namespace Himii {
@@ -103,6 +105,9 @@ namespace Himii {
         static const uint32_t TransformId = Fnv1A32("HimiiEngine.Transform");
         static const uint32_t SpriteRendererId = Fnv1A32("HimiiEngine.SpriteRenderer");
         static const uint32_t SpriteAnimationId = Fnv1A32("HimiiEngine.SpriteAnimation");
+        static const uint32_t BoxCollider2DId = Fnv1A32("HimiiEngine.BoxCollider2D");
+        static const uint32_t CircleCollider2DId = Fnv1A32("HimiiEngine.CircleCollider2D");
+        static const uint32_t CameraId = Fnv1A32("HimiiEngine.Camera");
 
         if (typeId == TilemapId)
             return entity.HasComponent<TilemapComponent>() ? 1 : 0;
@@ -114,6 +119,12 @@ namespace Himii {
             return entity.HasComponent<SpriteRendererComponent>() ? 1 : 0;
         if (typeId == SpriteAnimationId)
             return entity.HasComponent<SpriteAnimationComponent>() ? 1 : 0;
+        if (typeId == BoxCollider2DId)
+            return entity.HasComponent<BoxCollider2DComponent>() ? 1 : 0;
+        if (typeId == CircleCollider2DId)
+            return entity.HasComponent<CircleCollider2DComponent>() ? 1 : 0;
+        if (typeId == CameraId)
+            return entity.HasComponent<CameraComponent>() ? 1 : 0;
 
         // 未注册的组件类型：默认认为不存在
         return 0;
@@ -150,6 +161,7 @@ namespace Himii {
             return; // <--- 关键修复
 
         entity.GetComponent<TransformComponent>().Position = *translation;
+        scene->SyncEntityTransformToPhysics(entity);
     }
 
     static void Transform_GetRotation(uint64_t entityID, glm::vec3 *outRotation)
@@ -180,6 +192,7 @@ namespace Himii {
             return;
 
         entity.GetComponent<TransformComponent>().Rotation = *rotation;
+        scene->SyncEntityTransformToPhysics(entity);
     }
 
     static void Transform_GetScale(uint64_t entityID, glm::vec3 *outScale)
@@ -211,8 +224,27 @@ namespace Himii {
 
     static bool Input_IsKeyDown(int keycode)
     {
-        // 调用引擎底层的 Input 静态类
         return Input::IsKeyPressed(keycode);
+    }
+
+    static bool Input_IsKeyPressed(int keycode)
+    {
+        return Input::IsKeyJustPressed(keycode);
+    }
+
+    static bool Input_IsKeyReleased(int keycode)
+    {
+        return Input::IsKeyJustReleased(keycode);
+    }
+
+    static float Input_GetAxisHorizontal()
+    {
+        return Input::GetAxisHorizontal();
+    }
+
+    static float Input_GetAxisVertical()
+    {
+        return Input::GetAxisVertical();
     }
 
     static bool Input_IsMouseButtonDown(int button)
@@ -302,6 +334,491 @@ namespace Himii {
         {
             b2Body_SetLinearVelocity(bodyId, {velocity->x, velocity->y});
         }
+    }
+
+    static void BoxCollider2D_GetOffset(uint64_t entityID, glm::vec2* outOffset)
+    {
+        if (!outOffset)
+            return;
+
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+        {
+            *outOffset = glm::vec2(0.0f);
+            return;
+        }
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<BoxCollider2DComponent>())
+        {
+            *outOffset = glm::vec2(0.0f);
+            return;
+        }
+
+        *outOffset = entity.GetComponent<BoxCollider2DComponent>().Offset;
+    }
+
+    static void BoxCollider2D_SetOffset(uint64_t entityID, glm::vec2* offset)
+    {
+        if (!offset)
+            return;
+
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<BoxCollider2DComponent>())
+            return;
+
+        entity.GetComponent<BoxCollider2DComponent>().Offset = *offset;
+    }
+
+    static void BoxCollider2D_GetSize(uint64_t entityID, glm::vec2* outSize)
+    {
+        if (!outSize)
+            return;
+
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+        {
+            *outSize = glm::vec2(1.0f);
+            return;
+        }
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<BoxCollider2DComponent>())
+        {
+            *outSize = glm::vec2(1.0f);
+            return;
+        }
+
+        *outSize = entity.GetComponent<BoxCollider2DComponent>().Size;
+    }
+
+    static void BoxCollider2D_SetSize(uint64_t entityID, glm::vec2* size)
+    {
+        if (!size)
+            return;
+
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<BoxCollider2DComponent>())
+            return;
+
+        entity.GetComponent<BoxCollider2DComponent>().Size = *size;
+    }
+
+    static float BoxCollider2D_GetDensity(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0.0f;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<BoxCollider2DComponent>())
+            return 0.0f;
+
+        return entity.GetComponent<BoxCollider2DComponent>().Density;
+    }
+
+    static void BoxCollider2D_SetDensity(uint64_t entityID, float density)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<BoxCollider2DComponent>())
+            return;
+
+        entity.GetComponent<BoxCollider2DComponent>().Density = density;
+    }
+
+    static float BoxCollider2D_GetFriction(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0.0f;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<BoxCollider2DComponent>())
+            return 0.0f;
+
+        return entity.GetComponent<BoxCollider2DComponent>().Friction;
+    }
+
+    static void BoxCollider2D_SetFriction(uint64_t entityID, float friction)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<BoxCollider2DComponent>())
+            return;
+
+        entity.GetComponent<BoxCollider2DComponent>().Friction = friction;
+    }
+
+    static float BoxCollider2D_GetRestitution(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0.0f;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<BoxCollider2DComponent>())
+            return 0.0f;
+
+        return entity.GetComponent<BoxCollider2DComponent>().Restitution;
+    }
+
+    static void BoxCollider2D_SetRestitution(uint64_t entityID, float restitution)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<BoxCollider2DComponent>())
+            return;
+
+        entity.GetComponent<BoxCollider2DComponent>().Restitution = restitution;
+    }
+
+    static void CircleCollider2D_GetOffset(uint64_t entityID, glm::vec2* outOffset)
+    {
+        if (!outOffset)
+            return;
+
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+        {
+            *outOffset = glm::vec2(0.0f);
+            return;
+        }
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CircleCollider2DComponent>())
+        {
+            *outOffset = glm::vec2(0.0f);
+            return;
+        }
+
+        *outOffset = entity.GetComponent<CircleCollider2DComponent>().Offset;
+    }
+
+    static void CircleCollider2D_SetOffset(uint64_t entityID, glm::vec2* offset)
+    {
+        if (!offset)
+            return;
+
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CircleCollider2DComponent>())
+            return;
+
+        entity.GetComponent<CircleCollider2DComponent>().Offset = *offset;
+    }
+
+    static float CircleCollider2D_GetRadius(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0.0f;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CircleCollider2DComponent>())
+            return 0.0f;
+
+        return entity.GetComponent<CircleCollider2DComponent>().Radius;
+    }
+
+    static void CircleCollider2D_SetRadius(uint64_t entityID, float radius)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CircleCollider2DComponent>())
+            return;
+
+        entity.GetComponent<CircleCollider2DComponent>().Radius = radius;
+    }
+
+    static float CircleCollider2D_GetDensity(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0.0f;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CircleCollider2DComponent>())
+            return 0.0f;
+
+        return entity.GetComponent<CircleCollider2DComponent>().Density;
+    }
+
+    static void CircleCollider2D_SetDensity(uint64_t entityID, float density)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CircleCollider2DComponent>())
+            return;
+
+        entity.GetComponent<CircleCollider2DComponent>().Density = density;
+    }
+
+    static float CircleCollider2D_GetFriction(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0.0f;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CircleCollider2DComponent>())
+            return 0.0f;
+
+        return entity.GetComponent<CircleCollider2DComponent>().Friction;
+    }
+
+    static void CircleCollider2D_SetFriction(uint64_t entityID, float friction)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CircleCollider2DComponent>())
+            return;
+
+        entity.GetComponent<CircleCollider2DComponent>().Friction = friction;
+    }
+
+    static float CircleCollider2D_GetRestitution(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0.0f;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CircleCollider2DComponent>())
+            return 0.0f;
+
+        return entity.GetComponent<CircleCollider2DComponent>().Restitution;
+    }
+
+    static void CircleCollider2D_SetRestitution(uint64_t entityID, float restitution)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CircleCollider2DComponent>())
+            return;
+
+        entity.GetComponent<CircleCollider2DComponent>().Restitution = restitution;
+    }
+
+    static b2BodyId GetRuntimeBodyId(void* runtimeBodyPointer)
+    {
+        if (!runtimeBodyPointer)
+            return {};
+
+        return *reinterpret_cast<b2BodyId*>(runtimeBodyPointer);
+    }
+
+    static b2BodyType ToBoxBodyType(Rigidbody2DComponent::BodyType bodyType)
+    {
+        switch (bodyType)
+        {
+            case Rigidbody2DComponent::BodyType::Static:
+                return b2BodyType::b2_staticBody;
+            case Rigidbody2DComponent::BodyType::Dynamic:
+                return b2BodyType::b2_dynamicBody;
+            case Rigidbody2DComponent::BodyType::Kinematic:
+                return b2BodyType::b2_kinematicBody;
+        }
+
+        return b2BodyType::b2_staticBody;
+    }
+
+    static int Rigidbody2D_GetBodyType(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<Rigidbody2DComponent>())
+            return 0;
+
+        return static_cast<int>(entity.GetComponent<Rigidbody2DComponent>().Type);
+    }
+
+    static void Rigidbody2D_SetBodyType(uint64_t entityID, int bodyType)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<Rigidbody2DComponent>())
+            return;
+
+        auto& rigidbody2D = entity.GetComponent<Rigidbody2DComponent>();
+        rigidbody2D.Type = static_cast<Rigidbody2DComponent::BodyType>(bodyType);
+
+        b2BodyId bodyId = GetRuntimeBodyId(rigidbody2D.RuntimeBody);
+        if (b2Body_IsValid(bodyId))
+            b2Body_SetType(bodyId, ToBoxBodyType(rigidbody2D.Type));
+    }
+
+    static uint8_t Rigidbody2D_GetFixedRotation(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<Rigidbody2DComponent>())
+            return 0;
+
+        return entity.GetComponent<Rigidbody2DComponent>().FixedRotation ? 1 : 0;
+    }
+
+    static void Rigidbody2D_SetFixedRotation(uint64_t entityID, uint8_t fixedRotation)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<Rigidbody2DComponent>())
+            return;
+
+        auto& rigidbody2D = entity.GetComponent<Rigidbody2DComponent>();
+        rigidbody2D.FixedRotation = fixedRotation != 0;
+
+        b2BodyId bodyId = GetRuntimeBodyId(rigidbody2D.RuntimeBody);
+        if (b2Body_IsValid(bodyId))
+            b2Body_SetFixedRotation(bodyId, rigidbody2D.FixedRotation);
+    }
+
+    static uint8_t BoxCollider2D_GetIsTrigger(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<BoxCollider2DComponent>())
+            return 0;
+
+        return entity.GetComponent<BoxCollider2DComponent>().IsTrigger ? 1 : 0;
+    }
+
+    static void BoxCollider2D_SetIsTrigger(uint64_t entityID, uint8_t isTrigger)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<BoxCollider2DComponent>())
+            return;
+
+        entity.GetComponent<BoxCollider2DComponent>().IsTrigger = isTrigger != 0;
+    }
+
+    static int BoxCollider2D_GetLayer(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<BoxCollider2DComponent>())
+            return 0;
+
+        return entity.GetComponent<BoxCollider2DComponent>().Layer;
+    }
+
+    static void BoxCollider2D_SetLayer(uint64_t entityID, int layer)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<BoxCollider2DComponent>())
+            return;
+
+        entity.GetComponent<BoxCollider2DComponent>().Layer = layer;
+    }
+
+    static uint8_t CircleCollider2D_GetIsTrigger(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CircleCollider2DComponent>())
+            return 0;
+
+        return entity.GetComponent<CircleCollider2DComponent>().IsTrigger ? 1 : 0;
+    }
+
+    static void CircleCollider2D_SetIsTrigger(uint64_t entityID, uint8_t isTrigger)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CircleCollider2DComponent>())
+            return;
+
+        entity.GetComponent<CircleCollider2DComponent>().IsTrigger = isTrigger != 0;
+    }
+
+    static int CircleCollider2D_GetLayer(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CircleCollider2DComponent>())
+            return 0;
+
+        return entity.GetComponent<CircleCollider2DComponent>().Layer;
+    }
+
+    static void CircleCollider2D_SetLayer(uint64_t entityID, int layer)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CircleCollider2DComponent>())
+            return;
+
+        entity.GetComponent<CircleCollider2DComponent>().Layer = layer;
     }
 
     // 辅助：从实体的 TilemapComponent 获取 TileMapData 资源
@@ -500,6 +1017,144 @@ namespace Himii {
         entity.GetComponent<SpriteRendererComponent>().FlipHorizontal = flipHorizontal != 0;
     }
 
+    static int SpriteRenderer_GetSortingLayer(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SpriteRendererComponent>())
+            return 0;
+
+        return entity.GetComponent<SpriteRendererComponent>().SortingLayer;
+    }
+
+    static void SpriteRenderer_SetSortingLayer(uint64_t entityID, int sortingLayer)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SpriteRendererComponent>())
+            return;
+
+        entity.GetComponent<SpriteRendererComponent>().SortingLayer = sortingLayer;
+    }
+
+    static int SpriteRenderer_GetSortingOrder(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SpriteRendererComponent>())
+            return 0;
+
+        return entity.GetComponent<SpriteRendererComponent>().SortingOrder;
+    }
+
+    static void SpriteRenderer_SetSortingOrder(uint64_t entityID, int sortingOrder)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SpriteRendererComponent>())
+            return;
+
+        entity.GetComponent<SpriteRendererComponent>().SortingOrder = sortingOrder;
+    }
+
+    static float Camera_GetOrthographicSize(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 10.0f;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CameraComponent>())
+            return 10.0f;
+
+        return entity.GetComponent<CameraComponent>().Camera.GetOrthographicSize();
+    }
+
+    static void Camera_SetOrthographicSize(uint64_t entityID, float orthographicSize)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CameraComponent>())
+            return;
+
+        entity.GetComponent<CameraComponent>().Camera.SetOrthographicSize(orthographicSize);
+    }
+
+    static void Camera_GetBackgroundColor(uint64_t entityID, glm::vec4* outColor)
+    {
+        if (!outColor)
+            return;
+
+        *outColor = glm::vec4(0.0f);
+
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CameraComponent>())
+            return;
+
+        *outColor = entity.GetComponent<CameraComponent>().Camera.GetBackgroundColor();
+    }
+
+    static void Camera_SetBackgroundColor(uint64_t entityID, const glm::vec4* color)
+    {
+        if (!color)
+            return;
+
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CameraComponent>())
+            return;
+
+        entity.GetComponent<CameraComponent>().Camera.SetBackgroundColor(*color);
+    }
+
+    static uint8_t Camera_GetPrimary(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CameraComponent>())
+            return 0;
+
+        return entity.GetComponent<CameraComponent>().Primary ? 1 : 0;
+    }
+
+    static void Camera_SetPrimary(uint64_t entityID, uint8_t primary)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<CameraComponent>())
+            return;
+
+        entity.GetComponent<CameraComponent>().Primary = primary != 0;
+    }
+
     static void SpriteRenderer_SetTextureHandle(uint64_t entityID, uint64_t textureHandle)
     {
         Scene* scene = ScriptEngine::GetSceneContext();
@@ -672,14 +1327,14 @@ namespace Himii {
         ResetSpriteAnimationPlayback(animationComponent);
     }
 
-    static void SceneManager_LoadScene(const char* scenePath)
+    static uint8_t SceneManager_LoadScene(const char* scenePath)
     {
         if (!scenePath || scenePath[0] == '\0')
-            return;
+            return 0;
 
         Scene* scene = ScriptEngine::GetSceneContext();
         if (!scene)
-            return;
+            return 0;
 
         std::filesystem::path fullPath = Project::GetActive()
             ? Project::GetAssetFileSystemPath(scenePath)
@@ -688,7 +1343,7 @@ namespace Himii {
         if (!std::filesystem::exists(fullPath))
         {
             HIMII_CORE_ERROR("SceneManager.LoadScene: file not found: {0}", fullPath.string());
-            return;
+            return 0;
         }
 
         ScriptEngine::OnRuntimeStop();
@@ -699,10 +1354,47 @@ namespace Himii {
         if (!serializer.Deserialize(fullPath.string()))
         {
             HIMII_CORE_ERROR("SceneManager.LoadScene: failed to deserialize: {0}", fullPath.string());
-            return;
+            return 0;
         }
 
+        ScriptEngine::SetActiveSceneRelativePath(scenePath);
         scene->OnRuntimeStart();
+        return 1;
+    }
+
+    static const char* SceneManager_GetActiveScenePath()
+    {
+        static thread_local char activeScenePathBuffer[512] = {};
+        const std::string& activePath = ScriptEngine::GetActiveSceneRelativePath();
+        std::snprintf(activeScenePathBuffer, sizeof(activeScenePathBuffer), "%s", activePath.c_str());
+        return activeScenePathBuffer;
+    }
+
+    static uint64_t Scene_InstantiatePrefab(const char* prefabPath)
+    {
+        if (!prefabPath || prefabPath[0] == '\0')
+            return 0;
+
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+
+        std::filesystem::path fullPath = Project::GetActive()
+            ? Project::GetAssetFileSystemPath(prefabPath)
+            : std::filesystem::path(prefabPath);
+
+        Ref<Scene> sceneReference(scene, [](Scene*) {});
+        Entity instantiatedEntity = PrefabSerializer::Instantiate(sceneReference, fullPath);
+        if (!instantiatedEntity)
+            return 0;
+
+        if (ScriptEngine::IsRuntimeActive())
+        {
+            if (instantiatedEntity.HasComponent<ScriptComponent>())
+                ScriptEngine::OnCreateEntity(instantiatedEntity);
+        }
+
+        return instantiatedEntity.GetUUID();
     }
 
     ScriptEngineData ScriptGlue::GetNativeFunctions()
@@ -737,6 +1429,28 @@ namespace Himii {
         data.Rigidbody2D_GetLinearVelocity = (void *)&Rigidbody2D_GetLinearVelocity;
         data.Rigidbody2D_SetLinearVelocity = (void *)&Rigidbody2D_SetLinearVelocity;
 
+        data.BoxCollider2D_GetOffset = (void *)&BoxCollider2D_GetOffset;
+        data.BoxCollider2D_SetOffset = (void *)&BoxCollider2D_SetOffset;
+        data.BoxCollider2D_GetSize = (void *)&BoxCollider2D_GetSize;
+        data.BoxCollider2D_SetSize = (void *)&BoxCollider2D_SetSize;
+        data.BoxCollider2D_GetDensity = (void *)&BoxCollider2D_GetDensity;
+        data.BoxCollider2D_SetDensity = (void *)&BoxCollider2D_SetDensity;
+        data.BoxCollider2D_GetFriction = (void *)&BoxCollider2D_GetFriction;
+        data.BoxCollider2D_SetFriction = (void *)&BoxCollider2D_SetFriction;
+        data.BoxCollider2D_GetRestitution = (void *)&BoxCollider2D_GetRestitution;
+        data.BoxCollider2D_SetRestitution = (void *)&BoxCollider2D_SetRestitution;
+
+        data.CircleCollider2D_GetOffset = (void *)&CircleCollider2D_GetOffset;
+        data.CircleCollider2D_SetOffset = (void *)&CircleCollider2D_SetOffset;
+        data.CircleCollider2D_GetRadius = (void *)&CircleCollider2D_GetRadius;
+        data.CircleCollider2D_SetRadius = (void *)&CircleCollider2D_SetRadius;
+        data.CircleCollider2D_GetDensity = (void *)&CircleCollider2D_GetDensity;
+        data.CircleCollider2D_SetDensity = (void *)&CircleCollider2D_SetDensity;
+        data.CircleCollider2D_GetFriction = (void *)&CircleCollider2D_GetFriction;
+        data.CircleCollider2D_SetFriction = (void *)&CircleCollider2D_SetFriction;
+        data.CircleCollider2D_GetRestitution = (void *)&CircleCollider2D_GetRestitution;
+        data.CircleCollider2D_SetRestitution = (void *)&CircleCollider2D_SetRestitution;
+
         // Tilemap
         data.Tilemap_GetSize = (void *)&Tilemap_GetSize;
         data.Tilemap_SetSize = (void *)&Tilemap_SetSize;
@@ -766,6 +1480,41 @@ namespace Himii {
         data.SpriteAnimation_SetCurrentAnimationName = (void *)&SpriteAnimation_SetCurrentAnimationName;
 
         data.Tilemap_GetBounds = (void *)&Tilemap_GetBounds;
+
+        data.Input_IsKeyPressed = (void *)&Input_IsKeyPressed;
+        data.Input_IsKeyReleased = (void *)&Input_IsKeyReleased;
+        data.Input_GetAxisHorizontal = (void *)&Input_GetAxisHorizontal;
+        data.Input_GetAxisVertical = (void *)&Input_GetAxisVertical;
+
+        data.Rigidbody2D_GetBodyType = (void *)&Rigidbody2D_GetBodyType;
+        data.Rigidbody2D_SetBodyType = (void *)&Rigidbody2D_SetBodyType;
+        data.Rigidbody2D_GetFixedRotation = (void *)&Rigidbody2D_GetFixedRotation;
+        data.Rigidbody2D_SetFixedRotation = (void *)&Rigidbody2D_SetFixedRotation;
+
+        data.BoxCollider2D_GetIsTrigger = (void *)&BoxCollider2D_GetIsTrigger;
+        data.BoxCollider2D_SetIsTrigger = (void *)&BoxCollider2D_SetIsTrigger;
+        data.BoxCollider2D_GetLayer = (void *)&BoxCollider2D_GetLayer;
+        data.BoxCollider2D_SetLayer = (void *)&BoxCollider2D_SetLayer;
+
+        data.CircleCollider2D_GetIsTrigger = (void *)&CircleCollider2D_GetIsTrigger;
+        data.CircleCollider2D_SetIsTrigger = (void *)&CircleCollider2D_SetIsTrigger;
+        data.CircleCollider2D_GetLayer = (void *)&CircleCollider2D_GetLayer;
+        data.CircleCollider2D_SetLayer = (void *)&CircleCollider2D_SetLayer;
+
+        data.SpriteRenderer_GetSortingLayer = (void *)&SpriteRenderer_GetSortingLayer;
+        data.SpriteRenderer_SetSortingLayer = (void *)&SpriteRenderer_SetSortingLayer;
+        data.SpriteRenderer_GetSortingOrder = (void *)&SpriteRenderer_GetSortingOrder;
+        data.SpriteRenderer_SetSortingOrder = (void *)&SpriteRenderer_SetSortingOrder;
+
+        data.Camera_GetOrthographicSize = (void *)&Camera_GetOrthographicSize;
+        data.Camera_SetOrthographicSize = (void *)&Camera_SetOrthographicSize;
+        data.Camera_GetBackgroundColor = (void *)&Camera_GetBackgroundColor;
+        data.Camera_SetBackgroundColor = (void *)&Camera_SetBackgroundColor;
+        data.Camera_GetPrimary = (void *)&Camera_GetPrimary;
+        data.Camera_SetPrimary = (void *)&Camera_SetPrimary;
+
+        data.SceneManager_GetActiveScenePath = (void *)&SceneManager_GetActiveScenePath;
+        data.Scene_InstantiatePrefab = (void *)&Scene_InstantiatePrefab;
 
         return data;
     }

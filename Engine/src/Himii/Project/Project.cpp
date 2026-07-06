@@ -37,13 +37,37 @@ namespace Himii
                 HIMII_CORE_WARNING("Failed to copy {0}: {1}", sourcePath.string(), errorCode.message());
         }
 
-        void CopyScriptingApiSourcesToProject(const std::filesystem::path &projectDir)
+        std::filesystem::path ResolveScriptingApiSourceDirectory()
         {
             const std::filesystem::path engineDirectory = Application::GetEngineDir();
-            const std::filesystem::path apiSourceDirectory = engineDirectory / "Packaging/ScriptingApi/Himii";
-            if (!std::filesystem::exists(apiSourceDirectory))
+            const std::filesystem::path relativeApiPath = "Packaging/ScriptingApi/Himii";
+
+            std::filesystem::path candidate = engineDirectory / relativeApiPath;
+            if (std::filesystem::exists(candidate))
+                return candidate;
+
+            std::filesystem::path searchDirectory = Application::Get().GetExecutableDir();
+            for (int depth = 0; depth < 10; ++depth)
             {
-                HIMII_CORE_WARNING("Scripting API sources not found at {0}", apiSourceDirectory.string());
+                candidate = searchDirectory / relativeApiPath;
+                if (std::filesystem::exists(candidate))
+                    return candidate;
+
+                if (!searchDirectory.has_parent_path())
+                    break;
+
+                searchDirectory = searchDirectory.parent_path();
+            }
+
+            return {};
+        }
+
+        void CopyScriptingApiSourcesToProject(const std::filesystem::path &projectDir)
+        {
+            const std::filesystem::path apiSourceDirectory = ResolveScriptingApiSourceDirectory();
+            if (apiSourceDirectory.empty() || !std::filesystem::exists(apiSourceDirectory))
+            {
+                HIMII_CORE_WARNING("Scripting API sources not found (expected Packaging/ScriptingApi/Himii)");
                 return;
             }
 
@@ -177,6 +201,7 @@ namespace Himii
             std::ofstream scriptFile(defaultScriptPath);
             if (scriptFile.is_open())
             {
+                scriptFile << "using HimiiEngine;\n\n";
                 scriptFile << "public class SampleScript : Entity\n";
                 scriptFile << "{\n";
                 scriptFile << "    [SerializeField]\n";

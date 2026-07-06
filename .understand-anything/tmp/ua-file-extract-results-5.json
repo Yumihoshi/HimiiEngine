@@ -1,0 +1,1127 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 6,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "Engine/src/Himii/Renderer/Buffer.cpp",
+      "language": "cpp",
+      "fileCategory": "code",
+      "totalLines": 76,
+      "nonEmptyLines": 74,
+      "functions": [
+        {
+          "name": "Create",
+          "startLine": 9,
+          "endLine": 30,
+          "params": [
+            "size"
+          ]
+        },
+        {
+          "name": "Create",
+          "startLine": 32,
+          "endLine": 53,
+          "params": [
+            "vertices",
+            "size"
+          ]
+        },
+        {
+          "name": "Create",
+          "startLine": 54,
+          "endLine": 75,
+          "params": [
+            "indices",
+            "size"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Create",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "Create",
+          "line": 32,
+          "isDefault": false
+        },
+        {
+          "name": "Create",
+          "line": 54,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "Create",
+          "callee": "Renderer::GetAPI",
+          "lineNumber": 11
+        },
+        {
+          "caller": "Create",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 14
+        },
+        {
+          "caller": "Create",
+          "callee": "CreateRef<OpenGLVertexBuffer>",
+          "lineNumber": 17
+        },
+        {
+          "caller": "Create",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 19
+        },
+        {
+          "caller": "Create",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 22
+        },
+        {
+          "caller": "Create",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 25
+        },
+        {
+          "caller": "Create",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 28
+        },
+        {
+          "caller": "Create",
+          "callee": "Renderer::GetAPI",
+          "lineNumber": 34
+        },
+        {
+          "caller": "Create",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 37
+        },
+        {
+          "caller": "Create",
+          "callee": "CreateRef<OpenGLVertexBuffer>",
+          "lineNumber": 40
+        },
+        {
+          "caller": "Create",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 42
+        },
+        {
+          "caller": "Create",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 45
+        },
+        {
+          "caller": "Create",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 48
+        },
+        {
+          "caller": "Create",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 51
+        },
+        {
+          "caller": "Create",
+          "callee": "Renderer::GetAPI",
+          "lineNumber": 56
+        },
+        {
+          "caller": "Create",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 59
+        },
+        {
+          "caller": "Create",
+          "callee": "CreateRef<OpenGLIndexBuffer>",
+          "lineNumber": 62
+        },
+        {
+          "caller": "Create",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 64
+        },
+        {
+          "caller": "Create",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 67
+        },
+        {
+          "caller": "Create",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 70
+        },
+        {
+          "caller": "Create",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 73
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Buffer.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 175,
+      "nonEmptyLines": 154,
+      "functions": [
+        {
+          "name": "ShaderDataTypeSize",
+          "startLine": 11,
+          "endLine": 42,
+          "params": [
+            "type"
+          ]
+        },
+        {
+          "name": "BufferElement",
+          "startLine": 53,
+          "endLine": 53,
+          "params": []
+        },
+        {
+          "name": "BufferElement",
+          "startLine": 55,
+          "endLine": 58,
+          "params": [
+            "type",
+            "name"
+          ]
+        },
+        {
+          "name": "GetComponentCount",
+          "startLine": 60,
+          "endLine": 90,
+          "params": []
+        },
+        {
+          "name": "BufferLayout",
+          "startLine": 96,
+          "endLine": 96,
+          "params": []
+        },
+        {
+          "name": "BufferLayout",
+          "startLine": 97,
+          "endLine": 100,
+          "params": [
+            "element"
+          ]
+        },
+        {
+          "name": "GetStride",
+          "startLine": 102,
+          "endLine": 105,
+          "params": []
+        },
+        {
+          "name": "begin",
+          "startLine": 111,
+          "endLine": 114,
+          "params": []
+        },
+        {
+          "name": "end",
+          "startLine": 115,
+          "endLine": 118,
+          "params": []
+        },
+        {
+          "name": "begin",
+          "startLine": 118,
+          "endLine": 121,
+          "params": []
+        },
+        {
+          "name": "end",
+          "startLine": 122,
+          "endLine": 125,
+          "params": []
+        },
+        {
+          "name": "CalculateOffsetsAndStride",
+          "startLine": 127,
+          "endLine": 137,
+          "params": []
+        },
+        {
+          "name": "~VertexBuffer",
+          "startLine": 146,
+          "endLine": 146,
+          "params": []
+        },
+        {
+          "name": "~IndexBuffer",
+          "startLine": 164,
+          "endLine": 166,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "BufferElement",
+          "startLine": 44,
+          "endLine": 91,
+          "methods": [
+            "BufferElement",
+            "BufferElement",
+            "GetComponentCount"
+          ],
+          "properties": [
+            "Name",
+            "Type",
+            "Offset",
+            "Size",
+            "Normalized",
+            "Instanced"
+          ]
+        },
+        {
+          "name": "BufferLayout",
+          "startLine": 93,
+          "endLine": 142,
+          "methods": [
+            "BufferLayout",
+            "BufferLayout",
+            "GetStride",
+            "begin",
+            "end",
+            "begin",
+            "end",
+            "CalculateOffsetsAndStride"
+          ],
+          "properties": [
+            "m_Elements",
+            "m_Stride"
+          ]
+        },
+        {
+          "name": "VertexBuffer",
+          "startLine": 144,
+          "endLine": 160,
+          "methods": [
+            "~VertexBuffer",
+            "Bind",
+            "Unbind",
+            "SetData",
+            "SetLayout",
+            "Create",
+            "Create"
+          ],
+          "properties": []
+        },
+        {
+          "name": "IndexBuffer",
+          "startLine": 162,
+          "endLine": 174,
+          "methods": [
+            "~IndexBuffer",
+            "Bind",
+            "Unbind",
+            "GetCount",
+            "Create"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "BufferElement",
+          "line": 53,
+          "isDefault": false
+        },
+        {
+          "name": "BufferElement",
+          "line": 55,
+          "isDefault": false
+        },
+        {
+          "name": "GetComponentCount",
+          "line": 60,
+          "isDefault": false
+        },
+        {
+          "name": "BufferElement",
+          "line": 44,
+          "isDefault": false
+        },
+        {
+          "name": "BufferLayout",
+          "line": 96,
+          "isDefault": false
+        },
+        {
+          "name": "BufferLayout",
+          "line": 97,
+          "isDefault": false
+        },
+        {
+          "name": "GetStride",
+          "line": 102,
+          "isDefault": false
+        },
+        {
+          "name": "begin",
+          "line": 111,
+          "isDefault": false
+        },
+        {
+          "name": "end",
+          "line": 115,
+          "isDefault": false
+        },
+        {
+          "name": "begin",
+          "line": 118,
+          "isDefault": false
+        },
+        {
+          "name": "end",
+          "line": 122,
+          "isDefault": false
+        },
+        {
+          "name": "BufferLayout",
+          "line": 93,
+          "isDefault": false
+        },
+        {
+          "name": "~VertexBuffer",
+          "line": 146,
+          "isDefault": false
+        },
+        {
+          "name": "Bind",
+          "line": 148,
+          "isDefault": false
+        },
+        {
+          "name": "Unbind",
+          "line": 149,
+          "isDefault": false
+        },
+        {
+          "name": "SetData",
+          "line": 151,
+          "isDefault": false
+        },
+        {
+          "name": "SetLayout",
+          "line": 154,
+          "isDefault": false
+        },
+        {
+          "name": "Create",
+          "line": 156,
+          "isDefault": false
+        },
+        {
+          "name": "Create",
+          "line": 157,
+          "isDefault": false
+        },
+        {
+          "name": "VertexBuffer",
+          "line": 144,
+          "isDefault": false
+        },
+        {
+          "name": "~IndexBuffer",
+          "line": 164,
+          "isDefault": false
+        },
+        {
+          "name": "Bind",
+          "line": 168,
+          "isDefault": false
+        },
+        {
+          "name": "Unbind",
+          "line": 169,
+          "isDefault": false
+        },
+        {
+          "name": "GetCount",
+          "line": 171,
+          "isDefault": false
+        },
+        {
+          "name": "Create",
+          "line": 173,
+          "isDefault": false
+        },
+        {
+          "name": "IndexBuffer",
+          "line": 162,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ShaderDataTypeSize",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 40
+        },
+        {
+          "caller": "BufferElement",
+          "callee": "ShaderDataTypeSize",
+          "lineNumber": 56
+        },
+        {
+          "caller": "GetComponentCount",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 88
+        },
+        {
+          "caller": "BufferLayout",
+          "callee": "CalculateOffsetsAndStride",
+          "lineNumber": 99
+        },
+        {
+          "caller": "begin",
+          "callee": "begin",
+          "lineNumber": 113
+        },
+        {
+          "caller": "end",
+          "callee": "end",
+          "lineNumber": 117
+        },
+        {
+          "caller": "begin",
+          "callee": "begin",
+          "lineNumber": 120
+        },
+        {
+          "caller": "end",
+          "callee": "end",
+          "lineNumber": 124
+        },
+        {
+          "caller": "CalculateOffsetsAndStride",
+          "callee": "static_cast<uint32_t>",
+          "lineNumber": 134
+        },
+        {
+          "caller": "CalculateOffsetsAndStride",
+          "callee": "static_cast<uint32_t>",
+          "lineNumber": 135
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 26,
+        "functionCount": 14,
+        "classCount": 4
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Renderer.cpp",
+      "language": "cpp",
+      "fileCategory": "code",
+      "totalLines": 45,
+      "nonEmptyLines": 39,
+      "functions": [
+        {
+          "name": "Init",
+          "startLine": 11,
+          "endLine": 18,
+          "params": []
+        },
+        {
+          "name": "OnWindowResize",
+          "startLine": 20,
+          "endLine": 23,
+          "params": [
+            "width",
+            "height"
+          ]
+        },
+        {
+          "name": "BeginScene",
+          "startLine": 25,
+          "endLine": 28,
+          "params": [
+            "camera"
+          ]
+        },
+        {
+          "name": "BeginScene",
+          "startLine": 29,
+          "endLine": 32,
+          "params": [
+            "viewProjection"
+          ]
+        },
+        {
+          "name": "EndScene",
+          "startLine": 33,
+          "endLine": 35,
+          "params": []
+        },
+        {
+          "name": "Submit",
+          "startLine": 36,
+          "endLine": 44,
+          "params": [
+            "shader",
+            "vertexArray",
+            "transform"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Init",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "OnWindowResize",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "BeginScene",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "BeginScene",
+          "line": 29,
+          "isDefault": false
+        },
+        {
+          "name": "EndScene",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "Submit",
+          "line": 36,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "Init",
+          "callee": "HIMII_PROFILE_FUNCTION",
+          "lineNumber": 13
+        },
+        {
+          "caller": "Init",
+          "callee": "RenderCommand::Init",
+          "lineNumber": 15
+        },
+        {
+          "caller": "Init",
+          "callee": "Renderer2D::Init",
+          "lineNumber": 16
+        },
+        {
+          "caller": "Init",
+          "callee": "Renderer3D::Init",
+          "lineNumber": 17
+        },
+        {
+          "caller": "OnWindowResize",
+          "callee": "RenderCommand::SetViewport",
+          "lineNumber": 22
+        },
+        {
+          "caller": "BeginScene",
+          "callee": "GetViewProjectionMatrix",
+          "lineNumber": 27
+        },
+        {
+          "caller": "Submit",
+          "callee": "Bind",
+          "lineNumber": 38
+        },
+        {
+          "caller": "Submit",
+          "callee": "SetMat4",
+          "lineNumber": 39
+        },
+        {
+          "caller": "Submit",
+          "callee": "SetMat4",
+          "lineNumber": 40
+        },
+        {
+          "caller": "Submit",
+          "callee": "Bind",
+          "lineNumber": 42
+        },
+        {
+          "caller": "Submit",
+          "callee": "RenderCommand::DrawIndexed",
+          "lineNumber": 43
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 6,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Renderer.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 34,
+      "nonEmptyLines": 28,
+      "functions": [
+        {
+          "name": "GetAPI",
+          "startLine": 21,
+          "endLine": 24,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "Renderer",
+          "startLine": 8,
+          "endLine": 33,
+          "methods": [
+            "Init",
+            "OnWindowResize",
+            "BeginScene",
+            "BeginScene",
+            "EndScene",
+            "Submit",
+            "GetAPI"
+          ],
+          "properties": [
+            "m_SceneData"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Init",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "OnWindowResize",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "BeginScene",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "BeginScene",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "EndScene",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "Submit",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "GetAPI",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "Renderer",
+          "line": 8,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "GetAPI",
+          "callee": "RendererAPI::GetAPI",
+          "lineNumber": 23
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 8,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Shader.cpp",
+      "language": "cpp",
+      "fileCategory": "code",
+      "totalLines": 68,
+      "nonEmptyLines": 60,
+      "functions": [
+        {
+          "name": "Create",
+          "startLine": 9,
+          "endLine": 20,
+          "params": [
+            "filepath"
+          ]
+        },
+        {
+          "name": "Create",
+          "startLine": 22,
+          "endLine": 33,
+          "params": [
+            "name",
+            "vertexSrc",
+            "fragmentSrc"
+          ]
+        },
+        {
+          "name": "Add",
+          "startLine": 35,
+          "endLine": 39,
+          "params": [
+            "shader"
+          ]
+        },
+        {
+          "name": "Add",
+          "startLine": 41,
+          "endLine": 44,
+          "params": [
+            "name",
+            "shader"
+          ]
+        },
+        {
+          "name": "Load",
+          "startLine": 46,
+          "endLine": 51,
+          "params": [
+            "filepath"
+          ]
+        },
+        {
+          "name": "Load",
+          "startLine": 52,
+          "endLine": 57,
+          "params": [
+            "name",
+            "filepath"
+          ]
+        },
+        {
+          "name": "Get",
+          "startLine": 59,
+          "endLine": 62,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "Exists",
+          "startLine": 64,
+          "endLine": 67,
+          "params": [
+            "name"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Create",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "Create",
+          "line": 22,
+          "isDefault": false
+        },
+        {
+          "name": "Add",
+          "line": 35,
+          "isDefault": false
+        },
+        {
+          "name": "Add",
+          "line": 41,
+          "isDefault": false
+        },
+        {
+          "name": "Load",
+          "line": 46,
+          "isDefault": false
+        },
+        {
+          "name": "Load",
+          "line": 52,
+          "isDefault": false
+        },
+        {
+          "name": "Get",
+          "line": 59,
+          "isDefault": false
+        },
+        {
+          "name": "Exists",
+          "line": 64,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "Create",
+          "callee": "Renderer::GetAPI",
+          "lineNumber": 11
+        },
+        {
+          "caller": "Create",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 14
+        },
+        {
+          "caller": "Create",
+          "callee": "CreateRef<OpenGLShader>",
+          "lineNumber": 17
+        },
+        {
+          "caller": "Create",
+          "callee": "Renderer::GetAPI",
+          "lineNumber": 24
+        },
+        {
+          "caller": "Create",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 27
+        },
+        {
+          "caller": "Create",
+          "callee": "CreateRef<OpenGLShader>",
+          "lineNumber": 30
+        },
+        {
+          "caller": "Add",
+          "callee": "GetName",
+          "lineNumber": 37
+        },
+        {
+          "caller": "Add",
+          "callee": "Add",
+          "lineNumber": 38
+        },
+        {
+          "caller": "Load",
+          "callee": "Shader::Create",
+          "lineNumber": 48
+        },
+        {
+          "caller": "Load",
+          "callee": "Add",
+          "lineNumber": 49
+        },
+        {
+          "caller": "Load",
+          "callee": "Shader::Create",
+          "lineNumber": 54
+        },
+        {
+          "caller": "Load",
+          "callee": "Add",
+          "lineNumber": 55
+        },
+        {
+          "caller": "Exists",
+          "callee": "find",
+          "lineNumber": 66
+        },
+        {
+          "caller": "Exists",
+          "callee": "end",
+          "lineNumber": 66
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 8,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Shader.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 42,
+      "nonEmptyLines": 34,
+      "functions": [
+        {
+          "name": "~Shader",
+          "startLine": 10,
+          "endLine": 10,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "Shader",
+          "startLine": 8,
+          "endLine": 27,
+          "methods": [
+            "~Shader",
+            "Bind",
+            "Unbind",
+            "SetInt",
+            "SetIntArray",
+            "SetFloat",
+            "SetFloat2",
+            "SetFloat3",
+            "SetFloat4",
+            "SetMat4",
+            "Create",
+            "Create"
+          ],
+          "properties": []
+        },
+        {
+          "name": "ShaderLibrary",
+          "startLine": 29,
+          "endLine": 41,
+          "methods": [
+            "Add",
+            "Add",
+            "Load",
+            "Load",
+            "Get",
+            "Exists"
+          ],
+          "properties": [
+            "m_Shaders"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "~Shader",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "Bind",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "Unbind",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "SetInt",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "SetIntArray",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "SetFloat",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "SetFloat2",
+          "line": 18,
+          "isDefault": false
+        },
+        {
+          "name": "SetFloat3",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "SetFloat4",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "SetMat4",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "Create",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "Create",
+          "line": 26,
+          "isDefault": false
+        },
+        {
+          "name": "Shader",
+          "line": 8,
+          "isDefault": false
+        },
+        {
+          "name": "Add",
+          "line": 31,
+          "isDefault": false
+        },
+        {
+          "name": "Add",
+          "line": 32,
+          "isDefault": false
+        },
+        {
+          "name": "Load",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "Load",
+          "line": 34,
+          "isDefault": false
+        },
+        {
+          "name": "Get",
+          "line": 36,
+          "isDefault": false
+        },
+        {
+          "name": "Exists",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "ShaderLibrary",
+          "line": 29,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 20,
+        "functionCount": 1,
+        "classCount": 2
+      }
+    }
+  ]
+}

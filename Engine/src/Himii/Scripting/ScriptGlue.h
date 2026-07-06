@@ -34,6 +34,28 @@ namespace Himii
         void *Rigidbody2D_GetLinearVelocity;
         void *Rigidbody2D_SetLinearVelocity;
 
+        void *BoxCollider2D_GetOffset;
+        void *BoxCollider2D_SetOffset;
+        void *BoxCollider2D_GetSize;
+        void *BoxCollider2D_SetSize;
+        void *BoxCollider2D_GetDensity;
+        void *BoxCollider2D_SetDensity;
+        void *BoxCollider2D_GetFriction;
+        void *BoxCollider2D_SetFriction;
+        void *BoxCollider2D_GetRestitution;
+        void *BoxCollider2D_SetRestitution;
+
+        void *CircleCollider2D_GetOffset;
+        void *CircleCollider2D_SetOffset;
+        void *CircleCollider2D_GetRadius;
+        void *CircleCollider2D_SetRadius;
+        void *CircleCollider2D_GetDensity;
+        void *CircleCollider2D_SetDensity;
+        void *CircleCollider2D_GetFriction;
+        void *CircleCollider2D_SetFriction;
+        void *CircleCollider2D_GetRestitution;
+        void *CircleCollider2D_SetRestitution;
+
         // Tilemap
         void *Tilemap_GetSize;
         void *Tilemap_SetSize;
@@ -69,6 +91,41 @@ namespace Himii
         void *SpriteAnimation_SetCurrentAnimationName;
 
         void *Tilemap_GetBounds;
+
+        void *Input_IsKeyPressed;
+        void *Input_IsKeyReleased;
+        void *Input_GetAxisHorizontal;
+        void *Input_GetAxisVertical;
+
+        void *Rigidbody2D_GetBodyType;
+        void *Rigidbody2D_SetBodyType;
+        void *Rigidbody2D_GetFixedRotation;
+        void *Rigidbody2D_SetFixedRotation;
+
+        void *BoxCollider2D_GetIsTrigger;
+        void *BoxCollider2D_SetIsTrigger;
+        void *BoxCollider2D_GetLayer;
+        void *BoxCollider2D_SetLayer;
+
+        void *CircleCollider2D_GetIsTrigger;
+        void *CircleCollider2D_SetIsTrigger;
+        void *CircleCollider2D_GetLayer;
+        void *CircleCollider2D_SetLayer;
+
+        void *SpriteRenderer_GetSortingLayer;
+        void *SpriteRenderer_SetSortingLayer;
+        void *SpriteRenderer_GetSortingOrder;
+        void *SpriteRenderer_SetSortingOrder;
+
+        void *Camera_GetOrthographicSize;
+        void *Camera_SetOrthographicSize;
+        void *Camera_GetBackgroundColor;
+        void *Camera_SetBackgroundColor;
+        void *Camera_GetPrimary;
+        void *Camera_SetPrimary;
+
+        void *SceneManager_GetActiveScenePath;
+        void *Scene_InstantiatePrefab;
     };
 
     class ScriptGlue {

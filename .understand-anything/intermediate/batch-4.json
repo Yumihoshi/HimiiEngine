@@ -1,0 +1,647 @@
+{
+  "nodes": [
+    {
+      "id": "file:Engine/src/Hepch.h",
+      "type": "file",
+      "name": "Hepch.h",
+      "filePath": "Engine/src/Hepch.h",
+      "summary": "预编译头文件（PCH），汇总引擎核心模块的通用头文件，包括标准库、Windows API、Core.h、Log.h 和 Instrumentor.h，并处理 Windows 平台下的 NOMINMAX 与 NEAR/FAR 宏冲突。",
+      "tags": ["precompiled-header", "barrel", "core", "platform-abstraction"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:Engine/src/Himii/Core/ConsoleLog.cpp",
+      "type": "file",
+      "name": "ConsoleLog.cpp",
+      "filePath": "Engine/src/Himii/Core/ConsoleLog.cpp",
+      "summary": "实现编辑器内控制台日志的静态存储与操作，包括带时间戳的日志条目推送（环形缓冲区）、读取和清空，所有操作均通过互斥锁保证线程安全。",
+      "tags": ["logging", "console", "thread-safe", "utility"],
+      "complexity": "simple",
+      "languageNotes": "使用 std::lock_guard 与 static std::mutex 实现线程安全的日志写入；通过环形缓冲区限制最大条目数（MaxEntries=2000）。"
+    },
+    {
+      "id": "file:Engine/src/Himii/Core/ConsoleLog.h",
+      "type": "file",
+      "name": "ConsoleLog.h",
+      "filePath": "Engine/src/Himii/Core/ConsoleLog.h",
+      "summary": "定义控制台日志的数据结构 ConsoleLogEntry 和静态工具类 ConsoleLog，提供编辑器内日志的推送、查询与清空接口，依赖 Log.h 中的 LogLevel 枚举。",
+      "tags": ["data-model", "logging", "console", "type-definition"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:Engine/src/Himii/Core/Core.h",
+      "type": "file",
+      "name": "Core.h",
+      "filePath": "Engine/src/Himii/Core/Core.h",
+      "summary": "引擎核心基础定义，提供 Scope/Ref 智能指针类型别名、CreateScope/CreateRef 工厂模板函数以及 BIT 和 BIND_EVENT_FN 宏，是整个引擎内存管理的基础。",
+      "tags": ["core", "memory-management", "type-definition", "utility"],
+      "complexity": "simple",
+      "languageNotes": "使用 C++ 可变参数模板与完美转发（std::forward）实现智能指针工厂函数，Scope 映射 std::unique_ptr，Ref 映射 std::shared_ptr。"
+    },
+    {
+      "id": "file:Engine/src/Himii/Core/Log.cpp",
+      "type": "file",
+      "name": "Log.cpp",
+      "filePath": "Engine/src/Himii/Core/Log.cpp",
+      "summary": "实现基于 spdlog 的日志系统，支持控制台彩色输出（Debug 模式）和文件输出，提供分级日志打印、格式化输出、断言失败处理（含调试中断与 abort），并同步将日志推送到 ConsoleLog。",
+      "tags": ["logging", "spdlog", "assertion", "debugging"],
+      "complexity": "moderate",
+      "languageNotes": "集成 spdlog 库实现双通道日志（CORE 与 APP）；断言失败时根据平台调用 __debugbreak()（Windows）或 __builtin_trap()（Unix），最终调用 std::abort()。"
+    },
+    {
+      "id": "file:Engine/src/Himii/Core/Log.h",
+      "type": "file",
+      "name": "Log.h",
+      "filePath": "Engine/src/Himii/Core/Log.h",
+      "summary": "定义 LogLevel 枚举和静态日志类 Log，声明日志初始化、打印、断言等方法，并提供 HIMII_TRACE/INFO/WARNING/ERROR 系列便捷宏以及可变参数模板方法 PrintFormatted/AssertFormatted。",
+      "tags": ["logging", "api-definition", "macro", "spdlog"],
+      "complexity": "moderate",
+      "languageNotes": "使用 spdlog 作为底层日志库；通过预处理器宏封装日志调用以简化使用；断言宏在 Release 模式下定义为空操作（((void)0)）。"
+    },
+    {
+      "id": "file:Engine/src/Himii/Instrument/Instrumentor.h",
+      "type": "file",
+      "name": "Instrumentor.h",
+      "filePath": "Engine/src/Himii/Instrument/Instrumentor.h",
+      "summary": "Header-only 性能分析 instrumentation 库，提供基于 Chrome Tracing JSON 格式的 profiling 功能，包含单例 Instrumentor 管理会话与输出，以及 RAII 风格的 InstrumentationTimer 自动计时代理。",
+      "tags": ["profiling", "instrumentation", "performance", "header-only", "debugging"],
+      "complexity": "complex",
+      "languageNotes": "采用单例模式（Meyers Singleton）管理全局 Instrumentor 实例；InstrumentationTimer 利用 RAII 模式在析构时自动停止计时；输出兼容 Chrome://tracing 的 JSON 事件格式；通过 HIMII_PROFILE 宏控制编译开关。"
+    },
+    {
+      "id": "function:Engine/src/Himii/Core/ConsoleLog.cpp:Push",
+      "type": "function",
+      "name": "Push",
+      "filePath": "Engine/src/Himii/Core/ConsoleLog.cpp",
+      "lineRange": [19, 27],
+      "summary": "向控制台日志缓冲区追加一条带时间戳的日志条目，当缓冲区超过最大容量时移除最旧条目，操作受互斥锁保护。",
+      "tags": ["logging", "console", "thread-safe"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Core/ConsoleLog.cpp:GetEntries",
+      "type": "function",
+      "name": "GetEntries",
+      "filePath": "Engine/src/Himii/Core/ConsoleLog.cpp",
+      "lineRange": [29, 33],
+      "summary": "以线程安全的方式返回当前所有控制台日志条目的快照副本。",
+      "tags": ["logging", "console", "thread-safe"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Core/ConsoleLog.cpp:Clear",
+      "type": "function",
+      "name": "Clear",
+      "filePath": "Engine/src/Himii/Core/ConsoleLog.cpp",
+      "lineRange": [35, 39],
+      "summary": "以线程安全的方式清空所有控制台日志条目。",
+      "tags": ["logging", "console", "thread-safe"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Core/ConsoleLog.h:ConsoleLogEntry",
+      "type": "class",
+      "name": "ConsoleLogEntry",
+      "filePath": "Engine/src/Himii/Core/ConsoleLog.h",
+      "lineRange": [11, 17],
+      "summary": "控制台日志条目数据结构，包含日志级别、消息内容、来源名称和时间戳。",
+      "tags": ["data-model", "logging"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Core/ConsoleLog.h:ConsoleLog",
+      "type": "class",
+      "name": "ConsoleLog",
+      "filePath": "Engine/src/Himii/Core/ConsoleLog.h",
+      "lineRange": [19, 31],
+      "summary": "静态工具类，管理编辑器内控制台日志的环形缓冲区，提供线程安全的 Push、GetEntries 和 Clear 静态方法，最大容量 2000 条。",
+      "tags": ["logging", "console", "utility", "thread-safe"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Core/Log.cpp:GetFileName",
+      "type": "function",
+      "name": "GetFileName",
+      "filePath": "Engine/src/Himii/Core/Log.cpp",
+      "lineRange": [14, 19],
+      "summary": "从完整文件路径中提取文件名（支持正斜杠和反斜杠），辅助日志输出显示源文件信息。",
+      "tags": ["utility", "path", "logging"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Core/Log.cpp:Init",
+      "type": "function",
+      "name": "Init",
+      "filePath": "Engine/src/Himii/Core/Log.cpp",
+      "lineRange": [21, 45],
+      "summary": "初始化 spdlog 日志系统，创建 CORE 和 APP 两个 logger 实例；Debug 模式下启用彩色控制台输出，可选启用文件日志输出。",
+      "tags": ["logging", "initialization", "spdlog"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Core/Log.cpp:ConvertLogLevel",
+      "type": "function",
+      "name": "ConvertLogLevel",
+      "filePath": "Engine/src/Himii/Core/Log.cpp",
+      "lineRange": [47, 66],
+      "summary": "将引擎自定义的 LogLevel 枚举值映射为 spdlog 对应的日志级别，统一处理 Core 和 Client 级别的转换。",
+      "tags": ["logging", "conversion", "spdlog"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Core/Log.cpp:PrintMessage",
+      "type": "function",
+      "name": "PrintMessage",
+      "filePath": "Engine/src/Himii/Core/Log.cpp",
+      "lineRange": [68, 81],
+      "summary": "以带来源标签的格式化消息输出日志，自动区分 Core 和 Client logger，并同步推送到 ConsoleLog 供编辑器面板显示。",
+      "tags": ["logging", "output", "spdlog"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Core/Log.cpp:Print",
+      "type": "function",
+      "name": "Print",
+      "filePath": "Engine/src/Himii/Core/Log.cpp",
+      "lineRange": [83, 95],
+      "summary": "输出带完整源位置信息（文件名、函数名、行号）的格式化日志，按级别分发到 Core 或 Client logger，并同步推送到 ConsoleLog。",
+      "tags": ["logging", "output", "spdlog"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Core/Log.cpp:Assert",
+      "type": "function",
+      "name": "Assert",
+      "filePath": "Engine/src/Himii/Core/Log.cpp",
+      "lineRange": [97, 103],
+      "summary": "断言检查入口，当条件为 false 时委托 HandleAssertFailure 执行断言失败处理流程。",
+      "tags": ["assertion", "debugging"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Core/Log.cpp:HandleAssertFailure",
+      "type": "function",
+      "name": "HandleAssertFailure",
+      "filePath": "Engine/src/Himii/Core/Log.cpp",
+      "lineRange": [105, 126],
+      "summary": "断言失败处理核心：输出 critical 级别日志、刷新所有 logger，Debug 模式下触发调试中断（__debugbreak / __builtin_trap），最终调用 abort 终止程序。",
+      "tags": ["assertion", "debugging", "error-handling"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:Engine/src/Himii/Core/Log.h:Log",
+      "type": "class",
+      "name": "Log",
+      "filePath": "Engine/src/Himii/Core/Log.h",
+      "lineRange": [20, 56],
+      "summary": "引擎静态日志类，封装 spdlog 的初始化、日志打印（Print/PrintMessage）、断言（Assert）和格式化变参模板方法（PrintFormatted/AssertFormatted），管理 CORE 和 CLIENT 两个 logger 实例。",
+      "tags": ["logging", "api-definition", "utility", "spdlog"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:Engine/src/Himii/Instrument/Instrumentor.h:ProfileResult",
+      "type": "class",
+      "name": "ProfileResult",
+      "filePath": "Engine/src/Himii/Instrument/Instrumentor.h",
+      "lineRange": [13, 17],
+      "summary": "性能分析结果数据结构，记录被测函数的名称、起止时间戳（微秒）和线程 ID。",
+      "tags": ["data-model", "profiling"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Instrument/Instrumentor.h:InstrumentationSession",
+      "type": "class",
+      "name": "InstrumentationSession",
+      "filePath": "Engine/src/Himii/Instrument/Instrumentor.h",
+      "lineRange": [19, 21],
+      "summary": "性能分析会话元数据，仅包含会话名称。",
+      "tags": ["data-model", "profiling"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Instrument/Instrumentor.h:Instrumentor",
+      "type": "class",
+      "name": "Instrumentor",
+      "filePath": "Engine/src/Himii/Instrument/Instrumentor.h",
+      "lineRange": [23, 88],
+      "summary": "性能分析器单例类，管理 profiling 会话的创建与结束，将 ProfileResult 写入 Chrome Tracing 兼容的 JSON 文件，通过静态 Get() 方法提供全局访问。",
+      "tags": ["profiling", "singleton", "serialization"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:Engine/src/Himii/Instrument/Instrumentor.h:InstrumentationTimer",
+      "type": "class",
+      "name": "InstrumentationTimer",
+      "filePath": "Engine/src/Himii/Instrument/Instrumentor.h",
+      "lineRange": [90, 123],
+      "summary": "RAII 计时代理类，构造时记录起始时间点，析构时自动停止计时并将结果写入全局 Instrumentor；支持手动 Stop() 提前结束计时。",
+      "tags": ["profiling", "raii", "timer"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Instrument/Instrumentor.h:BeginSession",
+      "type": "function",
+      "name": "BeginSession",
+      "filePath": "Engine/src/Himii/Instrument/Instrumentor.h",
+      "lineRange": [34, 39],
+      "summary": "开启一个新的 profiling 会话，创建输出文件、写入 JSON 头部，并初始化 InstrumentationSession。",
+      "tags": ["profiling", "session-management"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Instrument/Instrumentor.h:EndSession",
+      "type": "function",
+      "name": "EndSession",
+      "filePath": "Engine/src/Himii/Instrument/Instrumentor.h",
+      "lineRange": [41, 48],
+      "summary": "结束当前 profiling 会话，写入 JSON 尾部，关闭输出文件并释放会话资源。",
+      "tags": ["profiling", "session-management"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Instrument/Instrumentor.h:WriteProfile",
+      "type": "function",
+      "name": "WriteProfile",
+      "filePath": "Engine/src/Himii/Instrument/Instrumentor.h",
+      "lineRange": [50, 69],
+      "summary": "将单个性能分析结果序列化为 Chrome Tracing 兼容的 JSON 事件格式并写入输出流，自动处理逗号分隔和引号转义。",
+      "tags": ["profiling", "serialization", "json"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Instrument/Instrumentor.h:WriteHeader",
+      "type": "function",
+      "name": "WriteHeader",
+      "filePath": "Engine/src/Himii/Instrument/Instrumentor.h",
+      "lineRange": [71, 75],
+      "summary": "写入 Chrome Tracing JSON 格式的文档头部（otherData 和 traceEvents 数组起始）。",
+      "tags": ["profiling", "serialization", "json"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Instrument/Instrumentor.h:WriteFooter",
+      "type": "function",
+      "name": "WriteFooter",
+      "filePath": "Engine/src/Himii/Instrument/Instrumentor.h",
+      "lineRange": [77, 81],
+      "summary": "写入 Chrome Tracing JSON 格式的文档尾部（闭合数组和对象）。",
+      "tags": ["profiling", "serialization", "json"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Instrument/Instrumentor.h:Stop",
+      "type": "function",
+      "name": "Stop",
+      "filePath": "Engine/src/Himii/Instrument/Instrumentor.h",
+      "lineRange": [103, 117],
+      "summary": "停止计时，计算起止时间差（微秒精度），生成 ProfileResult 并提交给全局 Instrumentor 写入输出文件，标记计时器为已停止。",
+      "tags": ["profiling", "timer", "raii"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:Engine/src/Hepch.h",
+      "target": "file:Engine/src/Himii/Core/Core.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:Engine/src/Hepch.h",
+      "target": "file:Engine/src/Himii/Core/Log.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:Engine/src/Hepch.h",
+      "target": "file:Engine/src/Himii/Instrument/Instrumentor.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/ConsoleLog.cpp",
+      "target": "file:Engine/src/Himii/Core/ConsoleLog.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/Log.cpp",
+      "target": "file:Engine/src/Himii/Core/ConsoleLog.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/Log.cpp",
+      "target": "file:Engine/src/Himii/Core/Log.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/ConsoleLog.cpp",
+      "target": "function:Engine/src/Himii/Core/ConsoleLog.cpp:Push",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/ConsoleLog.cpp",
+      "target": "function:Engine/src/Himii/Core/ConsoleLog.cpp:GetEntries",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/ConsoleLog.cpp",
+      "target": "function:Engine/src/Himii/Core/ConsoleLog.cpp:Clear",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/ConsoleLog.h",
+      "target": "class:Engine/src/Himii/Core/ConsoleLog.h:ConsoleLogEntry",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/ConsoleLog.h",
+      "target": "class:Engine/src/Himii/Core/ConsoleLog.h:ConsoleLog",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/Log.cpp",
+      "target": "function:Engine/src/Himii/Core/Log.cpp:GetFileName",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/Log.cpp",
+      "target": "function:Engine/src/Himii/Core/Log.cpp:Init",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/Log.cpp",
+      "target": "function:Engine/src/Himii/Core/Log.cpp:ConvertLogLevel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/Log.cpp",
+      "target": "function:Engine/src/Himii/Core/Log.cpp:PrintMessage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/Log.cpp",
+      "target": "function:Engine/src/Himii/Core/Log.cpp:Print",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/Log.cpp",
+      "target": "function:Engine/src/Himii/Core/Log.cpp:Assert",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/Log.cpp",
+      "target": "function:Engine/src/Himii/Core/Log.cpp:HandleAssertFailure",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/Log.h",
+      "target": "class:Engine/src/Himii/Core/Log.h:Log",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Instrument/Instrumentor.h",
+      "target": "class:Engine/src/Himii/Instrument/Instrumentor.h:ProfileResult",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Instrument/Instrumentor.h",
+      "target": "class:Engine/src/Himii/Instrument/Instrumentor.h:InstrumentationSession",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Instrument/Instrumentor.h",
+      "target": "class:Engine/src/Himii/Instrument/Instrumentor.h:Instrumentor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Instrument/Instrumentor.h",
+      "target": "class:Engine/src/Himii/Instrument/Instrumentor.h:InstrumentationTimer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Instrument/Instrumentor.h",
+      "target": "function:Engine/src/Himii/Instrument/Instrumentor.h:BeginSession",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Instrument/Instrumentor.h",
+      "target": "function:Engine/src/Himii/Instrument/Instrumentor.h:EndSession",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Instrument/Instrumentor.h",
+      "target": "function:Engine/src/Himii/Instrument/Instrumentor.h:WriteProfile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Instrument/Instrumentor.h",
+      "target": "function:Engine/src/Himii/Instrument/Instrumentor.h:WriteHeader",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Instrument/Instrumentor.h",
+      "target": "function:Engine/src/Himii/Instrument/Instrumentor.h:WriteFooter",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Instrument/Instrumentor.h",
+      "target": "function:Engine/src/Himii/Instrument/Instrumentor.h:Stop",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/ConsoleLog.cpp",
+      "target": "function:Engine/src/Himii/Core/ConsoleLog.cpp:Push",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/ConsoleLog.cpp",
+      "target": "function:Engine/src/Himii/Core/ConsoleLog.cpp:GetEntries",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/ConsoleLog.cpp",
+      "target": "function:Engine/src/Himii/Core/ConsoleLog.cpp:Clear",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/ConsoleLog.h",
+      "target": "class:Engine/src/Himii/Core/ConsoleLog.h:ConsoleLogEntry",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/ConsoleLog.h",
+      "target": "class:Engine/src/Himii/Core/ConsoleLog.h:ConsoleLog",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/Log.cpp",
+      "target": "function:Engine/src/Himii/Core/Log.cpp:GetFileName",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/Log.cpp",
+      "target": "function:Engine/src/Himii/Core/Log.cpp:Init",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/Log.cpp",
+      "target": "function:Engine/src/Himii/Core/Log.cpp:ConvertLogLevel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/Log.cpp",
+      "target": "function:Engine/src/Himii/Core/Log.cpp:PrintMessage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/Log.cpp",
+      "target": "function:Engine/src/Himii/Core/Log.cpp:Print",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/Log.cpp",
+      "target": "function:Engine/src/Himii/Core/Log.cpp:Assert",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/Log.cpp",
+      "target": "function:Engine/src/Himii/Core/Log.cpp:HandleAssertFailure",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/Log.h",
+      "target": "class:Engine/src/Himii/Core/Log.h:Log",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Instrument/Instrumentor.h",
+      "target": "class:Engine/src/Himii/Instrument/Instrumentor.h:ProfileResult",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Instrument/Instrumentor.h",
+      "target": "class:Engine/src/Himii/Instrument/Instrumentor.h:InstrumentationSession",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Instrument/Instrumentor.h",
+      "target": "class:Engine/src/Himii/Instrument/Instrumentor.h:Instrumentor",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Instrument/Instrumentor.h",
+      "target": "class:Engine/src/Himii/Instrument/Instrumentor.h:InstrumentationTimer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Core/Log.cpp:PrintMessage",
+      "target": "function:Engine/src/Himii/Core/ConsoleLog.cpp:Push",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Core/Log.cpp:Print",
+      "target": "function:Engine/src/Himii/Core/ConsoleLog.cpp:Push",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Core/ConsoleLog.h",
+      "target": "file:Engine/src/Himii/Core/Log.h",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    }
+  ]
+}

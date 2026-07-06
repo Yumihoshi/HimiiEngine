@@ -370,6 +370,8 @@ namespace Himii
                         icon = m_ScriptIcon;
                     else if (path.extension() == ".himii")
                         icon = m_SceneIcon;
+                    else if (path.extension() == ".hprefab")
+                        icon = m_SceneIcon;
 
                     Ref<Texture2D> imageThumbnail;
                     if (!directoryEntry.is_directory() && IsImageFileExtension(path))
@@ -636,6 +638,7 @@ namespace Himii
         if (!file.is_open())
             return false;
 
+        file << "using HimiiEngine;\n\n";
         file << "public class " << className << " : Entity\n";
         file << "{\n";
         file << "    [SerializeField]\n";

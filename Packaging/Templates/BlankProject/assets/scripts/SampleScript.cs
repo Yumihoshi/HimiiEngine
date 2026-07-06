@@ -1,3 +1,5 @@
+using HimiiEngine;
+
 public class SampleScript : Entity
 {
     [SerializeField]

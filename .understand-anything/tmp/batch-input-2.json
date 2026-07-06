@@ -1,0 +1,269 @@
+{
+  "projectRoot": "D:/Himii-Engine",
+  "batchIndex": 2,
+  "totalBatches": 14,
+  "files": [
+    {
+      "path": "HimiiEditor/src/EditorLayer.h",
+      "language": "c",
+      "sizeLines": 215,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/HimiiApp.cpp",
+      "language": "cpp",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "language": "cpp",
+      "sizeLines": 1057,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/AnimationEditorPanel.h",
+      "language": "c",
+      "sizeLines": 86,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/ConsolePanel.cpp",
+      "language": "cpp",
+      "sizeLines": 67,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/ConsolePanel.h",
+      "language": "c",
+      "sizeLines": 14,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "language": "cpp",
+      "sizeLines": 655,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/ContentBrowserPanel.h",
+      "language": "c",
+      "sizeLines": 64,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/EditorPreferencesPanel.cpp",
+      "language": "cpp",
+      "sizeLines": 90,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/EditorPreferencesPanel.h",
+      "language": "c",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "language": "cpp",
+      "sizeLines": 335,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/ParticleEmitterEditorPanel.h",
+      "language": "c",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/ProjectSettingsPanel.cpp",
+      "language": "cpp",
+      "sizeLines": 99,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/ProjectSettingsPanel.h",
+      "language": "c",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "language": "cpp",
+      "sizeLines": 1692,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/SceneHierarchyPanel.h",
+      "language": "c",
+      "sizeLines": 79,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/ScriptConsolePanel.cpp",
+      "language": "cpp",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/ScriptConsolePanel.h",
+      "language": "c",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "language": "cpp",
+      "sizeLines": 526,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/TextureInspectorPanel.h",
+      "language": "c",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "language": "cpp",
+      "sizeLines": 765,
+      "fileCategory": "code"
+    },
+    {
+      "path": "HimiiEditor/src/panel/TileMapEditorPanel.h",
+      "language": "c",
+      "sizeLines": 91,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "HimiiEditor/src/EditorLayer.h": [
+      "HimiiEditor/src/commands/EditorCommandHistory.h",
+      "HimiiEditor/src/panel/AnimationEditorPanel.h",
+      "HimiiEditor/src/panel/ConsolePanel.h",
+      "HimiiEditor/src/panel/ContentBrowserPanel.h",
+      "HimiiEditor/src/panel/EditorPreferencesPanel.h",
+      "HimiiEditor/src/panel/ParticleEmitterEditorPanel.h",
+      "HimiiEditor/src/panel/ProjectSettingsPanel.h",
+      "HimiiEditor/src/panel/SceneHierarchyPanel.h",
+      "HimiiEditor/src/panel/ScriptConsolePanel.h",
+      "HimiiEditor/src/panel/TextureInspectorPanel.h",
+      "HimiiEditor/src/panel/TileMapEditorPanel.h"
+    ],
+    "HimiiEditor/src/HimiiApp.cpp": [
+      "HimiiEditor/src/EditorLayer.h"
+    ],
+    "HimiiEditor/src/panel/AnimationEditorPanel.cpp": [
+      "HimiiEditor/src/panel/AnimationEditorPanel.h"
+    ],
+    "HimiiEditor/src/panel/AnimationEditorPanel.h": [],
+    "HimiiEditor/src/panel/ConsolePanel.cpp": [
+      "HimiiEditor/src/panel/ConsolePanel.h"
+    ],
+    "HimiiEditor/src/panel/ConsolePanel.h": [],
+    "HimiiEditor/src/panel/ContentBrowserPanel.cpp": [
+      "HimiiEditor/src/panel/ContentBrowserPanel.h"
+    ],
+    "HimiiEditor/src/panel/ContentBrowserPanel.h": [],
+    "HimiiEditor/src/panel/EditorPreferencesPanel.cpp": [
+      "HimiiEditor/src/panel/EditorPreferencesPanel.h"
+    ],
+    "HimiiEditor/src/panel/EditorPreferencesPanel.h": [],
+    "HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp": [
+      "HimiiEditor/src/panel/ParticleEmitterEditorPanel.h"
+    ],
+    "HimiiEditor/src/panel/ParticleEmitterEditorPanel.h": [],
+    "HimiiEditor/src/panel/ProjectSettingsPanel.cpp": [
+      "HimiiEditor/src/panel/ProjectSettingsPanel.h"
+    ],
+    "HimiiEditor/src/panel/ProjectSettingsPanel.h": [],
+    "HimiiEditor/src/panel/SceneHierarchyPanel.cpp": [
+      "HimiiEditor/src/panel/SceneHierarchyPanel.h"
+    ],
+    "HimiiEditor/src/panel/SceneHierarchyPanel.h": [],
+    "HimiiEditor/src/panel/ScriptConsolePanel.cpp": [
+      "HimiiEditor/src/panel/ScriptConsolePanel.h"
+    ],
+    "HimiiEditor/src/panel/ScriptConsolePanel.h": [],
+    "HimiiEditor/src/panel/TextureInspectorPanel.cpp": [
+      "HimiiEditor/src/panel/TextureInspectorPanel.h"
+    ],
+    "HimiiEditor/src/panel/TextureInspectorPanel.h": [],
+    "HimiiEditor/src/panel/TileMapEditorPanel.cpp": [
+      "HimiiEditor/src/panel/TileMapEditorPanel.h"
+    ],
+    "HimiiEditor/src/panel/TileMapEditorPanel.h": []
+  },
+  "neighborMap": {
+    "HimiiEditor/src/EditorLayer.h": [
+      {
+        "path": "HimiiEditor/src/commands/EditorCommandHistory.h",
+        "batchIndex": 3,
+        "symbols": [
+          "Execute",
+          "Undo",
+          "Redo",
+          "Clear",
+          "CanUndo",
+          "CanRedo",
+          "EditorCommandHistory"
+        ]
+      },
+      {
+        "path": "HimiiEditor/src/EditorLayer.cpp",
+        "batchIndex": 3,
+        "symbols": [
+          "EditorLayer",
+          "OnAttach",
+          "ApplySplashWindowSize",
+          "TransitionToEditorWindow",
+          "AdvanceEditorStartupLoading",
+          "OnDetach",
+          "OnUpdate",
+          "OnImGuiRender",
+          "OnEvent",
+          "OnKeyPressed",
+          "OnMouseButtonPressed",
+          "UpdateTilemapHoverFromInput",
+          "OnOverlayRender",
+          "CreateProject",
+          "OpenProject",
+          "UpdateEditorCameraForActiveProject",
+          "UpdateMainWindowTitle",
+          "DrawMainMenuBar",
+          "BuildProject",
+          "OpenCSProject",
+          "NewScene",
+          "LoadRecentProjects",
+          "SaveRecentProjects",
+          "DrawStartupSplash",
+          "DrawProjectHub",
+          "OpenScene",
+          "OpenScene",
+          "SaveScene",
+          "SaveProject",
+          "SaveSceneAs",
+          "SerializeScene",
+          "OnScenePlay",
+          "StartScenePlay",
+          "OnSceneSimulate",
+          "OnSceneStop",
+          "OnDuplicateEntity",
+          "RequestScriptCompile",
+          "CompileAndReloadScripts",
+          "UI_Toolbar",
+          "IsTilemapMoveEntityActive",
+          "UpdateTilemapPaintSession",
+          "IsTilemapEditContextActive",
+          "IsTilemapPaintActive",
+          "TryGetTilemapPaintContext",
+          "HandleTilemapScenePaint",
+          "ResetTilemapBoxSelection",
+          "DrawTilemapBoxSelectionOverlay",
+          "DrawTilemapGhostPreviewInViewport",
+          "DrawTilemapEditOverlay"
+        ]
+      }
+    ]
+  }
+}

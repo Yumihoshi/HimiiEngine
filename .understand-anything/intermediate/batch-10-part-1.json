@@ -1,0 +1,1589 @@
+{
+  "nodes": [
+    {
+      "id": "file:Engine/src/Himii/Asset/Asset.h",
+      "type": "file",
+      "name": "Asset.h",
+      "filePath": "Engine/src/Himii/Asset/Asset.h",
+      "summary": "定义 Asset 基类、AssetType 枚举以及类型与字符串互相转换的工具函数，为引擎资源系统提供抽象基类。",
+      "tags": [
+        "data-model",
+        "基类",
+        "资源系统",
+        "类型定义"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "type": "file",
+      "name": "AssetManager.cpp",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.cpp",
+      "summary": "实现资产管理器的所有核心功能，包括资产导入、注册表序列化、精灵注册/解析、纹理元数据管理和图集网格切片。",
+      "tags": [
+        "资源管理",
+        "序列化",
+        "精灵系统",
+        "纹理管理"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:Engine/src/Himii/Asset/AssetManager.h",
+      "type": "file",
+      "name": "AssetManager.h",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.h",
+      "summary": "声明资产管理器单例类及其数据结构，包括 SpriteRegistryEntry 和完整的资产管理公开 API。",
+      "tags": [
+        "资源管理",
+        "数据结构",
+        "api",
+        "精灵系统"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:Engine/src/Himii/Asset/AssetMetadata.h",
+      "type": "file",
+      "name": "AssetMetadata.h",
+      "filePath": "Engine/src/Himii/Asset/AssetMetadata.h",
+      "summary": "定义 AssetMetadata 结构体，描述资源的运行时元数据（句柄、类型、文件路径、加载状态）。",
+      "tags": [
+        "数据结构",
+        "资源系统",
+        "元数据"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "type": "file",
+      "name": "AssetSerializer.cpp",
+      "filePath": "Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "summary": "实现粒子发射器、精灵动画、TileSet 和 TileMapData 四种资产的 YAML 序列化与反序列化逻辑。",
+      "tags": [
+        "序列化",
+        "yaml",
+        "资产管道",
+        "精灵动画",
+        "tilemap"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:Engine/src/Himii/Asset/AssetSerializer.h",
+      "type": "file",
+      "name": "AssetSerializer.h",
+      "filePath": "Engine/src/Himii/Asset/AssetSerializer.h",
+      "summary": "声明四个资产序列化器类（ParticleEmitter、SpriteAnimation、TileSet、TileMapData），提供统一的 Serialize/Deserialize 接口。",
+      "tags": [
+        "序列化",
+        "api",
+        "资源系统",
+        "精灵动画",
+        "tilemap"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:Engine/src/Himii/Asset/PackFile.cpp",
+      "type": "file",
+      "name": "PackFile.cpp",
+      "filePath": "Engine/src/Himii/Asset/PackFile.cpp",
+      "summary": "实现 PackFile 打包文件的读写功能，包括二进制文件头的解析、索引构建、条目读取和打包文件生成。",
+      "tags": [
+        "文件系统",
+        "二进制格式",
+        "资源打包",
+        "i/o"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:Engine/src/Himii/Asset/PackFile.h",
+      "type": "file",
+      "name": "PackFile.h",
+      "filePath": "Engine/src/Himii/Asset/PackFile.h",
+      "summary": "声明 PackFileReader 和 PackFileWriter 两个类，提供打包文件的打开、读取和写入功能。",
+      "tags": [
+        "文件系统",
+        "i/o",
+        "资源打包",
+        "api"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:Engine/src/Himii/Asset/PackFileFormat.h",
+      "type": "file",
+      "name": "PackFileFormat.h",
+      "filePath": "Engine/src/Himii/Asset/PackFileFormat.h",
+      "summary": "定义 PackFile 二进制文件格式的数据结构（PackFileHeader 和 PackFileIndexEntry），包含魔数、版本号和索引布局。",
+      "tags": [
+        "数据结构",
+        "二进制格式",
+        "资源打包",
+        "文件格式"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/Asset.h:AssetTypeToString",
+      "type": "function",
+      "name": "AssetTypeToString",
+      "filePath": "Engine/src/Himii/Asset/Asset.h",
+      "lineRange": [
+        30,
+        43
+      ],
+      "summary": "将 AssetType 枚举值转换为对应的字符串名称。",
+      "tags": [
+        "类型转换",
+        "工具函数"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/Asset.h:AssetTypeFromString",
+      "type": "function",
+      "name": "AssetTypeFromString",
+      "filePath": "Engine/src/Himii/Asset/Asset.h",
+      "lineRange": [
+        45,
+        56
+      ],
+      "summary": "根据字符串名称查找并返回对应的 AssetType 枚举值。",
+      "tags": [
+        "类型转换",
+        "工具函数"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Asset/Asset.h:Asset",
+      "type": "class",
+      "name": "Asset",
+      "filePath": "Engine/src/Himii/Asset/Asset.h",
+      "lineRange": [
+        22,
+        57
+      ],
+      "summary": "引擎资源的抽象基类，定义资源类型枚举、Handle 属性和类型转换静态方法。",
+      "tags": [
+        "基类",
+        "数据模型",
+        "资源系统"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetManager.cpp:GetAsset",
+      "type": "function",
+      "name": "GetAsset",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.cpp",
+      "lineRange": [
+        19,
+        76
+      ],
+      "summary": "根据资源句柄加载或获取已缓存的资源对象，支持多种资源类型的反序列化和默认元数据生成。",
+      "tags": [
+        "资源管理",
+        "缓存",
+        "加载"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetManager.cpp:ImportAsset",
+      "type": "function",
+      "name": "ImportAsset",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.cpp",
+      "lineRange": [
+        78,
+        106
+      ],
+      "summary": "将文件路径导入为引擎资源，自动识别资源类型并注册到全局注册表。",
+      "tags": [
+        "资源管理",
+        "导入"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetManager.cpp:IsAssetHandleValid",
+      "type": "function",
+      "name": "IsAssetHandleValid",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.cpp",
+      "lineRange": [
+        108,
+        111
+      ],
+      "summary": "IsAssetHandleValid 函数。",
+      "tags": [
+        "函数"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetManager.cpp:IsAssetLoaded",
+      "type": "function",
+      "name": "IsAssetLoaded",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.cpp",
+      "lineRange": [
+        113,
+        116
+      ],
+      "summary": "IsAssetLoaded 函数。",
+      "tags": [
+        "函数"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetManager.cpp:IsSpriteHandle",
+      "type": "function",
+      "name": "IsSpriteHandle",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.cpp",
+      "lineRange": [
+        118,
+        121
+      ],
+      "summary": "IsSpriteHandle 函数。",
+      "tags": [
+        "函数"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetManager.cpp:GetAssetTypeFromExtension",
+      "type": "function",
+      "name": "GetAssetTypeFromExtension",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.cpp",
+      "lineRange": [
+        123,
+        142
+      ],
+      "summary": "根据文件扩展名（不区分大小写）匹配对应的 AssetType 枚举值。",
+      "tags": [
+        "类型判断",
+        "工具函数"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetManager.cpp:SerializeAssetRegistry",
+      "type": "function",
+      "name": "SerializeAssetRegistry",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.cpp",
+      "lineRange": [
+        144,
+        168
+      ],
+      "summary": "将当前资产注册表序列化为 YAML 文件，持久化所有已导入资源的元数据。",
+      "tags": [
+        "序列化",
+        "注册表"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetManager.cpp:DeserializeAssetRegistry",
+      "type": "function",
+      "name": "DeserializeAssetRegistry",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.cpp",
+      "lineRange": [
+        170,
+        222
+      ],
+      "summary": "从 YAML 文件反序列化资产注册表，恢复上次会话导入的所有资源信息。",
+      "tags": [
+        "序列化",
+        "注册表"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetManager.cpp:RegisterSpritesFromImportData",
+      "type": "function",
+      "name": "RegisterSpritesFromImportData",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.cpp",
+      "lineRange": [
+        224,
+        239
+      ],
+      "summary": "从纹理导入数据中将精灵定义注册到全局精灵注册表。",
+      "tags": [
+        "精灵系统",
+        "注册"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetManager.cpp:UnregisterSpritesForTexture",
+      "type": "function",
+      "name": "UnregisterSpritesForTexture",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.cpp",
+      "lineRange": [
+        241,
+        250
+      ],
+      "summary": "注销指定纹理关联的所有精灵条目。",
+      "tags": [
+        "精灵系统",
+        "注销"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetManager.cpp:LoadTextureImportData",
+      "type": "function",
+      "name": "LoadTextureImportData",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.cpp",
+      "lineRange": [
+        270,
+        288
+      ],
+      "summary": "加载指定纹理的导入元数据（精灵模式、切片设置等）并注册精灵。",
+      "tags": [
+        "纹理管理",
+        "加载"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetManager.cpp:SaveTextureImportData",
+      "type": "function",
+      "name": "SaveTextureImportData",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.cpp",
+      "lineRange": [
+        290,
+        305
+      ],
+      "summary": "保存指定纹理的导入元数据到 .meta 文件并更新精灵注册表。",
+      "tags": [
+        "纹理管理",
+        "保存"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetManager.cpp:EnsureDefaultTextureMeta",
+      "type": "function",
+      "name": "EnsureDefaultTextureMeta",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.cpp",
+      "lineRange": [
+        307,
+        344
+      ],
+      "summary": "确保纹理存在默认导入元数据，若缺失则根据纹理尺寸自动创建单精灵定义。",
+      "tags": [
+        "纹理管理",
+        "默认值"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetManager.cpp:ApplyGridSliceToTexture",
+      "type": "function",
+      "name": "ApplyGridSliceToTexture",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.cpp",
+      "lineRange": [
+        346,
+        362
+      ],
+      "summary": "对纹理按网格参数切片生成多个精灵定义并保存导入数据。",
+      "tags": [
+        "精灵系统",
+        "网格切片"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetManager.cpp:ResolveSprite",
+      "type": "function",
+      "name": "ResolveSprite",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.cpp",
+      "lineRange": [
+        381,
+        390
+      ],
+      "summary": "解析精灵句柄，返回对应的 SpriteResolved 结构（含纹理指针和 UV 坐标）。",
+      "tags": [
+        "精灵系统",
+        "解析"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetManager.cpp:ResolveSpriteFromTexture",
+      "type": "function",
+      "name": "ResolveSpriteFromTexture",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.cpp",
+      "lineRange": [
+        392,
+        420
+      ],
+      "summary": "根据纹理句柄和精灵索引解析精灵数据，计算 UV 坐标和像素尺寸。",
+      "tags": [
+        "精灵系统",
+        "解析",
+        "uv"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetManager.cpp:GetDefaultSpriteHandleForTexture",
+      "type": "function",
+      "name": "GetDefaultSpriteHandleForTexture",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.cpp",
+      "lineRange": [
+        428,
+        435
+      ],
+      "summary": "获取纹理默认精灵（索引 0）的资源句柄。",
+      "tags": [
+        "精灵系统",
+        "查询"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetManager.cpp:GetTextureHandleForSprite",
+      "type": "function",
+      "name": "GetTextureHandleForSprite",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.cpp",
+      "lineRange": [
+        437,
+        443
+      ],
+      "summary": "根据精灵资源句柄反向查找其所属的纹理句柄。",
+      "tags": [
+        "精灵系统",
+        "查询"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Asset/AssetManager.h:AssetManager",
+      "type": "class",
+      "name": "AssetManager",
+      "filePath": "Engine/src/Himii/Asset/AssetManager.h",
+      "lineRange": [
+        21,
+        71
+      ],
+      "summary": "资产管理器单例类，管理资产注册表、加载/缓存、纹理元数据和精灵注册/解析。",
+      "tags": [
+        "单例",
+        "资源管理",
+        "精灵系统"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Serialize",
+      "type": "function",
+      "name": "Serialize",
+      "filePath": "Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "lineRange": [
+        35,
+        62
+      ],
+      "summary": "将 ParticleEmitterAsset 序列化为 YAML 文件。",
+      "tags": [
+        "序列化",
+        "粒子系统"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Deserialize",
+      "type": "function",
+      "name": "Deserialize",
+      "filePath": "Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "lineRange": [
+        64,
+        108
+      ],
+      "summary": "从 YAML 文件反序列化 ParticleEmitterAsset。",
+      "tags": [
+        "序列化",
+        "粒子系统"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:WriteSpriteAnimationClip",
+      "type": "function",
+      "name": "WriteSpriteAnimationClip",
+      "filePath": "Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "lineRange": [
+        112,
+        136
+      ],
+      "summary": "将精灵动画片段的帧数据和循环模式写入 YAML 节点。",
+      "tags": [
+        "序列化",
+        "精灵动画"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:ReadSpriteAnimationClipAtlasCoordinates",
+      "type": "function",
+      "name": "ReadSpriteAnimationClipAtlasCoordinates",
+      "filePath": "Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "lineRange": [
+        138,
+        149
+      ],
+      "summary": "从 YAML 节点读取图集坐标帧数据。",
+      "tags": [
+        "序列化",
+        "精灵动画"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:ReadSpriteAnimationClipFrames",
+      "type": "function",
+      "name": "ReadSpriteAnimationClipFrames",
+      "filePath": "Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "lineRange": [
+        151,
+        162
+      ],
+      "summary": "从 YAML 节点读取独立帧数据（非图集模式）。",
+      "tags": [
+        "序列化",
+        "精灵动画"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Serialize",
+      "type": "function",
+      "name": "Serialize",
+      "filePath": "Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "lineRange": [
+        164,
+        187
+      ],
+      "summary": "将 SpriteAnimation 序列化为 YAML 文件，支持图集和独立帧两种模式。",
+      "tags": [
+        "序列化",
+        "精灵动画"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Deserialize",
+      "type": "function",
+      "name": "Deserialize",
+      "filePath": "Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "lineRange": [
+        189,
+        298
+      ],
+      "summary": "从 YAML 文件反序列化 SpriteAnimation，支持新版多动画和旧版单动画格式迁移。",
+      "tags": [
+        "序列化",
+        "精灵动画",
+        "格式迁移"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Serialize",
+      "type": "function",
+      "name": "Serialize",
+      "filePath": "Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "lineRange": [
+        302,
+        350
+      ],
+      "summary": "将 TileSet 序列化为 YAML 文件，包含图集源和 Tile 定义列表。",
+      "tags": [
+        "序列化",
+        "tilemap"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Deserialize",
+      "type": "function",
+      "name": "Deserialize",
+      "filePath": "Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "lineRange": [
+        352,
+        433
+      ],
+      "summary": "从 YAML 文件反序列化 TileSet，恢复图集源引用和 Tile 属性。",
+      "tags": [
+        "序列化",
+        "tilemap"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Serialize",
+      "type": "function",
+      "name": "Serialize",
+      "filePath": "Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "lineRange": [
+        437,
+        476
+      ],
+      "summary": "将 TileMapData 序列化为 YAML 文件，包含 TileSet 引用、网格尺寸和 Chunk 数据。",
+      "tags": [
+        "序列化",
+        "tilemap"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Deserialize",
+      "type": "function",
+      "name": "Deserialize",
+      "filePath": "Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "lineRange": [
+        478,
+        574
+      ],
+      "summary": "从 YAML 文件反序列化 TileMapData，支持新旧格式迁移（稠密 Tile 数组到稀疏 Chunk）。",
+      "tags": [
+        "序列化",
+        "tilemap",
+        "格式迁移"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:Engine/src/Himii/Asset/AssetSerializer.h:ParticleEmitterAssetSerializer",
+      "type": "class",
+      "name": "ParticleEmitterAssetSerializer",
+      "filePath": "Engine/src/Himii/Asset/AssetSerializer.h",
+      "lineRange": [
+        12,
+        17
+      ],
+      "summary": "粒子发射器资产的 YAML 序列化器。",
+      "tags": [
+        "序列化",
+        "粒子系统"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Asset/AssetSerializer.h:SpriteAnimationSerializer",
+      "type": "class",
+      "name": "SpriteAnimationSerializer",
+      "filePath": "Engine/src/Himii/Asset/AssetSerializer.h",
+      "lineRange": [
+        19,
+        23
+      ],
+      "summary": "精灵动画资产的 YAML 序列化器，支持图集模式和独立帧模式。",
+      "tags": [
+        "序列化",
+        "精灵动画"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Asset/AssetSerializer.h:TileSetSerializer",
+      "type": "class",
+      "name": "TileSetSerializer",
+      "filePath": "Engine/src/Himii/Asset/AssetSerializer.h",
+      "lineRange": [
+        25,
+        29
+      ],
+      "summary": "TileSet 资产的 YAML 序列化器。",
+      "tags": [
+        "序列化",
+        "tilemap"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Asset/AssetSerializer.h:TileMapDataSerializer",
+      "type": "class",
+      "name": "TileMapDataSerializer",
+      "filePath": "Engine/src/Himii/Asset/AssetSerializer.h",
+      "lineRange": [
+        31,
+        35
+      ],
+      "summary": "TileMapData 资产的 YAML 序列化器，支持新旧格式迁移。",
+      "tags": [
+        "序列化",
+        "tilemap"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/PackFile.cpp:NormalizeRelativePath",
+      "type": "function",
+      "name": "NormalizeRelativePath",
+      "filePath": "Engine/src/Himii/Asset/PackFile.cpp",
+      "lineRange": [
+        10,
+        16
+      ],
+      "summary": "NormalizeRelativePath 函数。",
+      "tags": [
+        "函数"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/PackFile.cpp:Open",
+      "type": "function",
+      "name": "Open",
+      "filePath": "Engine/src/Himii/Asset/PackFile.cpp",
+      "lineRange": [
+        18,
+        80
+      ],
+      "summary": "打开并解析 PackFile 二进制文件，验证魔数和版本，构建内存索引映射。",
+      "tags": [
+        "文件系统",
+        "解析"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/PackFile.cpp:Close",
+      "type": "function",
+      "name": "Close",
+      "filePath": "Engine/src/Himii/Asset/PackFile.cpp",
+      "lineRange": [
+        82,
+        89
+      ],
+      "summary": "Close 函数。",
+      "tags": [
+        "函数"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/PackFile.cpp:HasEntry",
+      "type": "function",
+      "name": "HasEntry",
+      "filePath": "Engine/src/Himii/Asset/PackFile.cpp",
+      "lineRange": [
+        91,
+        94
+      ],
+      "summary": "HasEntry 函数。",
+      "tags": [
+        "函数"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/PackFile.cpp:ReadEntry",
+      "type": "function",
+      "name": "ReadEntry",
+      "filePath": "Engine/src/Himii/Asset/PackFile.cpp",
+      "lineRange": [
+        96,
+        121
+      ],
+      "summary": "根据相对路径从 PackFile 中读取二进制条目数据。",
+      "tags": [
+        "文件系统",
+        "读取"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/PackFile.cpp:Write",
+      "type": "function",
+      "name": "Write",
+      "filePath": "Engine/src/Himii/Asset/PackFile.cpp",
+      "lineRange": [
+        123,
+        185
+      ],
+      "summary": "将条目列表打包写入 PackFile 二进制文件，生成文件头、索引区和数据区。",
+      "tags": [
+        "文件系统",
+        "写入",
+        "打包"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:Engine/src/Himii/Asset/PackFile.h:IsOpen",
+      "type": "function",
+      "name": "IsOpen",
+      "filePath": "Engine/src/Himii/Asset/PackFile.h",
+      "lineRange": [
+        20,
+        20
+      ],
+      "summary": "IsOpen 函数。",
+      "tags": [
+        "函数"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Asset/PackFile.h:PackFileReader",
+      "type": "class",
+      "name": "PackFileReader",
+      "filePath": "Engine/src/Himii/Asset/PackFile.h",
+      "lineRange": [
+        14,
+        39
+      ],
+      "summary": "PackFile 二进制打包文件的读取器，支持打开、验证、索引构建和按路径读取条目。",
+      "tags": [
+        "文件系统",
+        "读取器",
+        "二进制格式"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetMetadata.h",
+      "target": "file:Engine/src/Himii/Asset/Asset.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/Asset.h",
+      "target": "function:Engine/src/Himii/Asset/Asset.h:AssetTypeToString",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/Asset.h",
+      "target": "function:Engine/src/Himii/Asset/Asset.h:AssetTypeFromString",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/Asset.h",
+      "target": "class:Engine/src/Himii/Asset/Asset.h:Asset",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:GetAsset",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:ImportAsset",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:IsAssetHandleValid",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:IsAssetLoaded",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:IsSpriteHandle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:GetAssetTypeFromExtension",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:SerializeAssetRegistry",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:DeserializeAssetRegistry",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:RegisterSpritesFromImportData",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:UnregisterSpritesForTexture",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:LoadTextureImportData",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:SaveTextureImportData",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:EnsureDefaultTextureMeta",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:ApplyGridSliceToTexture",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:ResolveSprite",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:ResolveSpriteFromTexture",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:GetDefaultSpriteHandleForTexture",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:GetTextureHandleForSprite",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.h",
+      "target": "class:Engine/src/Himii/Asset/AssetManager.h:AssetManager",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Serialize",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Deserialize",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:WriteSpriteAnimationClip",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:ReadSpriteAnimationClipAtlasCoordinates",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:ReadSpriteAnimationClipFrames",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Serialize",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Deserialize",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Serialize",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Deserialize",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Serialize",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Deserialize",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.h",
+      "target": "class:Engine/src/Himii/Asset/AssetSerializer.h:ParticleEmitterAssetSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.h",
+      "target": "class:Engine/src/Himii/Asset/AssetSerializer.h:SpriteAnimationSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.h",
+      "target": "class:Engine/src/Himii/Asset/AssetSerializer.h:TileSetSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.h",
+      "target": "class:Engine/src/Himii/Asset/AssetSerializer.h:TileMapDataSerializer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/PackFile.cpp",
+      "target": "function:Engine/src/Himii/Asset/PackFile.cpp:NormalizeRelativePath",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/PackFile.cpp",
+      "target": "function:Engine/src/Himii/Asset/PackFile.cpp:Open",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/PackFile.cpp",
+      "target": "function:Engine/src/Himii/Asset/PackFile.cpp:Close",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/PackFile.cpp",
+      "target": "function:Engine/src/Himii/Asset/PackFile.cpp:HasEntry",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/PackFile.cpp",
+      "target": "function:Engine/src/Himii/Asset/PackFile.cpp:ReadEntry",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/PackFile.cpp",
+      "target": "function:Engine/src/Himii/Asset/PackFile.cpp:Write",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/PackFile.h",
+      "target": "function:Engine/src/Himii/Asset/PackFile.h:IsOpen",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/PackFile.h",
+      "target": "class:Engine/src/Himii/Asset/PackFile.h:PackFileReader",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/Asset.h",
+      "target": "function:Engine/src/Himii/Asset/Asset.h:AssetTypeToString",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/Asset.h",
+      "target": "function:Engine/src/Himii/Asset/Asset.h:AssetTypeFromString",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/Asset.h",
+      "target": "class:Engine/src/Himii/Asset/Asset.h:Asset",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:GetAsset",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:ImportAsset",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:IsAssetHandleValid",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:IsAssetLoaded",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:IsSpriteHandle",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:GetAssetTypeFromExtension",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:SerializeAssetRegistry",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:DeserializeAssetRegistry",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:RegisterSpritesFromImportData",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:UnregisterSpritesForTexture",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:LoadTextureImportData",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:SaveTextureImportData",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:EnsureDefaultTextureMeta",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:ApplyGridSliceToTexture",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:ResolveSprite",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:ResolveSpriteFromTexture",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:GetDefaultSpriteHandleForTexture",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:GetTextureHandleForSprite",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetManager.h",
+      "target": "class:Engine/src/Himii/Asset/AssetManager.h:AssetManager",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Serialize",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Deserialize",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Serialize",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Deserialize",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Serialize",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Deserialize",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Serialize",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.cpp",
+      "target": "function:Engine/src/Himii/Asset/AssetSerializer.cpp:Deserialize",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.h",
+      "target": "class:Engine/src/Himii/Asset/AssetSerializer.h:ParticleEmitterAssetSerializer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.h",
+      "target": "class:Engine/src/Himii/Asset/AssetSerializer.h:SpriteAnimationSerializer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.h",
+      "target": "class:Engine/src/Himii/Asset/AssetSerializer.h:TileSetSerializer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/AssetSerializer.h",
+      "target": "class:Engine/src/Himii/Asset/AssetSerializer.h:TileMapDataSerializer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/PackFile.cpp",
+      "target": "function:Engine/src/Himii/Asset/PackFile.cpp:NormalizeRelativePath",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/PackFile.cpp",
+      "target": "function:Engine/src/Himii/Asset/PackFile.cpp:Open",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/PackFile.cpp",
+      "target": "function:Engine/src/Himii/Asset/PackFile.cpp:Close",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/PackFile.cpp",
+      "target": "function:Engine/src/Himii/Asset/PackFile.cpp:HasEntry",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/PackFile.cpp",
+      "target": "function:Engine/src/Himii/Asset/PackFile.cpp:ReadEntry",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/PackFile.cpp",
+      "target": "function:Engine/src/Himii/Asset/PackFile.cpp:Write",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/PackFile.h",
+      "target": "function:Engine/src/Himii/Asset/PackFile.h:IsOpen",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Asset/PackFile.h",
+      "target": "class:Engine/src/Himii/Asset/PackFile.h:PackFileReader",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Asset/AssetManager.cpp:GetAsset",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:EnsureDefaultTextureMeta",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Asset/AssetManager.cpp:ImportAsset",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:GetAssetTypeFromExtension",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Asset/AssetManager.cpp:DeserializeAssetRegistry",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:LoadTextureImportData",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Asset/AssetManager.cpp:LoadTextureImportData",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:RegisterSpritesFromImportData",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Asset/AssetManager.cpp:SaveTextureImportData",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:RegisterSpritesFromImportData",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Asset/AssetManager.cpp:EnsureDefaultTextureMeta",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:LoadTextureImportData",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Asset/AssetManager.cpp:ApplyGridSliceToTexture",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:SaveTextureImportData",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Asset/AssetManager.cpp:ResolveSprite",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:ResolveSpriteFromTexture",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Asset/AssetManager.cpp:ResolveSpriteFromTexture",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:EnsureDefaultTextureMeta",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Asset/AssetManager.cpp:GetDefaultSpriteHandleForTexture",
+      "target": "function:Engine/src/Himii/Asset/AssetManager.cpp:EnsureDefaultTextureMeta",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Asset/AssetManager.cpp:EnsureDefaultTextureMeta",
+      "target": "function:Engine/src/Himii/Asset/SpriteSheetUtility.cpp:CreateDefaultSingleSprite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Asset/AssetManager.cpp:ResolveSpriteFromTexture",
+      "target": "function:Engine/src/Himii/Asset/SpriteSheetUtility.cpp:PixelRectToWorldQuadUVs",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Asset/AssetManager.cpp:ApplyGridSliceToTexture",
+      "target": "function:Engine/src/Himii/Asset/SpriteSheetUtility.cpp:ApplyGridSlice",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Asset/PackFile.cpp:Open",
+      "target": "function:Engine/src/Himii/Asset/PackFile.cpp:Close",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Asset/PackFile.cpp:HasEntry",
+      "target": "function:Engine/src/Himii/Asset/PackFile.cpp:NormalizeRelativePath",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Asset/PackFile.cpp:ReadEntry",
+      "target": "function:Engine/src/Himii/Asset/PackFile.cpp:NormalizeRelativePath",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Asset/PackFile.cpp:Write",
+      "target": "function:Engine/src/Himii/Asset/PackFile.cpp:NormalizeRelativePath",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

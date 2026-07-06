@@ -1,0 +1,76 @@
+{
+  "projectRoot": "D:/Himii-Engine",
+  "batchIndex": 7,
+  "totalBatches": 14,
+  "files": [
+    {
+      "path": "Engine/src/Himii/Core/Application.h",
+      "language": "c",
+      "sizeLines": 96,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Core/Layer.cpp",
+      "language": "cpp",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Core/Layer.h",
+      "language": "c",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Core/LayerStack.cpp",
+      "language": "cpp",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Core/LayerStack.h",
+      "language": "c",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Engine/src/Himii/Core/Application.h": [
+      "Engine/src/Himii/Core/Layer.h",
+      "Engine/src/Himii/Core/LayerStack.h"
+    ],
+    "Engine/src/Himii/Core/Layer.cpp": [
+      "Engine/src/Himii/Core/Layer.h"
+    ],
+    "Engine/src/Himii/Core/Layer.h": [],
+    "Engine/src/Himii/Core/LayerStack.cpp": [
+      "Engine/src/Himii/Core/LayerStack.h"
+    ],
+    "Engine/src/Himii/Core/LayerStack.h": [
+      "Engine/src/Himii/Core/Layer.h"
+    ]
+  },
+  "neighborMap": {
+    "Engine/src/Himii/Core/Application.h": [
+      {
+        "path": "Engine/src/Engine.h",
+        "batchIndex": 1,
+        "symbols": []
+      }
+    ],
+    "Engine/src/Himii/Core/Layer.h": [
+      {
+        "path": "Engine/src/Engine.h",
+        "batchIndex": 1,
+        "symbols": []
+      }
+    ],
+    "Engine/src/Himii/Core/LayerStack.h": [
+      {
+        "path": "Engine/src/Engine.h",
+        "batchIndex": 1,
+        "symbols": []
+      }
+    ]
+  }
+}

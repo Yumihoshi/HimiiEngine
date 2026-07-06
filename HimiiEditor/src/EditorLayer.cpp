@@ -5,6 +5,7 @@
 #include "Himii/Core/ConsoleLog.h"
 #include "Himii/Core/FileSystem.h"
 #include "Himii/Scripting/ScriptEngine.h"
+#include "Himii/Scene/PrefabSerializer.h"
 #include "Himii/Scripting/ScriptCompiler.h"
 #include "Himii/Scripting/ScriptIDELauncher.h"
 #include "Himii/Editor/EditorSettings.h"
@@ -516,7 +517,21 @@ namespace Himii
                 if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
                 {
                     const wchar_t *path = (const wchar_t *)payload->Data;
-                    OpenScene(std::filesystem::path(Project::GetAssetDirectory()) / path);
+                    std::filesystem::path assetPath(path);
+                    const std::filesystem::path fullAssetPath =
+                            std::filesystem::path(Project::GetAssetDirectory()) / assetPath;
+
+                    if (assetPath.extension() == ".himii")
+                    {
+                        OpenScene(fullAssetPath);
+                    }
+                    else if (assetPath.extension() == ".hprefab" && m_EditorScene)
+                    {
+                        Entity instantiatedEntity =
+                                PrefabSerializer::Instantiate(m_EditorScene, fullAssetPath);
+                        if (instantiatedEntity)
+                            m_SceneHierarchyPanel.SetSelectedEntity(instantiatedEntity);
+                    }
                 }
 
                 ImGui::EndDragDropTarget();
@@ -1699,6 +1714,15 @@ namespace Himii
 
             m_ActiveScene = m_EditorScene;
             m_EditorScenePath = path;
+
+            if (Project::GetActive())
+            {
+                std::error_code errorCode;
+                std::filesystem::path relativeScenePath =
+                        std::filesystem::relative(path, Project::GetAssetDirectory(), errorCode);
+                if (!errorCode)
+                    ScriptEngine::SetActiveSceneRelativePath(relativeScenePath.generic_string());
+            }
         }
     }
 
@@ -1793,6 +1817,15 @@ namespace Himii
 
         m_ActiveScene = Scene::Copy(m_EditorScene);
         m_ActiveScene->OnRuntimeStart();
+
+        if (Project::GetActive() && !m_EditorScenePath.empty())
+        {
+            std::error_code errorCode;
+            std::filesystem::path relativeScenePath =
+                    std::filesystem::relative(m_EditorScenePath, Project::GetAssetDirectory(), errorCode);
+            if (!errorCode)
+                ScriptEngine::SetActiveSceneRelativePath(relativeScenePath.generic_string());
+        }
 
         m_SceneHierarchyPanel.SetContext(m_ActiveScene);
     }

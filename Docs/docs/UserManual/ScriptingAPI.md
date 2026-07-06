@@ -15,15 +15,23 @@ using HimiiEngine;
 | 类别 | 类型 / 成员 | 说明 |
 |------|-------------|------|
 | 基类 | `Entity` | 脚本实体基类 |
-| 生命周期 | `OnCreate` / `OnUpdate` / `OnDestroy` | 仅 Play 模式调用 |
+| 生命周期 | `OnCreate` / `OnUpdate` / `OnFixedUpdate` / `OnDestroy` | 仅 Play 模式调用 |
 | 日志 | `Log.Info` / `Warning` / `Error` | 输出到 Console |
-| 输入 | `Input.IsKeyDown` / `IsMouseButtonDown` / `MousePosition` | 键盘与鼠标 |
+| 输入 | `Input.IsKeyDown` / `IsKeyPressed` / `IsKeyReleased` / `GetAxisHorizontal` / `GetAxisVertical` / `IsMouseButtonDown` / `MousePosition` | 键盘与鼠标 |
 | 变换 | `Position` / `Transform` | 实体位置、旋转、缩放 |
 | 组件 | `GetComponent<T>()` / `HasComponent<T>()` | 访问引擎组件 |
-| 2D 物理 | `Rigidbody2D` | 速度、冲量 |
-| 渲染 | `SpriteRenderer` | 颜色、纹理、水平翻转 |
+| 2D 物理 | `Rigidbody2D` | 速度、冲量、BodyType、FixedRotation |
+| 碰撞体 | `BoxCollider2D` / `CircleCollider2D` | 偏移、尺寸/半径、材料参数、IsTrigger、Layer |
+| 渲染 | `SpriteRenderer` | 颜色、纹理、翻转、SortingLayer/Order |
+| 相机 | `Camera` | OrthographicSize、BackgroundColor、Primary |
 | 动画 | `SpriteAnimation` | `Play` / `CurrentAnimation` |
-| 碰撞 | `OnCollisionEnter2D` / `OnCollisionExit2D` | Play 模式回调 |
+| 瓦片地图 | `Tilemap` | 读写格子、边界查询 |
+| 物理查询 | `Physics2D.Raycast` | 2D 射线检测 |
+| 场景 | `SceneManager.LoadScene` / `ActiveScenePath` | 运行时切换 `.himii` 场景 |
+| Prefab | `Entity.Instantiate` | 运行时实例化 `.hprefab` |
+| 时间 | `Time.DeltaTime` | 帧间隔（秒） |
+| 碰撞 | `OnCollisionEnter2D` / `OnCollisionExit2D` | Play 模式物理碰撞回调 |
+| 触发器 | `OnTriggerEnter2D` / `OnTriggerExit2D` | Play 模式 Trigger 回调 |
 | 序列化 | `[SerializeField]` | Inspector 显示 private 字段 |
 
 ---
@@ -67,8 +75,11 @@ public class PlayerController : Entity
 | 方法 | 调用时机 |
 |------|----------|
 | `OnCreate` | 实体脚本实例化后一次 |
-| `OnUpdate(timestep)` | 每帧 |
+| `OnUpdate(timestep)` | 每帧（物理步进**之前**） |
+| `OnFixedUpdate(timestep)` | 每帧物理步进与碰撞事件**之后** |
 | `OnDestroy` | 实体销毁或 Stop 时 |
+
+平台跳跃、着地检测、读写 `Rigidbody2D.Velocity` 等应放在 **`OnFixedUpdate`**；输入采集与相机可放在 `OnUpdate`。详见 [脚本工作流 - 物理时序](ScriptWorkflow.md#物理时序与平台跳跃重要)。
 
 ---
 
@@ -91,13 +102,21 @@ Log.Error("Something went wrong.");
 ```csharp
 if (Input.IsKeyDown(KeyCode.W))
 {
-    // 键按住
+    // 键按住（每帧为 true）
 }
 
-if (Input.IsKeyDown(KeyCode.Space))
+if (Input.IsKeyPressed(KeyCode.Space))
 {
-    // 跳跃等
+    // 本帧刚按下（边沿检测，适合跳跃）
 }
+
+if (Input.IsKeyReleased(KeyCode.E))
+{
+    // 本帧刚松开
+}
+
+float horizontal = Input.GetAxisHorizontal(); // A/D 或 Left/Right，-1 ~ 1
+float vertical = Input.GetAxisVertical();     // W/S 或 Up/Down
 
 Vector2 mouse = Input.MousePosition;
 if (Input.IsMouseButtonDown(0))
@@ -105,6 +124,14 @@ if (Input.IsMouseButtonDown(0))
     // 左键
 }
 ```
+
+| 方法 | 说明 |
+|------|------|
+| `IsKeyDown` | 键当前按住 |
+| `IsKeyPressed` | 本帧刚按下（单帧 true） |
+| `IsKeyReleased` | 本帧刚松开 |
+| `GetAxisHorizontal` | 水平轴：Left/Right 或 A/D |
+| `GetAxisVertical` | 垂直轴：Up/Down 或 W/S |
 
 常用键码定义在 **`KeyCode`** 枚举（`A`、`D`、`Left`、`Right`、`Space` 等），完整列表见 `ScriptCore` 中 `KeyCode.cs`。
 
@@ -122,6 +149,8 @@ Transform.Rotation = new Vector3(0.0f, 0.0f, 0.0f);
 ```
 
 **注意**：角色左右朝向请用 **`SpriteRenderer.FlipHorizontal`**，不要将 **`Transform.Scale.x`** 设为负数（会导致碰撞与渲染异常）。
+
+在 **Play** 模式下，若实体带有 **Rigidbody2D**，修改 **`Position`** 或 **`Transform.Rotation`** 会同步到 Box2D 刚体（相当于传送）。Dynamic 角色日常移动仍推荐在 **`OnFixedUpdate`** 中使用 **`Rigidbody2D.Velocity`**。
 
 ---
 
@@ -161,10 +190,121 @@ if (rigidbody != null)
 | 成员 | 说明 |
 |------|------|
 | `Velocity` | 线速度（`Vector2`） |
+| `BodyType` | `Static` / `Dynamic` / `Kinematic`（运行时读写） |
+| `FixedRotation` | 是否锁定 Z 轴旋转 |
 | `ApplyImpulse(impulse, wake)` | 对质心施加冲量 |
 | `ApplyImpulse(impulse, point, wake)` | 在世界坐标点施加冲量 |
 
 Inspector 中设置 **Body Type**（Static / Dynamic / Kinematic）、**Fixed Rotation** 等。详见 [2D 物理](Physics2D.md)。
+
+---
+
+## BoxCollider2D / CircleCollider2D
+
+```csharp
+var boxCollider = GetComponent<BoxCollider2D>();
+if (boxCollider != null)
+{
+    Vector2 size = boxCollider.Size;
+    boxCollider.Friction = 0.8f;
+}
+
+var circleCollider = GetComponent<CircleCollider2D>();
+if (circleCollider != null)
+    circleCollider.Radius = 0.5f;
+```
+
+| 组件 | 属性 |
+|------|------|
+| `BoxCollider2D` | `Offset`、`Size`、`Density`、`Friction`、`Restitution`、`IsTrigger`、`Layer` |
+| `CircleCollider2D` | `Offset`、`Radius`、`Density`、`Friction`、`Restitution`、`IsTrigger`、`Layer` |
+
+**IsTrigger**：勾选后形状为传感器，不产生物理碰撞响应，但会触发 `OnTriggerEnter2D` / `OnTriggerExit2D`。
+
+**Layer**：物理层索引（0–7），与项目 **Project Settings → Physics 2D Layers** 中的层名及碰撞矩阵对应。
+
+运行时修改碰撞体参数会更新组件数据；形状在下次进入 **Play** 时重建。详见 [2D 物理](Physics2D.md)。
+
+---
+
+## Tilemap
+
+```csharp
+var tilemap = GetComponent<Tilemap>();
+if (tilemap != null && tilemap.HasBounds)
+{
+    tilemap.GetBounds(out int minX, out int minY, out int maxX, out int maxY);
+    ushort tileId = tilemap.GetTile(0, 0);
+    tilemap.SetTile(1, 0, tileId);
+}
+```
+
+| 成员 | 说明 |
+|------|------|
+| `Width` / `Height` | 地图尺寸（稀疏分块模型的外接范围） |
+| `HasBounds` | 是否存在有效格子 |
+| `GetBounds` | 已绘制格子的包围盒 |
+| `GetTile` / `SetTile` | 读写瓦片 ID |
+
+---
+
+## Physics2D
+
+```csharp
+RaycastHit2D hit = Physics2D.Raycast(start, end);
+if (hit.Hit)
+    Log.Info($"Hit entity {hit.EntityID} at {hit.Point}");
+```
+
+| 字段 | 说明 |
+|------|------|
+| `Hit` | 是否命中 |
+| `Point` / `Normal` | 命中点与世界法线 |
+| `Distance` | 沿射线距离 |
+| `EntityID` | 命中实体 ID |
+
+---
+
+## SceneManager
+
+```csharp
+if (SceneManager.LoadScene("scenes/Level1.himii"))
+{
+    Log.Info("Loaded level 1.");
+}
+
+string current = SceneManager.ActiveScenePath;
+```
+
+- 路径相对于项目 **`assets/`** 目录。
+- 仅在 **Play** 模式有效；会停止当前脚本、清空实体并加载新场景。
+- `LoadScene` 返回 `bool` 表示是否成功。
+- `ActiveScenePath` 返回当前场景的 assets 相对路径（未加载时为空）。
+- 项目 **Start Scene** 在 `.hproj` 中配置。
+
+---
+
+## Prefab 实例化
+
+```csharp
+Entity enemy = Entity.Instantiate("prefabs/Enemy.hprefab");
+if (enemy != null)
+    enemy.Position = new Vector3(5.0f, 0.0f, 0.0f);
+```
+
+- 路径相对于 **`assets/`**。
+- 仅在 **Play** 模式会为脚本调用 `OnCreate`。
+- 编辑器中：Hierarchy 右键 **Save as Prefab**，或将 `.hprefab` 拖入 Viewport 实例化。
+
+---
+
+## Time
+
+```csharp
+float delta = Time.DeltaTime;
+```
+
+与 `OnUpdate(timestep)` 参数等价，便于在非生命周期方法中读取帧间隔。
 
 ---
 
@@ -183,6 +323,30 @@ spriteRenderer.TextureHandle = textureHandle;
 | `SpriteAssetHandle` / `SpriteHandle` | 子 Sprite 资产句柄 |
 | `TextureHandle` | 纹理句柄（可自动绑定默认子 Sprite） |
 | `FlipHorizontal` | 水平镜像绘制 |
+| `SortingLayer` | 排序层索引（越小越靠后绘制） |
+| `SortingOrder` | 同层内的绘制顺序 |
+
+Sorting Layer 名称在 **Project Settings → Sorting Layers** 中配置。
+
+---
+
+## Camera
+
+```csharp
+var camera = GetComponent<Camera>();
+if (camera != null)
+{
+    camera.OrthographicSize = 8.0f;
+    camera.BackgroundColor = new Vector4(0.1f, 0.1f, 0.15f, 1.0f);
+    camera.Primary = true;
+}
+```
+
+| 属性 | 说明 |
+|------|------|
+| `OrthographicSize` | 正交相机半高（2D 常用） |
+| `BackgroundColor` | 清屏颜色 |
+| `Primary` | 是否为主相机（渲染时使用） |
 
 ---
 
@@ -224,15 +388,35 @@ public override void OnCollisionExit2D(Collision2DInfo collision)
 {
     Log.Info($"Exit: {collision.OtherEntityID}");
 }
+
+public override void OnTriggerEnter2D(Collision2DInfo collision)
+{
+    Log.Info($"Trigger enter: {collision.OtherEntityID}");
+}
+
+public override void OnTriggerExit2D(Collision2DInfo collision)
+{
+    Log.Info($"Trigger exit: {collision.OtherEntityID}");
+}
 ```
 
 | 说明 | 细节 |
 |------|------|
+| 碰撞回调 | 双方 **IsTrigger 均未勾选** 时触发 `OnCollisionEnter2D` / `OnCollisionExit2D` |
+| 触发器回调 | 至少一方 **IsTrigger 勾选** 时触发 `OnTriggerEnter2D` / `OnTriggerExit2D`（无物理推力） |
 | 触发条件 | 双方有 **Box** 或 **Circle Collider 2D**；至少一方参与动态模拟 |
 | 不触发 | **Simulate** 模式不运行脚本实例 |
-| 用途 | 着地检测、伤害判定等 |
+| 用途 | 伤害、拾取、机关等；**平台着地优先用射线**（见 [脚本工作流](ScriptWorkflow.md)） |
 
-`Collision2DInfo.OtherEntityID` 为对方实体 ID。更多组件参数见 [2D 物理](Physics2D.md)。
+`Collision2DInfo` 字段：
+
+| 字段 | 说明 |
+|------|------|
+| `OtherEntityID` | 对方实体 ID |
+| `Normal` | 支撑法线（指向本实体，世界空间）；脚下地面通常 `Normal.Y` 较大 |
+| `Point` | 接触点世界坐标（首个 manifold 点） |
+
+更多组件参数见 [2D 物理](Physics2D.md)。
 
 ---
 
@@ -253,7 +437,7 @@ public class PlayerController : Entity
 }
 ```
 
-`[SerializeField]` 类型定义在 `assets/scripts/Himii/SerializeField.cs`（引擎同步到游戏项目）。
+`[SerializeField]` 由 **ScriptCore.dll** 提供（`HimiiEngine.SerializeField`），游戏脚本只需 `using HimiiEngine;`，**无需**在项目内复制该文件。
 
 | 规则 | 说明 |
 |------|------|

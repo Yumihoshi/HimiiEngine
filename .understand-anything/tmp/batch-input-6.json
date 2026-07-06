@@ -1,0 +1,61 @@
+{
+  "projectRoot": "D:/Himii-Engine",
+  "batchIndex": 6,
+  "totalBatches": 14,
+  "files": [
+    {
+      "path": "Engine/src/Himii/Scripting/ScriptCompiler.cpp",
+      "language": "cpp",
+      "sizeLines": 120,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scripting/ScriptCompiler.h",
+      "language": "c",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scripting/ScriptEngine.cpp",
+      "language": "cpp",
+      "sizeLines": 873,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scripting/ScriptEngine.h",
+      "language": "c",
+      "sizeLines": 162,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "language": "cpp",
+      "sizeLines": 771,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scripting/ScriptGlue.h",
+      "language": "c",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Engine/src/Himii/Scripting/ScriptCompiler.cpp": [
+      "Engine/src/Himii/Scripting/ScriptCompiler.h"
+    ],
+    "Engine/src/Himii/Scripting/ScriptCompiler.h": [],
+    "Engine/src/Himii/Scripting/ScriptEngine.cpp": [
+      "Engine/src/Himii/Scripting/ScriptCompiler.h",
+      "Engine/src/Himii/Scripting/ScriptEngine.h",
+      "Engine/src/Himii/Scripting/ScriptGlue.h"
+    ],
+    "Engine/src/Himii/Scripting/ScriptEngine.h": [],
+    "Engine/src/Himii/Scripting/ScriptGlue.cpp": [
+      "Engine/src/Himii/Scripting/ScriptEngine.h",
+      "Engine/src/Himii/Scripting/ScriptGlue.h"
+    ],
+    "Engine/src/Himii/Scripting/ScriptGlue.h": []
+  },
+  "neighborMap": {}
+}

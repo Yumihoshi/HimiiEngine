@@ -35,6 +35,26 @@ namespace HimiiEngine
             return new Entity(id);
         }
 
+        /// <summary>
+        /// 从 Prefab 资产实例化实体（路径相对于 assets，例如 prefabs/Enemy.hprefab）。
+        /// </summary>
+        public static Entity Instantiate(string prefabPath)
+        {
+            if (string.IsNullOrEmpty(prefabPath) || InternalCalls.Scene_InstantiatePrefab == null)
+                return null;
+
+            IntPtr prefabPathPointer = Marshal.StringToCoTaskMemUTF8(prefabPath);
+            try
+            {
+                ulong entityIdentifier = InternalCalls.Scene_InstantiatePrefab(prefabPathPointer);
+                return entityIdentifier == 0 ? null : new Entity(entityIdentifier);
+            }
+            finally
+            {
+                Marshal.FreeCoTaskMem(prefabPathPointer);
+            }
+        }
+
         // --- Component Accessors ---
 
         public Vector3 Position
@@ -86,10 +106,14 @@ namespace HimiiEngine
         }
 
         public virtual void OnCreate() { }
-        public virtual void OnUpdate(float ts) { }
+        public virtual void OnUpdate(float timestep) { }
+        /// <summary>物理步进与碰撞事件之后调用，适合移动、跳跃与着地检测。</summary>
+        public virtual void OnFixedUpdate(float timestep) { }
         public virtual void OnDestroy() { }
 
         public virtual void OnCollisionEnter2D(Collision2DInfo collision) { }
         public virtual void OnCollisionExit2D(Collision2DInfo collision) { }
+        public virtual void OnTriggerEnter2D(Collision2DInfo collision) { }
+        public virtual void OnTriggerExit2D(Collision2DInfo collision) { }
     }
 }

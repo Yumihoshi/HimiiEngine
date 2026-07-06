@@ -319,6 +319,8 @@ namespace Himii
                     << (uint64_t)spriteRenderer.SpriteAssetHandle;
             out << YAML::Key << "TilingFactor" << YAML::Value << spriteRenderer.TilingFactor;
             out << YAML::Key << "FlipHorizontal" << YAML::Value << spriteRenderer.FlipHorizontal;
+            out << YAML::Key << "SortingLayer" << YAML::Value << spriteRenderer.SortingLayer;
+            out << YAML::Key << "SortingOrder" << YAML::Value << spriteRenderer.SortingOrder;
             out << YAML::EndMap;
         }
         if (entity.HasComponent<CircleRendererComponent>())
@@ -360,6 +362,8 @@ namespace Himii
             out << YAML::Key << "Friction" << YAML::Value << boxCollider2D.Friction;
             out << YAML::Key << "Restitution" << YAML::Value << boxCollider2D.Restitution;
             out << YAML::Key << "RestitutionThreshold" << YAML::Value << boxCollider2D.RestitutionThreshold;
+            out << YAML::Key << "IsTrigger" << YAML::Value << boxCollider2D.IsTrigger;
+            out << YAML::Key << "Layer" << YAML::Value << boxCollider2D.Layer;
             out << YAML::EndMap;
         }
         if (entity.HasComponent<CircleCollider2DComponent>())
@@ -373,6 +377,8 @@ namespace Himii
             out << YAML::Key << "Friction" << YAML::Value << circleCollider2D.Friction;
             out << YAML::Key << "Restitution" << YAML::Value << circleCollider2D.Restitution;
             out << YAML::Key << "RestitutionThreshold" << YAML::Value << circleCollider2D.RestitutionThreshold;
+            out << YAML::Key << "IsTrigger" << YAML::Value << circleCollider2D.IsTrigger;
+            out << YAML::Key << "Layer" << YAML::Value << circleCollider2D.Layer;
             out << YAML::EndMap;
         }
         if (entity.HasComponent<SpriteAnimationComponent>())
@@ -646,6 +652,10 @@ namespace Himii
                 src.TilingFactor = spriteRendererComponent["TilingFactor"].as<float>();
             if (spriteRendererComponent["FlipHorizontal"])
                 src.FlipHorizontal = spriteRendererComponent["FlipHorizontal"].as<bool>();
+            if (spriteRendererComponent["SortingLayer"])
+                src.SortingLayer = spriteRendererComponent["SortingLayer"].as<int>();
+            if (spriteRendererComponent["SortingOrder"])
+                src.SortingOrder = spriteRendererComponent["SortingOrder"].as<int>();
         }
         auto circleRendererComponent = entity["CircleRendererComponent"];
         if (circleRendererComponent)
@@ -682,6 +692,10 @@ namespace Himii
             bcc.Friction = boxCollider2DComponent["Friction"].as<float>();
             bcc.Restitution = boxCollider2DComponent["Restitution"].as<float>();
             bcc.RestitutionThreshold = boxCollider2DComponent["RestitutionThreshold"].as<float>();
+            if (boxCollider2DComponent["IsTrigger"])
+                bcc.IsTrigger = boxCollider2DComponent["IsTrigger"].as<bool>();
+            if (boxCollider2DComponent["Layer"])
+                bcc.Layer = boxCollider2DComponent["Layer"].as<int>();
         }
         auto circleCollider2DComponent = entity["CircleCollider2DComponent"];
         if (circleCollider2DComponent)
@@ -693,6 +707,10 @@ namespace Himii
             ccc.Friction = circleCollider2DComponent["Friction"].as<float>();
             ccc.Restitution = circleCollider2DComponent["Restitution"].as<float>();
             ccc.RestitutionThreshold = circleCollider2DComponent["RestitutionThreshold"].as<float>();
+            if (circleCollider2DComponent["IsTrigger"])
+                ccc.IsTrigger = circleCollider2DComponent["IsTrigger"].as<bool>();
+            if (circleCollider2DComponent["Layer"])
+                ccc.Layer = circleCollider2DComponent["Layer"].as<int>();
         }
         auto spriteAnimationComponent = entity["SpriteAnimationComponent"];
         if (spriteAnimationComponent)

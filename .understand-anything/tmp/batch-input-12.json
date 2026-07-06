@@ -1,0 +1,193 @@
+{
+  "projectRoot": "D:/Himii-Engine",
+  "batchIndex": 12,
+  "totalBatches": 14,
+  "files": [
+    {
+      "path": "Engine/src/Himii/Scene/TilemapColliderBuilder.cpp",
+      "language": "cpp",
+      "sizeLines": 320,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/TilemapColliderBuilder.h",
+      "language": "c",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp",
+      "language": "cpp",
+      "sizeLines": 63,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/TileMapCoordinateUtility.h",
+      "language": "c",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/TileMapData.cpp",
+      "language": "cpp",
+      "sizeLines": 187,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/TileMapData.h",
+      "language": "c",
+      "sizeLines": 102,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/TileSet.h",
+      "language": "c",
+      "sizeLines": 157,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scripting/ScriptIDE.cpp",
+      "language": "cpp",
+      "sizeLines": 28,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scripting/ScriptIDE.h",
+      "language": "c",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scripting/ScriptIDELauncher.cpp",
+      "language": "cpp",
+      "sizeLines": 394,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scripting/ScriptIDELauncher.h",
+      "language": "c",
+      "sizeLines": 41,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Utils/PlatformUtils.h",
+      "language": "c",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/Linux/LinuxPlatformUtils.cpp",
+      "language": "cpp",
+      "sizeLines": 154,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLBuffer.cpp",
+      "language": "cpp",
+      "sizeLines": 89,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLBuffer.h",
+      "language": "c",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLContext.cpp",
+      "language": "cpp",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLContext.h",
+      "language": "c",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLFramebuffer.cpp",
+      "language": "cpp",
+      "sizeLines": 227,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLFramebuffer.h",
+      "language": "c",
+      "sizeLines": 43,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLRendererAPI.cpp",
+      "language": "cpp",
+      "sizeLines": 129,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLRendererAPI.h",
+      "language": "c",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLShader.cpp",
+      "language": "cpp",
+      "sizeLines": 477,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLShader.h",
+      "language": "c",
+      "sizeLines": 60,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLTexture.cpp",
+      "language": "cpp",
+      "sizeLines": 122,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLTexture.h",
+      "language": "c",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Engine/src/Himii/Scene/TilemapColliderBuilder.cpp": [],
+    "Engine/src/Himii/Scene/TilemapColliderBuilder.h": [],
+    "Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp": [],
+    "Engine/src/Himii/Scene/TileMapCoordinateUtility.h": [],
+    "Engine/src/Himii/Scene/TileMapData.cpp": [],
+    "Engine/src/Himii/Scene/TileMapData.h": [],
+    "Engine/src/Himii/Scene/TileSet.h": [],
+    "Engine/src/Himii/Scripting/ScriptIDE.cpp": [
+      "Engine/src/Himii/Scripting/ScriptIDE.h"
+    ],
+    "Engine/src/Himii/Scripting/ScriptIDE.h": [],
+    "Engine/src/Himii/Scripting/ScriptIDELauncher.cpp": [
+      "Engine/src/Himii/Scripting/ScriptIDELauncher.h"
+    ],
+    "Engine/src/Himii/Scripting/ScriptIDELauncher.h": [],
+    "Engine/src/Himii/Utils/PlatformUtils.h": [],
+    "Engine/src/Platform/Linux/LinuxPlatformUtils.cpp": [],
+    "Engine/src/Platform/OpenGL/OpenGLBuffer.cpp": [
+      "Engine/src/Platform/OpenGL/OpenGLBuffer.h"
+    ],
+    "Engine/src/Platform/OpenGL/OpenGLBuffer.h": [],
+    "Engine/src/Platform/OpenGL/OpenGLContext.cpp": [
+      "Engine/src/Platform/OpenGL/OpenGLContext.h"
+    ],
+    "Engine/src/Platform/OpenGL/OpenGLContext.h": [],
+    "Engine/src/Platform/OpenGL/OpenGLFramebuffer.cpp": [],
+    "Engine/src/Platform/OpenGL/OpenGLFramebuffer.h": [],
+    "Engine/src/Platform/OpenGL/OpenGLRendererAPI.cpp": [],
+    "Engine/src/Platform/OpenGL/OpenGLRendererAPI.h": [],
+    "Engine/src/Platform/OpenGL/OpenGLShader.cpp": [],
+    "Engine/src/Platform/OpenGL/OpenGLShader.h": [],
+    "Engine/src/Platform/OpenGL/OpenGLTexture.cpp": [],
+    "Engine/src/Platform/OpenGL/OpenGLTexture.h": []
+  },
+  "neighborMap": {}
+}

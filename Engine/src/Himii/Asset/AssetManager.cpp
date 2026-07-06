@@ -137,6 +137,8 @@ namespace Himii
             return AssetType::TileMap;
         if (extensionLower == ".particle")
             return AssetType::ParticleEmitter;
+        if (extensionLower == ".hprefab")
+            return AssetType::Prefab;
 
         return AssetType::None;
     }

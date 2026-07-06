@@ -106,8 +106,6 @@ namespace Himii {
 
         bool m_UseOrthographicProjection = false;
 
-        static constexpr float kTwoDimensionalPanSpeedMultiplier = 4.0f;
-
         bool m_IsActive = false;
     };
 

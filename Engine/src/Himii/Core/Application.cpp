@@ -2,6 +2,7 @@
 #include "Himii/Core/Application.h"
 #include "Himii/Core/FileSystem.h"
 #include "Himii/Renderer/Renderer.h"
+#include "Himii/Core/Input.h"
 #include <GLFW/glfw3.h>
 #ifndef HIMII_PLATFORM_WINDOWS
 #include <unistd.h>
@@ -12,6 +13,7 @@
 #endif
 
 #include "Himii/Scripting/ScriptEngine.h"
+#include "Himii/Scripting/ScriptCompiler.h"
 
 namespace Himii
 {
@@ -43,6 +45,7 @@ namespace Himii
     {
         HIMII_PROFILE_FUNCTION();
 
+        ScriptCompiler::Shutdown();
         ScriptEngine::Shutdown();
         FileSystem::Shutdown();
         s_Instance = nullptr;
@@ -184,6 +187,7 @@ namespace Himii
             }
 
             m_Window->Update();
+            Input::EndFrame();
         }
     }
 

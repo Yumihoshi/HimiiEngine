@@ -1,0 +1,209 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 4,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "Engine/src/Himii/Events/ApplicationEvent.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 35,
+      "nonEmptyLines": 28,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Events/Event.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 84,
+      "nonEmptyLines": 74,
+      "functions": [
+        {
+          "name": "~Event",
+          "startLine": 41,
+          "endLine": 41,
+          "params": []
+        },
+        {
+          "name": "ToString",
+          "startLine": 47,
+          "endLine": 50,
+          "params": []
+        },
+        {
+          "name": "IsInCategroy",
+          "startLine": 54,
+          "endLine": 57,
+          "params": [
+            "category"
+          ]
+        },
+        {
+          "name": "EventDispatcher",
+          "startLine": 62,
+          "endLine": 64,
+          "params": [
+            "event"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Event",
+          "startLine": 39,
+          "endLine": 58,
+          "methods": [
+            "~Event",
+            "GetEventType",
+            "GetCategoryFlags",
+            "ToString",
+            "IsInCategroy"
+          ],
+          "properties": [
+            "GetName",
+            "Handled"
+          ]
+        },
+        {
+          "name": "EventDispatcher",
+          "startLine": 60,
+          "endLine": 79,
+          "methods": [
+            "EventDispatcher"
+          ],
+          "properties": [
+            "m_Event"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "~Event",
+          "line": 41,
+          "isDefault": false
+        },
+        {
+          "name": "GetEventType",
+          "line": 43,
+          "isDefault": false
+        },
+        {
+          "name": "GetCategoryFlags",
+          "line": 46,
+          "isDefault": false
+        },
+        {
+          "name": "ToString",
+          "line": 47,
+          "isDefault": false
+        },
+        {
+          "name": "IsInCategroy",
+          "line": 54,
+          "isDefault": false
+        },
+        {
+          "name": "Event",
+          "line": 39,
+          "isDefault": false
+        },
+        {
+          "name": "EventDispatcher",
+          "line": 62,
+          "isDefault": false
+        },
+        {
+          "name": "EventDispatcher",
+          "line": 60,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ToString",
+          "callee": "GetName",
+          "lineNumber": 49
+        },
+        {
+          "caller": "IsInCategroy",
+          "callee": "GetCategoryFlags",
+          "lineNumber": 56
+        },
+        {
+          "caller": "Dispatch",
+          "callee": "GetEventType",
+          "lineNumber": 69
+        },
+        {
+          "caller": "Dispatch",
+          "callee": "T::GetStaticType",
+          "lineNumber": 69
+        },
+        {
+          "caller": "Dispatch",
+          "callee": "func",
+          "lineNumber": 71
+        },
+        {
+          "caller": "Dispatch",
+          "callee": "static_cast<T &>",
+          "lineNumber": 71
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 8,
+        "functionCount": 4,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Events/KeyEvent.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 76,
+      "nonEmptyLines": 63,
+      "callGraph": [
+        {
+          "caller": "ToString",
+          "callee": "str",
+          "lineNumber": 36
+        },
+        {
+          "caller": "ToString",
+          "callee": "str",
+          "lineNumber": 54
+        },
+        {
+          "caller": "ToString",
+          "callee": "str",
+          "lineNumber": 70
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Events/MouseEvent.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 88,
+      "nonEmptyLines": 68,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

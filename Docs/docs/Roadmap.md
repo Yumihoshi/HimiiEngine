@@ -91,9 +91,9 @@
 ### 核心模块：游戏性与脚本 (Gameplay & Scripting)
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |
 | :--- | :--- | :--- |
-| [ ] | **Prefab System** | 预制体资产的保存与实例化 |
-| [ ] | **Scene Transition** | 运行时场景切换 API |
-| [ ] | **[SerializeField]** | 支持 private 字段在 Inspector 中显示 |
+| [x] | **Prefab System（基础）** | 单实体 `.hprefab` 保存与实例化（无实例覆盖） |
+| [x] | **Scene Transition（基础）** | `SceneManager.LoadScene` + `ActiveScenePath` |
+| [x] | **[SerializeField]** | ScriptCore 提供特性；private 字段 Inspector 显示与场景序列化 |
 
 ### 核心模块：编辑器交互 (Editor UX)
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |

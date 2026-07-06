@@ -1,0 +1,2125 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLTextureCube.cpp",
+      "language": "cpp",
+      "fileCategory": "code",
+      "totalLines": 71,
+      "nonEmptyLines": 59,
+      "functions": [
+        {
+          "name": "OpenGLTextureCube",
+          "startLine": 10,
+          "endLine": 60,
+          "params": [
+            "paths"
+          ]
+        },
+        {
+          "name": "~OpenGLTextureCube",
+          "startLine": 62,
+          "endLine": 65,
+          "params": []
+        },
+        {
+          "name": "Bind",
+          "startLine": 67,
+          "endLine": 70,
+          "params": [
+            "slot"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "OpenGLTextureCube",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "~OpenGLTextureCube",
+          "line": 62,
+          "isDefault": false
+        },
+        {
+          "name": "Bind",
+          "line": 67,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "glGenTextures",
+          "lineNumber": 12
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "glBindTexture",
+          "lineNumber": 13
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "glPixelStorei",
+          "lineNumber": 15
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "stbi_set_flip_vertically_on_load",
+          "lineNumber": 18
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "size",
+          "lineNumber": 20
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "size",
+          "lineNumber": 23
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "FileSystem::ReadBytes",
+          "lineNumber": 26
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "stbi_load_from_memory",
+          "lineNumber": 28
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "data",
+          "lineNumber": 28
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "static_cast<int>",
+          "lineNumber": 28
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "size",
+          "lineNumber": 28
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "stbi_load",
+          "lineNumber": 31
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "c_str",
+          "lineNumber": 31
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "glTexImage2D",
+          "lineNumber": 37
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "stbi_image_free",
+          "lineNumber": 39
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "HIMII_CORE_ERROR",
+          "lineNumber": 43
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "glPixelStorei",
+          "lineNumber": 47
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "glTexParameteri",
+          "lineNumber": 54
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "glTexParameteri",
+          "lineNumber": 55
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "glTexParameteri",
+          "lineNumber": 57
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "glTexParameteri",
+          "lineNumber": 58
+        },
+        {
+          "caller": "OpenGLTextureCube",
+          "callee": "glTexParameteri",
+          "lineNumber": 59
+        },
+        {
+          "caller": "~OpenGLTextureCube",
+          "callee": "glDeleteTextures",
+          "lineNumber": 64
+        },
+        {
+          "caller": "Bind",
+          "callee": "glBindTexture",
+          "lineNumber": 69
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLTextureCube.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 37,
+      "nonEmptyLines": 27,
+      "functions": [
+        {
+          "name": "GetWidth",
+          "startLine": 12,
+          "endLine": 12,
+          "params": []
+        },
+        {
+          "name": "GetHeight",
+          "startLine": 13,
+          "endLine": 13,
+          "params": []
+        },
+        {
+          "name": "GetRendererID",
+          "startLine": 15,
+          "endLine": 15,
+          "params": []
+        },
+        {
+          "name": "SetData",
+          "startLine": 19,
+          "endLine": 19,
+          "params": [
+            "data",
+            "size"
+          ]
+        },
+        {
+          "name": "IsLoaded",
+          "startLine": 23,
+          "endLine": 23,
+          "params": []
+        },
+        {
+          "name": "operator==",
+          "startLine": 25,
+          "endLine": 28,
+          "params": [
+            "other"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "OpenGLTextureCube",
+          "startLine": 5,
+          "endLine": 36,
+          "methods": [
+            "GetWidth",
+            "GetHeight",
+            "GetRendererID",
+            "SetData",
+            "Bind",
+            "IsLoaded",
+            "operator=="
+          ],
+          "properties": [
+            "m_RendererID",
+            "m_Width",
+            "m_Specification",
+            "m_Path",
+            "m_IsLoaded"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "GetWidth",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "GetHeight",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "GetRendererID",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "SetData",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "Bind",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "IsLoaded",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "operator==",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "OpenGLTextureCube",
+          "line": 5,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "operator==",
+          "callee": "GetRendererID",
+          "lineNumber": 27
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 8,
+        "functionCount": 6,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLUniformBuffer.cpp",
+      "language": "cpp",
+      "fileCategory": "code",
+      "totalLines": 33,
+      "nonEmptyLines": 25,
+      "functions": [
+        {
+          "name": "OpenGLUniformBuffer",
+          "startLine": 9,
+          "endLine": 15,
+          "params": [
+            "size",
+            "binding"
+          ]
+        },
+        {
+          "name": "~OpenGLUniformBuffer",
+          "startLine": 17,
+          "endLine": 20,
+          "params": []
+        },
+        {
+          "name": "SetData",
+          "startLine": 23,
+          "endLine": 26,
+          "params": [
+            "data",
+            "size",
+            "offset"
+          ]
+        },
+        {
+          "name": "Bind",
+          "startLine": 28,
+          "endLine": 31,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "OpenGLUniformBuffer",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "~OpenGLUniformBuffer",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "SetData",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "Bind",
+          "line": 28,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "OpenGLUniformBuffer",
+          "callee": "glCreateBuffers",
+          "lineNumber": 12
+        },
+        {
+          "caller": "OpenGLUniformBuffer",
+          "callee": "glNamedBufferData",
+          "lineNumber": 13
+        },
+        {
+          "caller": "OpenGLUniformBuffer",
+          "callee": "glBindBufferBase",
+          "lineNumber": 14
+        },
+        {
+          "caller": "~OpenGLUniformBuffer",
+          "callee": "glDeleteBuffers",
+          "lineNumber": 19
+        },
+        {
+          "caller": "SetData",
+          "callee": "glNamedBufferSubData",
+          "lineNumber": 25
+        },
+        {
+          "caller": "Bind",
+          "callee": "glBindBufferBase",
+          "lineNumber": 30
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLUniformBuffer.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 20,
+      "nonEmptyLines": 15,
+      "classes": [
+        {
+          "name": "OpenGLUniformBuffer",
+          "startLine": 8,
+          "endLine": 19,
+          "methods": [
+            "SetData",
+            "Bind"
+          ],
+          "properties": [
+            "m_RendererID",
+            "m_Binding"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SetData",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "Bind",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "OpenGLUniformBuffer",
+          "line": 8,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLVertexArray.cpp",
+      "language": "cpp",
+      "fileCategory": "code",
+      "totalLines": 138,
+      "nonEmptyLines": 127,
+      "functions": [
+        {
+          "name": "ShaderDataTypeToOpenGLBaseType",
+          "startLine": 7,
+          "endLine": 36,
+          "params": [
+            "type"
+          ]
+        },
+        {
+          "name": "OpenGLVertexArray",
+          "startLine": 38,
+          "endLine": 43,
+          "params": []
+        },
+        {
+          "name": "~OpenGLVertexArray",
+          "startLine": 44,
+          "endLine": 49,
+          "params": []
+        },
+        {
+          "name": "Bind",
+          "startLine": 50,
+          "endLine": 55,
+          "params": []
+        },
+        {
+          "name": "Unbind",
+          "startLine": 56,
+          "endLine": 61,
+          "params": []
+        },
+        {
+          "name": "AddVertexBuffer",
+          "startLine": 62,
+          "endLine": 128,
+          "params": [
+            "vertexBuffer"
+          ]
+        },
+        {
+          "name": "SetIndexBuffer",
+          "startLine": 129,
+          "endLine": 137,
+          "params": [
+            "indexBuffer"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "OpenGLVertexArray",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "~OpenGLVertexArray",
+          "line": 44,
+          "isDefault": false
+        },
+        {
+          "name": "Bind",
+          "line": 50,
+          "isDefault": false
+        },
+        {
+          "name": "Unbind",
+          "line": 56,
+          "isDefault": false
+        },
+        {
+          "name": "AddVertexBuffer",
+          "line": 62,
+          "isDefault": false
+        },
+        {
+          "name": "SetIndexBuffer",
+          "line": 129,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ShaderDataTypeToOpenGLBaseType",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 34
+        },
+        {
+          "caller": "OpenGLVertexArray",
+          "callee": "HIMII_PROFILE_FUNCTION",
+          "lineNumber": 40
+        },
+        {
+          "caller": "OpenGLVertexArray",
+          "callee": "glCreateVertexArrays",
+          "lineNumber": 42
+        },
+        {
+          "caller": "~OpenGLVertexArray",
+          "callee": "HIMII_PROFILE_FUNCTION",
+          "lineNumber": 46
+        },
+        {
+          "caller": "~OpenGLVertexArray",
+          "callee": "glDeleteVertexArrays",
+          "lineNumber": 48
+        },
+        {
+          "caller": "Bind",
+          "callee": "HIMII_PROFILE_FUNCTION",
+          "lineNumber": 52
+        },
+        {
+          "caller": "Bind",
+          "callee": "glBindVertexArray",
+          "lineNumber": 54
+        },
+        {
+          "caller": "Unbind",
+          "callee": "HIMII_PROFILE_FUNCTION",
+          "lineNumber": 58
+        },
+        {
+          "caller": "Unbind",
+          "callee": "glBindVertexArray",
+          "lineNumber": 60
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "HIMII_PROFILE_FUNCTION",
+          "lineNumber": 64
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "glBindVertexArray",
+          "lineNumber": 66
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "Bind",
+          "lineNumber": 67
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 69
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "size",
+          "lineNumber": 69
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "GetElements",
+          "lineNumber": 69
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "GetLayout",
+          "lineNumber": 69
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "GetLayout",
+          "lineNumber": 72
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "glEnableVertexAttribArray",
+          "lineNumber": 83
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "glVertexAttribPointer",
+          "lineNumber": 84
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "GetComponentCount",
+          "lineNumber": 84
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "ShaderDataTypeToOpenGLBaseType",
+          "lineNumber": 85
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "GetStride",
+          "lineNumber": 86
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "glVertexAttribDivisor",
+          "lineNumber": 89
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "glEnableVertexAttribArray",
+          "lineNumber": 99
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "glVertexAttribIPointer",
+          "lineNumber": 100
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "GetComponentCount",
+          "lineNumber": 100
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "ShaderDataTypeToOpenGLBaseType",
+          "lineNumber": 101
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "GetStride",
+          "lineNumber": 101
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "glVertexAttribDivisor",
+          "lineNumber": 104
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "GetComponentCount",
+          "lineNumber": 111
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "glEnableVertexAttribArray",
+          "lineNumber": 114
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "glVertexAttribPointer",
+          "lineNumber": 115
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "ShaderDataTypeToOpenGLBaseType",
+          "lineNumber": 115
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "GetStride",
+          "lineNumber": 116
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "glVertexAttribDivisor",
+          "lineNumber": 118
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 124
+        },
+        {
+          "caller": "AddVertexBuffer",
+          "callee": "push_back",
+          "lineNumber": 127
+        },
+        {
+          "caller": "SetIndexBuffer",
+          "callee": "HIMII_PROFILE_FUNCTION",
+          "lineNumber": 131
+        },
+        {
+          "caller": "SetIndexBuffer",
+          "callee": "glBindVertexArray",
+          "lineNumber": 133
+        },
+        {
+          "caller": "SetIndexBuffer",
+          "callee": "Bind",
+          "lineNumber": 134
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 6,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Platform/OpenGL/OpenGLVertexArray.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 34,
+      "nonEmptyLines": 28,
+      "classes": [
+        {
+          "name": "OpenGLVertexArray",
+          "startLine": 6,
+          "endLine": 33,
+          "methods": [
+            "Bind",
+            "Unbind",
+            "AddVertexBuffer",
+            "SetIndexBuffer"
+          ],
+          "properties": [
+            "m_RendererID",
+            "m_VertexBufferIndex",
+            "m_VertexBuffers",
+            "m_IndexBuffers"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Bind",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "Unbind",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "AddVertexBuffer",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "SetIndexBuffer",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "OpenGLVertexArray",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 5,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "Engine/src/Platform/Windows/WindowsInput.cpp",
+      "language": "cpp",
+      "fileCategory": "code",
+      "totalLines": 40,
+      "nonEmptyLines": 34,
+      "functions": [
+        {
+          "name": "IsKeyPressed",
+          "startLine": 9,
+          "endLine": 14,
+          "params": [
+            "key"
+          ]
+        },
+        {
+          "name": "IsMouseButtonPressed",
+          "startLine": 16,
+          "endLine": 21,
+          "params": [
+            "button"
+          ]
+        },
+        {
+          "name": "GetMousePosition",
+          "startLine": 23,
+          "endLine": 29,
+          "params": []
+        },
+        {
+          "name": "GetMouseX",
+          "startLine": 31,
+          "endLine": 34,
+          "params": []
+        },
+        {
+          "name": "GetMouseY",
+          "startLine": 36,
+          "endLine": 39,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "IsKeyPressed",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "IsMouseButtonPressed",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "GetMousePosition",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "GetMouseX",
+          "line": 31,
+          "isDefault": false
+        },
+        {
+          "name": "GetMouseY",
+          "line": 36,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "IsKeyPressed",
+          "callee": "static_cast<GLFWwindow *>",
+          "lineNumber": 11
+        },
+        {
+          "caller": "IsKeyPressed",
+          "callee": "GetNativeWindow",
+          "lineNumber": 11
+        },
+        {
+          "caller": "IsKeyPressed",
+          "callee": "GetWindow",
+          "lineNumber": 11
+        },
+        {
+          "caller": "IsKeyPressed",
+          "callee": "Application::Get",
+          "lineNumber": 11
+        },
+        {
+          "caller": "IsKeyPressed",
+          "callee": "glfwGetKey",
+          "lineNumber": 12
+        },
+        {
+          "caller": "IsMouseButtonPressed",
+          "callee": "static_cast<GLFWwindow *>",
+          "lineNumber": 18
+        },
+        {
+          "caller": "IsMouseButtonPressed",
+          "callee": "GetNativeWindow",
+          "lineNumber": 18
+        },
+        {
+          "caller": "IsMouseButtonPressed",
+          "callee": "GetWindow",
+          "lineNumber": 18
+        },
+        {
+          "caller": "IsMouseButtonPressed",
+          "callee": "Application::Get",
+          "lineNumber": 18
+        },
+        {
+          "caller": "IsMouseButtonPressed",
+          "callee": "glfwGetMouseButton",
+          "lineNumber": 19
+        },
+        {
+          "caller": "GetMousePosition",
+          "callee": "static_cast<GLFWwindow *>",
+          "lineNumber": 25
+        },
+        {
+          "caller": "GetMousePosition",
+          "callee": "GetNativeWindow",
+          "lineNumber": 25
+        },
+        {
+          "caller": "GetMousePosition",
+          "callee": "GetWindow",
+          "lineNumber": 25
+        },
+        {
+          "caller": "GetMousePosition",
+          "callee": "Application::Get",
+          "lineNumber": 25
+        },
+        {
+          "caller": "GetMousePosition",
+          "callee": "glfwGetCursorPos",
+          "lineNumber": 27
+        },
+        {
+          "caller": "GetMousePosition",
+          "callee": "glm::vec2",
+          "lineNumber": 28
+        },
+        {
+          "caller": "GetMousePosition",
+          "callee": "static_cast<float>",
+          "lineNumber": 28
+        },
+        {
+          "caller": "GetMousePosition",
+          "callee": "static_cast<float>",
+          "lineNumber": 28
+        },
+        {
+          "caller": "GetMouseX",
+          "callee": "GetMousePosition",
+          "lineNumber": 33
+        },
+        {
+          "caller": "GetMouseY",
+          "callee": "GetMousePosition",
+          "lineNumber": 38
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 5,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Platform/Windows/WindowsPlatformUtils.cpp",
+      "language": "cpp",
+      "fileCategory": "code",
+      "totalLines": 109,
+      "nonEmptyLines": 99,
+      "functions": [
+        {
+          "name": "OpenFile",
+          "startLine": 17,
+          "endLine": 41,
+          "params": [
+            "filter"
+          ]
+        },
+        {
+          "name": "SaveFile",
+          "startLine": 43,
+          "endLine": 63,
+          "params": [
+            "filter"
+          ]
+        },
+        {
+          "name": "OpenFolder",
+          "startLine": 65,
+          "endLine": 108,
+          "params": [
+            "initialPath"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "OpenFile",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "SaveFile",
+          "line": 43,
+          "isDefault": false
+        },
+        {
+          "name": "OpenFolder",
+          "line": 65,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "OpenFile",
+          "callee": "ZeroMemory",
+          "lineNumber": 23
+        },
+        {
+          "caller": "OpenFile",
+          "callee": "glfwGetWin32Window",
+          "lineNumber": 27
+        },
+        {
+          "caller": "OpenFile",
+          "callee": "GetNativeWindow",
+          "lineNumber": 27
+        },
+        {
+          "caller": "OpenFile",
+          "callee": "GetWindow",
+          "lineNumber": 27
+        },
+        {
+          "caller": "OpenFile",
+          "callee": "Application::Get",
+          "lineNumber": 27
+        },
+        {
+          "caller": "OpenFile",
+          "callee": "GetCurrentDirectoryA",
+          "lineNumber": 30
+        },
+        {
+          "caller": "OpenFile",
+          "callee": "GetOpenFileNameA",
+          "lineNumber": 37
+        },
+        {
+          "caller": "OpenFile",
+          "callee": "std::string",
+          "lineNumber": 40
+        },
+        {
+          "caller": "SaveFile",
+          "callee": "ZeroMemory",
+          "lineNumber": 48
+        },
+        {
+          "caller": "SaveFile",
+          "callee": "glfwGetWin32Window",
+          "lineNumber": 50
+        },
+        {
+          "caller": "SaveFile",
+          "callee": "GetNativeWindow",
+          "lineNumber": 50
+        },
+        {
+          "caller": "SaveFile",
+          "callee": "GetWindow",
+          "lineNumber": 50
+        },
+        {
+          "caller": "SaveFile",
+          "callee": "Application::Get",
+          "lineNumber": 50
+        },
+        {
+          "caller": "SaveFile",
+          "callee": "GetCurrentDirectoryA",
+          "lineNumber": 53
+        },
+        {
+          "caller": "SaveFile",
+          "callee": "strchr",
+          "lineNumber": 58
+        },
+        {
+          "caller": "SaveFile",
+          "callee": "GetSaveFileNameA",
+          "lineNumber": 59
+        },
+        {
+          "caller": "SaveFile",
+          "callee": "std::string",
+          "lineNumber": 62
+        },
+        {
+          "caller": "OpenFolder",
+          "callee": "CoCreateInstance",
+          "lineNumber": 73
+        },
+        {
+          "caller": "OpenFolder",
+          "callee": "reinterpret_cast<void**>",
+          "lineNumber": 74
+        },
+        {
+          "caller": "OpenFolder",
+          "callee": "SUCCEEDED",
+          "lineNumber": 76
+        },
+        {
+          "caller": "OpenFolder",
+          "callee": "SUCCEEDED",
+          "lineNumber": 79
+        },
+        {
+          "caller": "OpenFolder",
+          "callee": "GetOptions",
+          "lineNumber": 79
+        },
+        {
+          "caller": "OpenFolder",
+          "callee": "SetOptions",
+          "lineNumber": 81
+        },
+        {
+          "caller": "OpenFolder",
+          "callee": "SUCCEEDED",
+          "lineNumber": 84
+        },
+        {
+          "caller": "OpenFolder",
+          "callee": "Show",
+          "lineNumber": 84
+        },
+        {
+          "caller": "OpenFolder",
+          "callee": "SUCCEEDED",
+          "lineNumber": 87
+        },
+        {
+          "caller": "OpenFolder",
+          "callee": "GetResult",
+          "lineNumber": 87
+        },
+        {
+          "caller": "OpenFolder",
+          "callee": "SUCCEEDED",
+          "lineNumber": 90
+        },
+        {
+          "caller": "OpenFolder",
+          "callee": "GetDisplayName",
+          "lineNumber": 90
+        },
+        {
+          "caller": "OpenFolder",
+          "callee": "WideCharToMultiByte",
+          "lineNumber": 93
+        },
+        {
+          "caller": "OpenFolder",
+          "callee": "WideCharToMultiByte",
+          "lineNumber": 97
+        },
+        {
+          "caller": "OpenFolder",
+          "callee": "data",
+          "lineNumber": 98
+        },
+        {
+          "caller": "OpenFolder",
+          "callee": "CoTaskMemFree",
+          "lineNumber": 100
+        },
+        {
+          "caller": "OpenFolder",
+          "callee": "Release",
+          "lineNumber": 102
+        },
+        {
+          "caller": "OpenFolder",
+          "callee": "Release",
+          "lineNumber": 105
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Platform/Windows/WindowsWindow.cpp",
+      "language": "cpp",
+      "fileCategory": "code",
+      "totalLines": 368,
+      "nonEmptyLines": 308,
+      "functions": [
+        {
+          "name": "GLFWErrorCallback",
+          "startLine": 61,
+          "endLine": 64,
+          "params": [
+            "error",
+            "description"
+          ]
+        },
+        {
+          "name": "WindowsWindow",
+          "startLine": 66,
+          "endLine": 71,
+          "params": [
+            "props"
+          ]
+        },
+        {
+          "name": "~WindowsWindow",
+          "startLine": 73,
+          "endLine": 78,
+          "params": []
+        },
+        {
+          "name": "Init",
+          "startLine": 80,
+          "endLine": 257,
+          "params": [
+            "props"
+          ]
+        },
+        {
+          "name": "Shutdown",
+          "startLine": 259,
+          "endLine": 270,
+          "params": []
+        },
+        {
+          "name": "Update",
+          "startLine": 272,
+          "endLine": 278,
+          "params": []
+        },
+        {
+          "name": "SetVSync",
+          "startLine": 279,
+          "endLine": 292,
+          "params": [
+            "enabled"
+          ]
+        },
+        {
+          "name": "IsVSync",
+          "startLine": 294,
+          "endLine": 297,
+          "params": []
+        },
+        {
+          "name": "SetTitle",
+          "startLine": 299,
+          "endLine": 304,
+          "params": [
+            "title"
+          ]
+        },
+        {
+          "name": "SetClientSize",
+          "startLine": 306,
+          "endLine": 312,
+          "params": [
+            "width",
+            "height"
+          ]
+        },
+        {
+          "name": "CenterOnScreen",
+          "startLine": 314,
+          "endLine": 330,
+          "params": []
+        },
+        {
+          "name": "SetDecorated",
+          "startLine": 332,
+          "endLine": 346,
+          "params": [
+            "decorated"
+          ]
+        },
+        {
+          "name": "MaximizeForEditor",
+          "startLine": 348,
+          "endLine": 366,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "WindowsWindow",
+          "line": 66,
+          "isDefault": false
+        },
+        {
+          "name": "~WindowsWindow",
+          "line": 73,
+          "isDefault": false
+        },
+        {
+          "name": "Init",
+          "line": 80,
+          "isDefault": false
+        },
+        {
+          "name": "Shutdown",
+          "line": 259,
+          "isDefault": false
+        },
+        {
+          "name": "Update",
+          "line": 272,
+          "isDefault": false
+        },
+        {
+          "name": "SetVSync",
+          "line": 279,
+          "isDefault": false
+        },
+        {
+          "name": "IsVSync",
+          "line": 294,
+          "isDefault": false
+        },
+        {
+          "name": "SetTitle",
+          "line": 299,
+          "isDefault": false
+        },
+        {
+          "name": "SetClientSize",
+          "line": 306,
+          "isDefault": false
+        },
+        {
+          "name": "CenterOnScreen",
+          "line": 314,
+          "isDefault": false
+        },
+        {
+          "name": "SetDecorated",
+          "line": 332,
+          "isDefault": false
+        },
+        {
+          "name": "MaximizeForEditor",
+          "line": 348,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ApplyBorderlessWindow",
+          "callee": "GetWindowLongPtr",
+          "lineNumber": 31
+        },
+        {
+          "caller": "ApplyBorderlessWindow",
+          "callee": "SetWindowLongPtr",
+          "lineNumber": 33
+        },
+        {
+          "caller": "ApplyBorderlessWindow",
+          "callee": "GetWindowLongPtr",
+          "lineNumber": 35
+        },
+        {
+          "caller": "ApplyBorderlessWindow",
+          "callee": "SetWindowLongPtr",
+          "lineNumber": 37
+        },
+        {
+          "caller": "ApplyBorderlessWindow",
+          "callee": "SetWindowPos",
+          "lineNumber": 39
+        },
+        {
+          "caller": "ApplyDarkNativeTitleBar",
+          "callee": "DwmSetWindowAttribute",
+          "lineNumber": 50
+        },
+        {
+          "caller": "ApplyDarkNativeTitleBar",
+          "callee": "RGB",
+          "lineNumber": 54
+        },
+        {
+          "caller": "ApplyDarkNativeTitleBar",
+          "callee": "RGB",
+          "lineNumber": 55
+        },
+        {
+          "caller": "ApplyDarkNativeTitleBar",
+          "callee": "DwmSetWindowAttribute",
+          "lineNumber": 56
+        },
+        {
+          "caller": "ApplyDarkNativeTitleBar",
+          "callee": "DwmSetWindowAttribute",
+          "lineNumber": 57
+        },
+        {
+          "caller": "GLFWErrorCallback",
+          "callee": "HIMII_CORE_ERROR",
+          "lineNumber": 63
+        },
+        {
+          "caller": "WindowsWindow",
+          "callee": "HIMII_PROFILE_FUNCTION",
+          "lineNumber": 68
+        },
+        {
+          "caller": "WindowsWindow",
+          "callee": "Init",
+          "lineNumber": 70
+        },
+        {
+          "caller": "~WindowsWindow",
+          "callee": "HIMII_PROFILE_FUNCTION",
+          "lineNumber": 75
+        },
+        {
+          "caller": "~WindowsWindow",
+          "callee": "Shutdown",
+          "lineNumber": 77
+        },
+        {
+          "caller": "Init",
+          "callee": "HIMII_PROFILE_FUNCTION",
+          "lineNumber": 82
+        },
+        {
+          "caller": "Init",
+          "callee": "HIMII_CORE_INFO",
+          "lineNumber": 89
+        },
+        {
+          "caller": "Init",
+          "callee": "HIMII_PROFILE_SCOPE",
+          "lineNumber": 93
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwInit",
+          "lineNumber": 94
+        },
+        {
+          "caller": "Init",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 95
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwSetErrorCallback",
+          "lineNumber": 96
+        },
+        {
+          "caller": "Init",
+          "callee": "HIMII_PROFILE_SCOPE",
+          "lineNumber": 99
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwDefaultWindowHints",
+          "lineNumber": 101
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwWindowHint",
+          "lineNumber": 102
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwWindowHint",
+          "lineNumber": 103
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwWindowHint",
+          "lineNumber": 104
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwCreateWindow",
+          "lineNumber": 106
+        },
+        {
+          "caller": "Init",
+          "callee": "c_str",
+          "lineNumber": 106
+        },
+        {
+          "caller": "Init",
+          "callee": "HIMII_CORE_ERROR",
+          "lineNumber": 111
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwTerminate",
+          "lineNumber": 112
+        },
+        {
+          "caller": "Init",
+          "callee": "CreateScope<OpenGLContext>",
+          "lineNumber": 116
+        },
+        {
+          "caller": "Init",
+          "callee": "Init",
+          "lineNumber": 117
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwGetWin32Window",
+          "lineNumber": 121
+        },
+        {
+          "caller": "Init",
+          "callee": "FileSystem::MaterializeLooseFile",
+          "lineNumber": 125
+        },
+        {
+          "caller": "Init",
+          "callee": "static_cast<HICON>",
+          "lineNumber": 126
+        },
+        {
+          "caller": "Init",
+          "callee": "LoadImageA",
+          "lineNumber": 126
+        },
+        {
+          "caller": "Init",
+          "callee": "c_str",
+          "lineNumber": 126
+        },
+        {
+          "caller": "Init",
+          "callee": "string",
+          "lineNumber": 126
+        },
+        {
+          "caller": "Init",
+          "callee": "SendMessage",
+          "lineNumber": 131
+        },
+        {
+          "caller": "Init",
+          "callee": "reinterpret_cast<LPARAM>",
+          "lineNumber": 131
+        },
+        {
+          "caller": "Init",
+          "callee": "SendMessage",
+          "lineNumber": 132
+        },
+        {
+          "caller": "Init",
+          "callee": "reinterpret_cast<LPARAM>",
+          "lineNumber": 132
+        },
+        {
+          "caller": "Init",
+          "callee": "HIMII_CORE_WARNING",
+          "lineNumber": 136
+        },
+        {
+          "caller": "Init",
+          "callee": "string",
+          "lineNumber": 136
+        },
+        {
+          "caller": "Init",
+          "callee": "ApplyDarkNativeTitleBar",
+          "lineNumber": 140
+        },
+        {
+          "caller": "Init",
+          "callee": "ApplyBorderlessWindow",
+          "lineNumber": 142
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwMaximizeWindow",
+          "lineNumber": 148
+        },
+        {
+          "caller": "Init",
+          "callee": "CenterOnScreen",
+          "lineNumber": 151
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwSetWindowUserPointer",
+          "lineNumber": 153
+        },
+        {
+          "caller": "Init",
+          "callee": "SetVSync",
+          "lineNumber": 155
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwSetWindowSizeCallback",
+          "lineNumber": 158
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwGetWindowUserPointer",
+          "lineNumber": 161
+        },
+        {
+          "caller": "Init",
+          "callee": "EventCallback",
+          "lineNumber": 165
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwSetWindowCloseCallback",
+          "lineNumber": 168
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwGetWindowUserPointer",
+          "lineNumber": 171
+        },
+        {
+          "caller": "Init",
+          "callee": "EventCallback",
+          "lineNumber": 173
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwSetKeyCallback",
+          "lineNumber": 176
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwGetWindowUserPointer",
+          "lineNumber": 179
+        },
+        {
+          "caller": "Init",
+          "callee": "EventCallback",
+          "lineNumber": 185
+        },
+        {
+          "caller": "Init",
+          "callee": "EventCallback",
+          "lineNumber": 191
+        },
+        {
+          "caller": "Init",
+          "callee": "EventCallback",
+          "lineNumber": 197
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwSetCharCallback",
+          "lineNumber": 202
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwGetWindowUserPointer",
+          "lineNumber": 205
+        },
+        {
+          "caller": "Init",
+          "callee": "EventCallback",
+          "lineNumber": 208
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwSetMouseButtonCallback",
+          "lineNumber": 211
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwGetWindowUserPointer",
+          "lineNumber": 214
+        },
+        {
+          "caller": "Init",
+          "callee": "EventCallback",
+          "lineNumber": 221
+        },
+        {
+          "caller": "Init",
+          "callee": "EventCallback",
+          "lineNumber": 227
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwSetScrollCallback",
+          "lineNumber": 233
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwGetWindowUserPointer",
+          "lineNumber": 236
+        },
+        {
+          "caller": "Init",
+          "callee": "EventCallback",
+          "lineNumber": 239
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwSetCursorPosCallback",
+          "lineNumber": 242
+        },
+        {
+          "caller": "Init",
+          "callee": "glfwGetWindowUserPointer",
+          "lineNumber": 245
+        },
+        {
+          "caller": "Init",
+          "callee": "EventCallback",
+          "lineNumber": 250
+        },
+        {
+          "caller": "Init",
+          "callee": "HIMII_CORE_ERROR",
+          "lineNumber": 254
+        },
+        {
+          "caller": "Shutdown",
+          "callee": "HIMII_PROFILE_FUNCTION",
+          "lineNumber": 261
+        },
+        {
+          "caller": "Shutdown",
+          "callee": "glfwDestroyWindow",
+          "lineNumber": 263
+        },
+        {
+          "caller": "Shutdown",
+          "callee": "glfwTerminate",
+          "lineNumber": 268
+        },
+        {
+          "caller": "Update",
+          "callee": "HIMII_PROFILE_FUNCTION",
+          "lineNumber": 274
+        },
+        {
+          "caller": "Update",
+          "callee": "SwapBuffers",
+          "lineNumber": 276
+        },
+        {
+          "caller": "Update",
+          "callee": "glfwPollEvents",
+          "lineNumber": 277
+        },
+        {
+          "caller": "SetVSync",
+          "callee": "HIMII_PROFILE_FUNCTION",
+          "lineNumber": 281
+        },
+        {
+          "caller": "SetVSync",
+          "callee": "glfwSwapInterval",
+          "lineNumber": 285
+        },
+        {
+          "caller": "SetVSync",
+          "callee": "glfwSwapInterval",
+          "lineNumber": 289
+        },
+        {
+          "caller": "SetTitle",
+          "callee": "glfwSetWindowTitle",
+          "lineNumber": 303
+        },
+        {
+          "caller": "SetTitle",
+          "callee": "c_str",
+          "lineNumber": 303
+        },
+        {
+          "caller": "SetClientSize",
+          "callee": "glfwSetWindowSize",
+          "lineNumber": 311
+        },
+        {
+          "caller": "CenterOnScreen",
+          "callee": "glfwGetPrimaryMonitor",
+          "lineNumber": 319
+        },
+        {
+          "caller": "CenterOnScreen",
+          "callee": "glfwGetVideoMode",
+          "lineNumber": 323
+        },
+        {
+          "caller": "CenterOnScreen",
+          "callee": "glfwSetWindowPos",
+          "lineNumber": 329
+        },
+        {
+          "caller": "SetDecorated",
+          "callee": "glfwSetWindowAttrib",
+          "lineNumber": 337
+        },
+        {
+          "caller": "SetDecorated",
+          "callee": "glfwGetWin32Window",
+          "lineNumber": 342
+        },
+        {
+          "caller": "SetDecorated",
+          "callee": "ApplyDarkNativeTitleBar",
+          "lineNumber": 343
+        },
+        {
+          "caller": "MaximizeForEditor",
+          "callee": "SetDecorated",
+          "lineNumber": 353
+        },
+        {
+          "caller": "MaximizeForEditor",
+          "callee": "glfwMaximizeWindow",
+          "lineNumber": 354
+        },
+        {
+          "caller": "MaximizeForEditor",
+          "callee": "glfwGetPrimaryMonitor",
+          "lineNumber": 356
+        },
+        {
+          "caller": "MaximizeForEditor",
+          "callee": "glfwGetVideoMode",
+          "lineNumber": 359
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 12,
+        "functionCount": 13,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Platform/Windows/WindowsWindow.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 65,
+      "nonEmptyLines": 49,
+      "functions": [
+        {
+          "name": "GetWidth",
+          "startLine": 15,
+          "endLine": 18,
+          "params": []
+        },
+        {
+          "name": "GetHeight",
+          "startLine": 19,
+          "endLine": 22,
+          "params": []
+        },
+        {
+          "name": "SetEventCallback",
+          "startLine": 24,
+          "endLine": 27,
+          "params": [
+            "callback"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "WindowsWindow",
+          "startLine": 8,
+          "endLine": 63,
+          "methods": [
+            "Update",
+            "GetWidth",
+            "GetHeight",
+            "SetEventCallback",
+            "SetVSync",
+            "IsVSync",
+            "SetTitle",
+            "SetClientSize",
+            "CenterOnScreen",
+            "MaximizeForEditor",
+            "SetDecorated",
+            "Init",
+            "Shutdown"
+          ],
+          "properties": [
+            "m_Window",
+            "m_Context",
+            "m_Data"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Update",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "GetWidth",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "GetHeight",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "SetEventCallback",
+          "line": 24,
+          "isDefault": false
+        },
+        {
+          "name": "SetVSync",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "IsVSync",
+          "line": 29,
+          "isDefault": false
+        },
+        {
+          "name": "SetTitle",
+          "line": 36,
+          "isDefault": false
+        },
+        {
+          "name": "SetClientSize",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "CenterOnScreen",
+          "line": 40,
+          "isDefault": false
+        },
+        {
+          "name": "MaximizeForEditor",
+          "line": 42,
+          "isDefault": false
+        },
+        {
+          "name": "SetDecorated",
+          "line": 44,
+          "isDefault": false
+        },
+        {
+          "name": "WindowsWindow",
+          "line": 8,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 12,
+        "functionCount": 3,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "HimiiEditor/AppIcon.rc",
+      "language": "rc",
+      "fileCategory": "code",
+      "totalLines": 6,
+      "nonEmptyLines": 4,
+      "metrics": {}
+    },
+    {
+      "path": "HimiiEditor/assets/fonts/msyh.ttc",
+      "language": "ttc",
+      "fileCategory": "code",
+      "totalLines": 94512,
+      "nonEmptyLines": 90023,
+      "metrics": {}
+    },
+    {
+      "path": "HimiiEditor/assets/shaders/FlatColor.glsl",
+      "language": "glsl",
+      "fileCategory": "code",
+      "totalLines": 26,
+      "nonEmptyLines": 18,
+      "metrics": {}
+    },
+    {
+      "path": "HimiiEditor/assets/shaders/Grid.glsl",
+      "language": "glsl",
+      "fileCategory": "code",
+      "totalLines": 147,
+      "nonEmptyLines": 117,
+      "metrics": {}
+    },
+    {
+      "path": "HimiiEditor/assets/shaders/Renderer2D_Circle.glsl",
+      "language": "glsl",
+      "fileCategory": "code",
+      "totalLines": 67,
+      "nonEmptyLines": 54,
+      "metrics": {}
+    },
+    {
+      "path": "HimiiEditor/assets/shaders/Renderer2D_Line.glsl",
+      "language": "glsl",
+      "fileCategory": "code",
+      "totalLines": 47,
+      "nonEmptyLines": 36,
+      "metrics": {}
+    },
+    {
+      "path": "HimiiEditor/assets/shaders/Renderer2D_Quad.glsl",
+      "language": "glsl",
+      "fileCategory": "code",
+      "totalLines": 98,
+      "nonEmptyLines": 87,
+      "metrics": {}
+    },
+    {
+      "path": "HimiiEditor/assets/shaders/Renderer2D_Text.glsl",
+      "language": "glsl",
+      "fileCategory": "code",
+      "totalLines": 85,
+      "nonEmptyLines": 65,
+      "metrics": {}
+    },
+    {
+      "path": "HimiiEditor/assets/shaders/Renderer3D_Cube.glsl",
+      "language": "glsl",
+      "fileCategory": "code",
+      "totalLines": 94,
+      "nonEmptyLines": 72,
+      "metrics": {}
+    },
+    {
+      "path": "HimiiEditor/assets/shaders/Skybox.glsl",
+      "language": "glsl",
+      "fileCategory": "code",
+      "totalLines": 42,
+      "nonEmptyLines": 31,
+      "metrics": {}
+    },
+    {
+      "path": "HimiiEditor/CMakeLists.txt",
+      "language": "txt",
+      "fileCategory": "docs",
+      "totalLines": 72,
+      "nonEmptyLines": 58,
+      "metrics": {}
+    },
+    {
+      "path": "HimiiEditor/resources/skybox/back.bmp",
+      "language": "bmp",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "metrics": {}
+    },
+    {
+      "path": "HimiiEditor/resources/skybox/bottom.bmp",
+      "language": "bmp",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "metrics": {}
+    },
+    {
+      "path": "HimiiEditor/resources/skybox/front.bmp",
+      "language": "bmp",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "metrics": {}
+    },
+    {
+      "path": "HimiiEditor/resources/skybox/left.bmp",
+      "language": "bmp",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "metrics": {}
+    }
+  ]
+}

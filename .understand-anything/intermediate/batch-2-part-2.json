@@ -1,0 +1,875 @@
+{
+  "nodes": [
+    {
+      "id": "file:HimiiEditor/src/panel/EditorPreferencesPanel.cpp",
+      "type": "file",
+      "name": "EditorPreferencesPanel.cpp",
+      "filePath": "HimiiEditor/src/panel/EditorPreferencesPanel.cpp",
+      "summary": "编辑器偏好设置面板实现，提供 IDE 配置（如外部代码编辑器路径）的编辑界面。",
+      "tags": [
+        "preferences",
+        "editor-panel",
+        "settings",
+        "ide-config"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:HimiiEditor/src/panel/EditorPreferencesPanel.h",
+      "type": "file",
+      "name": "EditorPreferencesPanel.h",
+      "filePath": "HimiiEditor/src/panel/EditorPreferencesPanel.h",
+      "summary": "编辑器偏好设置面板头文件，声明 EditorPreferencesPanel 类。",
+      "tags": [
+        "preferences",
+        "editor-panel",
+        "header"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "type": "file",
+      "name": "ParticleEmitterEditorPanel.cpp",
+      "filePath": "HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "summary": "粒子发射器编辑器面板实现，支持粒子资产加载、实时预览、属性编辑和资产保存。",
+      "tags": [
+        "particle-editor",
+        "editor-panel",
+        "asset-editing",
+        "preview"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.h",
+      "type": "file",
+      "name": "ParticleEmitterEditorPanel.h",
+      "filePath": "HimiiEditor/src/panel/ParticleEmitterEditorPanel.h",
+      "summary": "粒子发射器编辑器面板头文件，声明 ParticleEmitterEditorPanel 类及其资产管理接口。",
+      "tags": [
+        "particle-editor",
+        "editor-panel",
+        "header"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:HimiiEditor/src/panel/ProjectSettingsPanel.cpp",
+      "type": "file",
+      "name": "ProjectSettingsPanel.cpp",
+      "filePath": "HimiiEditor/src/panel/ProjectSettingsPanel.cpp",
+      "summary": "项目设置面板实现，提供项目级配置（如场景路径、脚本程序集路径）的查看和编辑功能。",
+      "tags": [
+        "project-settings",
+        "editor-panel",
+        "configuration"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:HimiiEditor/src/panel/ProjectSettingsPanel.h",
+      "type": "file",
+      "name": "ProjectSettingsPanel.h",
+      "filePath": "HimiiEditor/src/panel/ProjectSettingsPanel.h",
+      "summary": "项目设置面板头文件，声明 ProjectSettingsPanel 类及其同步/应用配置接口。",
+      "tags": [
+        "project-settings",
+        "editor-panel",
+        "header"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "type": "file",
+      "name": "SceneHierarchyPanel.cpp",
+      "filePath": "HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "summary": "场景层级面板实现（编辑器核心面板之一），提供场景实体树视图、组件检视器（含 Transform、Sprite、Rigidbody2D、BoxCollider2D、脚本组件等），以及拖放资源分配功能。",
+      "tags": [
+        "scene-hierarchy",
+        "editor-panel",
+        "entity-inspector",
+        "component-editor",
+        "drag-and-drop"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:HimiiEditor/src/panel/SceneHierarchyPanel.h",
+      "type": "file",
+      "name": "SceneHierarchyPanel.h",
+      "filePath": "HimiiEditor/src/panel/SceneHierarchyPanel.h",
+      "summary": "场景层级面板头文件，声明 SceneHierarchyPanel 类，包含实体选择、命令历史管理和向其他编辑器面板传递编辑请求的接口。",
+      "tags": [
+        "scene-hierarchy",
+        "editor-panel",
+        "header",
+        "command-history"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:HimiiEditor/src/panel/EditorPreferencesPanel.h:EditorPreferencesPanel",
+      "type": "class",
+      "name": "EditorPreferencesPanel",
+      "filePath": "HimiiEditor/src/panel/EditorPreferencesPanel.h",
+      "lineRange": [
+        7,
+        14
+      ],
+      "summary": "编辑器偏好设置面板类，用于配置 IDE 路径等编辑器全局偏好。",
+      "tags": [
+        "preferences",
+        "editor-panel",
+        "settings"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:HimiiEditor/src/panel/ParticleEmitterEditorPanel.h:ParticleEmitterEditorPanel",
+      "type": "class",
+      "name": "ParticleEmitterEditorPanel",
+      "filePath": "HimiiEditor/src/panel/ParticleEmitterEditorPanel.h",
+      "lineRange": [
+        14,
+        46
+      ],
+      "summary": "粒子发射器编辑器面板类，管理粒子系统资产的加载、实时预览、属性编辑和保存。",
+      "tags": [
+        "particle-editor",
+        "editor-panel",
+        "asset-editing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:HimiiEditor/src/panel/ProjectSettingsPanel.h:ProjectSettingsPanel",
+      "type": "class",
+      "name": "ProjectSettingsPanel",
+      "filePath": "HimiiEditor/src/panel/ProjectSettingsPanel.h",
+      "lineRange": [
+        7,
+        21
+      ],
+      "summary": "项目设置面板类，提供项目级配置的查看界面及配置同步功能。",
+      "tags": [
+        "project-settings",
+        "editor-panel",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:HimiiEditor/src/panel/SceneHierarchyPanel.h:SceneHierarchyPanel",
+      "type": "class",
+      "name": "SceneHierarchyPanel",
+      "filePath": "HimiiEditor/src/panel/SceneHierarchyPanel.h",
+      "lineRange": [
+        13,
+        79
+      ],
+      "summary": "场景层级面板类，管理场景实体树的显示、实体选择状态、组件检视器渲染以及向其他面板的编辑请求转发。",
+      "tags": [
+        "scene-hierarchy",
+        "editor-panel",
+        "entity-inspector"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/EditorPreferencesPanel.cpp:DrawIDEConfig",
+      "type": "function",
+      "name": "DrawIDEConfig",
+      "filePath": "HimiiEditor/src/panel/EditorPreferencesPanel.cpp",
+      "lineRange": [
+        17,
+        64
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/EditorPreferencesPanel.cpp:OnImGuiRender",
+      "type": "function",
+      "name": "OnImGuiRender",
+      "filePath": "HimiiEditor/src/panel/EditorPreferencesPanel.cpp",
+      "lineRange": [
+        66,
+        89
+      ],
+      "summary": "ImGui 渲染入口，绘制面板的全部 UI 布局和交互元素。",
+      "tags": [
+        "ui-render",
+        "entry-point",
+        "imgui"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:LoadAsset",
+      "type": "function",
+      "name": "LoadAsset",
+      "filePath": "HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "lineRange": [
+        36,
+        46
+      ],
+      "summary": "加载/重载编辑所需的纹理和资产数据。",
+      "tags": [
+        "asset-loading",
+        "data-reload"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:UpdatePreview",
+      "type": "function",
+      "name": "UpdatePreview",
+      "filePath": "HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "lineRange": [
+        48,
+        66
+      ],
+      "summary": "渲染/更新粒子系统的实时预览。",
+      "tags": [
+        "particle-preview",
+        "rendering"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:RenderPreview",
+      "type": "function",
+      "name": "RenderPreview",
+      "filePath": "HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "lineRange": [
+        68,
+        131
+      ],
+      "summary": "渲染/更新粒子系统的实时预览。",
+      "tags": [
+        "particle-preview",
+        "rendering"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:PropRow",
+      "type": "function",
+      "name": "PropRow",
+      "filePath": "HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "lineRange": [
+        134,
+        143
+      ],
+      "summary": "绘制属性编辑 UI，显示和编辑当前选择资产的属性面板。",
+      "tags": [
+        "property-editor",
+        "ui",
+        "inspector"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:UI_Properties",
+      "type": "function",
+      "name": "UI_Properties",
+      "filePath": "HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "lineRange": [
+        145,
+        242
+      ],
+      "summary": "ImGui UI 子区域渲染方法。",
+      "tags": [
+        "ui-render",
+        "panel-section"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:SaveAsset",
+      "type": "function",
+      "name": "SaveAsset",
+      "filePath": "HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "lineRange": [
+        244,
+        259
+      ],
+      "summary": "资产序列化并保存到文件的方法。",
+      "tags": [
+        "serialization",
+        "asset-saving"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:OnImGuiRender",
+      "type": "function",
+      "name": "OnImGuiRender",
+      "filePath": "HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "lineRange": [
+        261,
+        334
+      ],
+      "summary": "ImGui 渲染入口，绘制面板的全部 UI 布局和交互元素。",
+      "tags": [
+        "ui-render",
+        "entry-point",
+        "imgui"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ProjectSettingsPanel.cpp:SyncFromProject",
+      "type": "function",
+      "name": "SyncFromProject",
+      "filePath": "HimiiEditor/src/panel/ProjectSettingsPanel.cpp",
+      "lineRange": [
+        18,
+        27
+      ],
+      "summary": "同步方法，在 UI 和底层数据模型之间同步状态。",
+      "tags": [
+        "data-sync",
+        "state-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ProjectSettingsPanel.cpp:ApplyToProject",
+      "type": "function",
+      "name": "ApplyToProject",
+      "filePath": "HimiiEditor/src/panel/ProjectSettingsPanel.cpp",
+      "lineRange": [
+        29,
+        38
+      ],
+      "summary": "同步方法，在 UI 和底层数据模型之间同步状态。",
+      "tags": [
+        "data-sync",
+        "state-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ProjectSettingsPanel.cpp:OnImGuiRender",
+      "type": "function",
+      "name": "OnImGuiRender",
+      "filePath": "HimiiEditor/src/panel/ProjectSettingsPanel.cpp",
+      "lineRange": [
+        40,
+        98
+      ],
+      "summary": "ImGui 渲染入口，绘制面板的全部 UI 布局和交互元素。",
+      "tags": [
+        "ui-render",
+        "entry-point",
+        "imgui"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:SceneHierarchyPanel",
+      "type": "function",
+      "name": "SceneHierarchyPanel",
+      "filePath": "HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "lineRange": [
+        35,
+        49
+      ],
+      "summary": "面板辅助方法，定义于 HimiiEditor/src/panel/SceneHierarchyPanel.cpp。",
+      "tags": [
+        "helper",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:OnImGuiRender",
+      "type": "function",
+      "name": "OnImGuiRender",
+      "filePath": "HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "lineRange": [
+        65,
+        190
+      ],
+      "summary": "ImGui 渲染入口，绘制面板的全部 UI 布局和交互元素。",
+      "tags": [
+        "ui-render",
+        "entry-point",
+        "imgui"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:DrawEntityNode",
+      "type": "function",
+      "name": "DrawEntityNode",
+      "filePath": "HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "lineRange": [
+        192,
+        238
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:DrawVec3Control",
+      "type": "function",
+      "name": "DrawVec3Control",
+      "filePath": "HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "lineRange": [
+        240,
+        330
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:DrawTextureAssignControl",
+      "type": "function",
+      "name": "DrawTextureAssignControl",
+      "filePath": "HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "lineRange": [
+        341,
+        362
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:DrawComponents",
+      "type": "function",
+      "name": "DrawComponents",
+      "filePath": "HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "lineRange": [
+        464,
+        1677
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:HimiiEditor/src/panel/EditorPreferencesPanel.cpp",
+      "target": "file:HimiiEditor/src/panel/EditorPreferencesPanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "target": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ProjectSettingsPanel.cpp",
+      "target": "file:HimiiEditor/src/panel/ProjectSettingsPanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "target": "file:HimiiEditor/src/panel/SceneHierarchyPanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/EditorPreferencesPanel.h",
+      "target": "class:HimiiEditor/src/panel/EditorPreferencesPanel.h:EditorPreferencesPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.h",
+      "target": "class:HimiiEditor/src/panel/ParticleEmitterEditorPanel.h:ParticleEmitterEditorPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ProjectSettingsPanel.h",
+      "target": "class:HimiiEditor/src/panel/ProjectSettingsPanel.h:ProjectSettingsPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/SceneHierarchyPanel.h",
+      "target": "class:HimiiEditor/src/panel/SceneHierarchyPanel.h:SceneHierarchyPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/EditorPreferencesPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/EditorPreferencesPanel.cpp:DrawIDEConfig",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/EditorPreferencesPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/EditorPreferencesPanel.cpp:OnImGuiRender",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:LoadAsset",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:UpdatePreview",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:RenderPreview",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:PropRow",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:UI_Properties",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:SaveAsset",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:OnImGuiRender",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ProjectSettingsPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ProjectSettingsPanel.cpp:SyncFromProject",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ProjectSettingsPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ProjectSettingsPanel.cpp:ApplyToProject",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ProjectSettingsPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ProjectSettingsPanel.cpp:OnImGuiRender",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:SceneHierarchyPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:OnImGuiRender",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:DrawEntityNode",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:DrawVec3Control",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:DrawTextureAssignControl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:DrawComponents",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/EditorPreferencesPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/EditorPreferencesPanel.cpp:DrawIDEConfig",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/EditorPreferencesPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/EditorPreferencesPanel.cpp:OnImGuiRender",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/EditorPreferencesPanel.h",
+      "target": "class:HimiiEditor/src/panel/EditorPreferencesPanel.h:EditorPreferencesPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:LoadAsset",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:UpdatePreview",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:RenderPreview",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:UI_Properties",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:SaveAsset",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:OnImGuiRender",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.h",
+      "target": "class:HimiiEditor/src/panel/ParticleEmitterEditorPanel.h:ParticleEmitterEditorPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ProjectSettingsPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ProjectSettingsPanel.cpp:SyncFromProject",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ProjectSettingsPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ProjectSettingsPanel.cpp:ApplyToProject",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ProjectSettingsPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ProjectSettingsPanel.cpp:OnImGuiRender",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ProjectSettingsPanel.h",
+      "target": "class:HimiiEditor/src/panel/ProjectSettingsPanel.h:ProjectSettingsPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:SceneHierarchyPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:OnImGuiRender",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:DrawEntityNode",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/SceneHierarchyPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:DrawComponents",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/SceneHierarchyPanel.h",
+      "target": "class:HimiiEditor/src/panel/SceneHierarchyPanel.h:SceneHierarchyPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/EditorPreferencesPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/EditorPreferencesPanel.cpp:DrawIDEConfig",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:UI_Properties",
+      "target": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:PropRow",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:UpdatePreview",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:SaveAsset",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:RenderPreview",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp:UI_Properties",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/ProjectSettingsPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/ProjectSettingsPanel.cpp:SyncFromProject",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/ProjectSettingsPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/ProjectSettingsPanel.cpp:ApplyToProject",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:DrawEntityNode",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:DrawComponents",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:DrawComponents",
+      "target": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:DrawVec3Control",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:DrawComponents",
+      "target": "function:HimiiEditor/src/panel/SceneHierarchyPanel.cpp:DrawTextureAssignControl",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

@@ -1,0 +1,1103 @@
+{
+  "nodes": [
+    {
+      "id": "file:Engine/src/Himii/Scripting/ScriptEngine.h",
+      "type": "file",
+      "name": "ScriptEngine.h",
+      "filePath": "Engine/src/Himii/Scripting/ScriptEngine.h",
+      "summary": "声明脚本引擎相关的核心类型：字段值容器 ScriptFieldInstance、2D 碰撞互操作结构 Collision2DInterop，以及管理整个 .NET 脚本运行时生命周期的 ScriptEngine 静态类。",
+      "tags": ["头文件", "脚本引擎", "类型定义", "互操作"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "type": "file",
+      "name": "ScriptGlue.cpp",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "summary": "实现 C# 脚本可调用的全部 C++ 原生函数胶水层，涵盖场景操作、实体增删查、Transform/Rigidbody2D/Sprite/Tilemap/SpriteAnimation 组件访问、输入查询、物理射线检测和场景加载，通过 GetNativeFunctions 注册所有函数指针。",
+      "tags": ["脚本胶水层", "原生互操作", "组件访问", "场景管理", "物理查询"],
+      "complexity": "complex",
+      "languageNotes": "通过 ScriptGlue::GetNativeFunctions 集中注册所有 C++ 原生函数到 ScriptEngineData 结构，供 C# 端通过 DllImport 或函数指针调用。每个胶水函数遵循统一模式：获取场景上下文 → 查找实体 → 获取组件 → 执行操作。"
+    },
+    {
+      "id": "file:Engine/src/Himii/Scripting/ScriptGlue.h",
+      "type": "file",
+      "name": "ScriptGlue.h",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.h",
+      "summary": "声明 C# 脚本与 C++ 引擎之间的互操作数据结构 ScriptEngineData（包含所有函数指针字段）和 ScriptGlue 工具类（提供 GetNativeFunctions 注册入口）。",
+      "tags": ["头文件", "互操作", "函数指针", "数据结构"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptFieldInstance",
+      "type": "class",
+      "name": "ScriptFieldInstance",
+      "filePath": "Engine/src/Himii/Scripting/ScriptEngine.h",
+      "lineRange": [46, 67],
+      "summary": "脚本字段值的通用运行时容器，通过类型枚举和缓冲区存储不同类型（float、int、bool、vec2-4、string、entity）的数据，提供模板化的类型安全读写接口。",
+      "tags": ["字段容器", "类型擦除", "模板", "数据模型"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:Engine/src/Himii/Scripting/ScriptEngine.h:Collision2DInterop",
+      "type": "class",
+      "name": "Collision2DInterop",
+      "filePath": "Engine/src/Himii/Scripting/ScriptEngine.h",
+      "lineRange": [84, 89],
+      "summary": "2D 碰撞事件的 C++/C# 互操作数据结构，传递被碰撞实体 UUID、碰撞法线和碰撞点坐标。",
+      "tags": ["碰撞数据", "2d物理", "互操作", "数据模型"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "class",
+      "name": "ScriptEngine",
+      "filePath": "Engine/src/Himii/Scripting/ScriptEngine.h",
+      "lineRange": [91, 159],
+      "summary": "脚本系统核心静态类，管理 .NET CoreCLR 运行时初始化与销毁、程序集加载与热重载、脚本实例的创建更新销毁、字段反射读写、碰撞事件分发以及脚本序列化。",
+      "tags": ["核心类", "静态类", "运行时管理", "实例管理", "序列化"],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:Engine/src/Himii/Scripting/ScriptGlue.h:ScriptEngineData",
+      "type": "class",
+      "name": "ScriptEngineData",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.h",
+      "lineRange": [7, 72],
+      "summary": "C# 脚本引擎访问 C++ 原生功能的函数指针集合结构体，包含日志、场景管理、组件访问、物理、渲染、动画等所有胶水函数的函数指针。",
+      "tags": ["函数指针表", "互操作桥", "数据结构", "胶水层"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:Engine/src/Himii/Scripting/ScriptGlue.h:ScriptGlue",
+      "type": "class",
+      "name": "ScriptGlue",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.h",
+      "lineRange": [74, 78],
+      "summary": "胶水层注册静态工具类，提供 GetNativeFunctions 方法将所有 C++ 原生函数的函数指针填充到 ScriptEngineData 结构。",
+      "tags": ["注册入口", "静态工具类", "函数指针注册"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:IsSceneValid",
+      "type": "function",
+      "name": "IsSceneValid",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [20, 31],
+      "summary": "验证场景上下文和指定实体 ID 是否有效，查找实体并输出引用，用于胶水函数的前置安全检查。",
+      "tags": ["验证", "场景检查", "安全防护"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:NativeLog",
+      "type": "function",
+      "name": "NativeLog",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [33, 39],
+      "summary": "C# 脚本调用 C++ 日志系统的桥接函数，将日志级别和消息转发到引擎的 Log 系统。",
+      "tags": ["日志桥接", "csharp互操作", "日志系统"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Scene_CreatEntity",
+      "type": "function",
+      "name": "Scene_CreatEntity",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [41, 49],
+      "summary": "在脚本上下文的当前场景中创建带名称的新实体，返回新实体的 UUID。",
+      "tags": ["场景操作", "实体创建", "uuid"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Scene_DestroyEntity",
+      "type": "function",
+      "name": "Scene_DestroyEntity",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [51, 60],
+      "summary": "根据 UUID 从当前场景中销毁指定实体及其所有组件。",
+      "tags": ["场景操作", "实体销毁", "uuid"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Scene_FindEntityByName",
+      "type": "function",
+      "name": "Scene_FindEntityByName",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [62, 70],
+      "summary": "按名称在场景中查找实体，返回首个匹配实体的 UUID。",
+      "tags": ["场景操作", "实体查找", "名称查询"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Fnv1A32",
+      "type": "function",
+      "name": "Fnv1A32",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [73, 85],
+      "summary": "实现 FNV-1a 32 位哈希算法，用于将组件类型名称字符串映射为哈希码以支持脚本端的组件类型识别。",
+      "tags": ["哈希算法", "fnv1a", "类型识别"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Entity_HasComponent",
+      "type": "function",
+      "name": "Entity_HasComponent",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [88, 120],
+      "summary": "检查指定实体是否拥有某种类型的组件，通过 Fnv1A32 哈希匹配 Transform、Rigidbody2D、Tilemap、SpriteRenderer、SpriteAnimation 等组件类型。",
+      "tags": ["组件检查", "类型哈希", "实体查询"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Transform_GetTranslation",
+      "type": "function",
+      "name": "Transform_GetTranslation",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [122, 139],
+      "summary": "获取实体 Transform 组件的世界空间平移位置，输出到 glm::vec3 引用参数。",
+      "tags": ["变换组件", "位置读取", "transform"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Transform_SetTranslation",
+      "type": "function",
+      "name": "Transform_SetTranslation",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [142, 153],
+      "summary": "设置实体 Transform 组件的世界空间平移位置。",
+      "tags": ["变换组件", "位置写入", "transform"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Transform_GetRotation",
+      "type": "function",
+      "name": "Transform_GetRotation",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [155, 171],
+      "summary": "获取实体 Transform 组件的旋转欧拉角，输出到 glm::vec3 引用参数。",
+      "tags": ["变换组件", "旋转读取", "transform"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Transform_SetRotation",
+      "type": "function",
+      "name": "Transform_SetRotation",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [173, 183],
+      "summary": "设置实体 Transform 组件的旋转欧拉角。",
+      "tags": ["变换组件", "旋转写入", "transform"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Transform_GetScale",
+      "type": "function",
+      "name": "Transform_GetScale",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [185, 199],
+      "summary": "获取实体 Transform 组件的缩放值，对于 Rigidbody2D 实体返回物理体的线性速度模拟缩放。",
+      "tags": ["变换组件", "缩放读取", "transform"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Transform_SetScale",
+      "type": "function",
+      "name": "Transform_SetScale",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [201, 210],
+      "summary": "设置实体 Transform 组件的缩放值。",
+      "tags": ["变换组件", "缩放写入", "transform"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Rigidbody2D_ApplyLinearImpulse",
+      "type": "function",
+      "name": "Rigidbody2D_ApplyLinearImpulse",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [230, 248],
+      "summary": "对实体的 Box2D 刚体在指定世界坐标点施加线性冲量，影响物体的线速度和角速度。",
+      "tags": ["刚体物理", "冲量施加", "box2d", "rigidbody2d"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Rigidbody2D_ApplyLinearImpulseToCenter",
+      "type": "function",
+      "name": "Rigidbody2D_ApplyLinearImpulseToCenter",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [250, 269],
+      "summary": "对实体的 Box2D 刚体质心施加线性冲量，仅改变线速度不产生角速度。",
+      "tags": ["刚体物理", "冲量施加", "box2d", "rigidbody2d"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Rigidbody2D_GetLinearVelocity",
+      "type": "function",
+      "name": "Rigidbody2D_GetLinearVelocity",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [271, 288],
+      "summary": "获取实体 Box2D 刚体的当前线性速度向量。",
+      "tags": ["刚体物理", "速度读取", "box2d", "rigidbody2d"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Rigidbody2D_SetLinearVelocity",
+      "type": "function",
+      "name": "Rigidbody2D_SetLinearVelocity",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [290, 305],
+      "summary": "直接设置实体 Box2D 刚体的线性速度向量。",
+      "tags": ["刚体物理", "速度写入", "box2d", "rigidbody2d"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:GetTileMapDataFromEntity",
+      "type": "function",
+      "name": "GetTileMapDataFromEntity",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [308, 320],
+      "summary": "从实体获取 Tilemap 组件关联的 TileMapData 资源数据指针，通过资产管理器加载。",
+      "tags": ["图块地图", "资源加载", "tilemap", "资产管理器"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Tilemap_GetSize",
+      "type": "function",
+      "name": "Tilemap_GetSize",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [323, 334],
+      "summary": "获取实体 Tilemap 组件的图块网格宽度和高度。",
+      "tags": ["图块地图", "尺寸读取", "tilemap"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Tilemap_SetSize",
+      "type": "function",
+      "name": "Tilemap_SetSize",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [336, 343],
+      "summary": "设置实体 Tilemap 组件的图块网格尺寸，若 TileMapData 未加载则发出警告。",
+      "tags": ["图块地图", "尺寸写入", "tilemap"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Tilemap_GetTile",
+      "type": "function",
+      "name": "Tilemap_GetTile",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [345, 355],
+      "summary": "读取 Tilemap 网格中指定坐标 (x, y) 的图块 ID。",
+      "tags": ["图块地图", "图块读取", "tilemap"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Tilemap_SetTile",
+      "type": "function",
+      "name": "Tilemap_SetTile",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [357, 367],
+      "summary": "在 Tilemap 网格的指定坐标 (x, y) 设置图块 ID。",
+      "tags": ["图块地图", "图块写入", "tilemap"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Tilemap_GetBounds",
+      "type": "function",
+      "name": "Tilemap_GetBounds",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [369, 386],
+      "summary": "获取 Tilemap 的边界包围盒在世界空间中的最小/最大坐标。",
+      "tags": ["图块地图", "边界读取", "tilemap"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Physics2D_Raycast",
+      "type": "function",
+      "name": "Physics2D_Raycast",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [388, 394],
+      "summary": "在 2D 物理世界中执行射线检测，从起点到终点发射射线并返回碰撞结果。",
+      "tags": ["物理查询", "射线检测", "raycast", "2d物理"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_GetColor",
+      "type": "function",
+      "name": "SpriteRenderer_GetColor",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [401, 413],
+      "summary": "获取实体精灵渲染器的调制颜色 (RGBA)。",
+      "tags": ["精灵渲染", "颜色读取", "spriterenderer"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_SetColor",
+      "type": "function",
+      "name": "SpriteRenderer_SetColor",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [415, 427],
+      "summary": "设置实体精灵渲染器的调制颜色 (RGBA)。",
+      "tags": ["精灵渲染", "颜色写入", "spriterenderer"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_GetSpriteHandle",
+      "type": "function",
+      "name": "SpriteRenderer_GetSpriteHandle",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [429, 439],
+      "summary": "获取实体精灵渲染器当前使用的精灵资源句柄。",
+      "tags": ["精灵渲染", "资源句柄", "spriterenderer"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_SetSpriteHandle",
+      "type": "function",
+      "name": "SpriteRenderer_SetSpriteHandle",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [441, 452],
+      "summary": "设置实体精灵渲染器使用的精灵资源句柄。",
+      "tags": ["精灵渲染", "资源句柄", "spriterenderer"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_GetTextureHandle",
+      "type": "function",
+      "name": "SpriteRenderer_GetTextureHandle",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [454, 475],
+      "summary": "通过实体精灵渲染器当前精灵间接获取关联的纹理资源句柄，经过资产管理器查找。",
+      "tags": ["精灵渲染", "纹理查询", "spriterenderer", "资产管理器"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_GetFlipHorizontal",
+      "type": "function",
+      "name": "SpriteRenderer_GetFlipHorizontal",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [477, 488],
+      "summary": "查询实体精灵渲染器的水平翻转状态。",
+      "tags": ["精灵渲染", "翻转查询", "spriterenderer"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_SetFlipHorizontal",
+      "type": "function",
+      "name": "SpriteRenderer_SetFlipHorizontal",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [490, 501],
+      "summary": "设置实体精灵渲染器的水平翻转状态。",
+      "tags": ["精灵渲染", "翻转变换", "spriterenderer"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_SetTextureHandle",
+      "type": "function",
+      "name": "SpriteRenderer_SetTextureHandle",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [503, 525],
+      "summary": "直接设置实体精灵渲染器的纹理资源句柄，并自动获取该纹理的默认精灵句柄。",
+      "tags": ["精灵渲染", "纹理设置", "spriterenderer", "资产管理器"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_GetPlaying",
+      "type": "function",
+      "name": "SpriteAnimation_GetPlaying",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [527, 538],
+      "summary": "查询实体精灵动画组件的播放状态（是否正在播放）。",
+      "tags": ["精灵动画", "播放状态", "spritenimation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_SetPlaying",
+      "type": "function",
+      "name": "SpriteAnimation_SetPlaying",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [540, 551],
+      "summary": "设置实体精灵动画组件的播放/暂停状态。",
+      "tags": ["精灵动画", "播放控制", "spritenimation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_GetFrameRate",
+      "type": "function",
+      "name": "SpriteAnimation_GetFrameRate",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [553, 564],
+      "summary": "获取实体精灵动画组件的当前帧率。",
+      "tags": ["精灵动画", "帧率读取", "spritenimation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_SetFrameRate",
+      "type": "function",
+      "name": "SpriteAnimation_SetFrameRate",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [566, 577],
+      "summary": "设置实体精灵动画组件的播放帧率。",
+      "tags": ["精灵动画", "帧率控制", "spritenimation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_ResetPlayback",
+      "type": "function",
+      "name": "SpriteAnimation_ResetPlayback",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [579, 590],
+      "summary": "重置实体精灵动画的播放进度到起始帧。",
+      "tags": ["精灵动画", "播放重置", "spritenimation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_Play",
+      "type": "function",
+      "name": "SpriteAnimation_Play",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [592, 628],
+      "summary": "按名称播放实体精灵动画组件的指定动画片段，支持通过资产管理器查找动画资源，若找不到指定动画则使用主剪辑。",
+      "tags": ["精灵动画", "动画播放", "资源查找", "spritenimation"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_SetCurrentAnimationName",
+      "type": "function",
+      "name": "SpriteAnimation_SetCurrentAnimationName",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [647, 673],
+      "summary": "设置实体精灵动画的当前动画名称，从资产管理器加载对应的 SpriteAnimation 资源并更新动画状态。",
+      "tags": ["精灵动画", "动画切换", "资源加载", "spritenimation"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SceneManager_LoadScene",
+      "type": "function",
+      "name": "SceneManager_LoadScene",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [675, 706],
+      "summary": "从指定文件路径加载新场景，验证文件存在后停止当前运行时、清空实体并反序列化场景数据，最后启动新场景的运行时。",
+      "tags": ["场景加载", "场景切换", "反序列化", "运行时管理"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:GetNativeFunctions",
+      "type": "function",
+      "name": "GetNativeFunctions",
+      "filePath": "Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "lineRange": [708, 771],
+      "summary": "集中注册所有 C++ 原生函数指针到 ScriptEngineData 结构，供 C# 脚本引擎初始化时调用，建立完整的 C# → C++ 互操作函数表。",
+      "tags": ["函数注册", "互操作桥", "函数指针表", "入口点"],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "file:Engine/src/Himii/Scripting/ScriptEngine.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "file:Engine/src/Himii/Scripting/ScriptGlue.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptEngine.h",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptFieldInstance",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptEngine.h",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:Collision2DInterop",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptEngine.h",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.h",
+      "target": "class:Engine/src/Himii/Scripting/ScriptGlue.h:ScriptEngineData",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.h",
+      "target": "class:Engine/src/Himii/Scripting/ScriptGlue.h:ScriptGlue",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:IsSceneValid",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:NativeLog",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Scene_CreatEntity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Scene_DestroyEntity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Scene_FindEntityByName",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Fnv1A32",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Entity_HasComponent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Transform_GetTranslation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Transform_SetTranslation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Transform_GetRotation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Transform_SetRotation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Transform_GetScale",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Transform_SetScale",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Rigidbody2D_ApplyLinearImpulse",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Rigidbody2D_ApplyLinearImpulseToCenter",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Rigidbody2D_GetLinearVelocity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Rigidbody2D_SetLinearVelocity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:GetTileMapDataFromEntity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Tilemap_GetSize",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Tilemap_SetSize",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Tilemap_GetTile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Tilemap_SetTile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Tilemap_GetBounds",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Physics2D_Raycast",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_GetColor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_SetColor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_GetSpriteHandle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_SetSpriteHandle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_GetTextureHandle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_GetFlipHorizontal",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_SetFlipHorizontal",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_SetTextureHandle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_GetPlaying",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_SetPlaying",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_GetFrameRate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_SetFrameRate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_ResetPlayback",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_Play",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_SetCurrentAnimationName",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SceneManager_LoadScene",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Scripting/ScriptGlue.cpp",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:GetNativeFunctions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:GetNativeFunctions",
+      "target": "class:Engine/src/Himii/Scripting/ScriptGlue.h:ScriptEngineData",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Scene_CreatEntity",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Scene_DestroyEntity",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Scene_FindEntityByName",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Entity_HasComponent",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Entity_HasComponent",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Fnv1A32",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:GetTileMapDataFromEntity",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Entity_HasComponent",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Tilemap_GetSize",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:GetTileMapDataFromEntity",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Tilemap_GetTile",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:GetTileMapDataFromEntity",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Tilemap_SetTile",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:GetTileMapDataFromEntity",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Tilemap_GetBounds",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:GetTileMapDataFromEntity",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Tilemap_GetSize",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Tilemap_GetTile",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Tilemap_SetTile",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Tilemap_GetBounds",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Physics2D_Raycast",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SceneManager_LoadScene",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Transform_GetTranslation",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Transform_SetTranslation",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Rigidbody2D_ApplyLinearImpulse",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Rigidbody2D_ApplyLinearImpulseToCenter",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Rigidbody2D_GetLinearVelocity",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:Rigidbody2D_SetLinearVelocity",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_GetColor",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_SetColor",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_Play",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_SetCurrentAnimationName",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:Engine/src/Himii/Scripting/ScriptGlue.h:ScriptGlue",
+      "target": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:GetNativeFunctions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_GetSpriteHandle",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_SetSpriteHandle",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_GetTextureHandle",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_SetTextureHandle",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_GetFlipHorizontal",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteRenderer_SetFlipHorizontal",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_GetPlaying",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_SetPlaying",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_GetFrameRate",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_SetFrameRate",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Scripting/ScriptGlue.cpp:SpriteAnimation_ResetPlayback",
+      "target": "class:Engine/src/Himii/Scripting/ScriptEngine.h:ScriptEngine",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

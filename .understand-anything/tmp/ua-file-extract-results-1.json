@@ -1,0 +1,7375 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 31,
+  "filesSkipped": [],
+  "results": [
+    {
+      "path": "Engine/src/Engine.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 40,
+      "nonEmptyLines": 36,
+      "metrics": {
+        "importCount": 31,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Core/Input.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 16,
+      "nonEmptyLines": 15,
+      "classes": [
+        {
+          "name": "Input",
+          "startLine": 8,
+          "endLine": 15,
+          "methods": [
+            "IsKeyPressed",
+            "IsMouseButtonPressed",
+            "GetMousePosition",
+            "GetMouseX",
+            "GetMouseY"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "IsKeyPressed",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "IsMouseButtonPressed",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "GetMousePosition",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "GetMouseX",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "GetMouseY",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "Input",
+          "line": 8,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 6,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Core/KeyCodes.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 143,
+      "nonEmptyLines": 133,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Core/MouseCodes.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 26,
+      "nonEmptyLines": 23,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Core/Timestep.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 26,
+      "nonEmptyLines": 24,
+      "functions": [
+        {
+          "name": "Timestep",
+          "startLine": 7,
+          "endLine": 9,
+          "params": []
+        },
+        {
+          "name": "GetSeconds",
+          "startLine": 10,
+          "endLine": 13,
+          "params": []
+        },
+        {
+          "name": "GetMilliseconds",
+          "startLine": 14,
+          "endLine": 17,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "Timestep",
+          "startLine": 5,
+          "endLine": 25,
+          "methods": [
+            "Timestep",
+            "GetSeconds",
+            "GetMilliseconds"
+          ],
+          "properties": [
+            "m_Time"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Timestep",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "GetSeconds",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "GetMilliseconds",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "Timestep",
+          "line": 5,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 3,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Core/Window.cpp",
+      "language": "cpp",
+      "fileCategory": "code",
+      "totalLines": 12,
+      "nonEmptyLines": 10,
+      "functions": [
+        {
+          "name": "Create",
+          "startLine": 7,
+          "endLine": 10,
+          "params": [
+            "props"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Create",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "Create",
+          "callee": "CreateScope<WindowsWindow>",
+          "lineNumber": 9
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Core/Window.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 56,
+      "nonEmptyLines": 41,
+      "functions": [
+        {
+          "name": "WindowProps",
+          "startLine": 20,
+          "endLine": 23,
+          "params": []
+        },
+        {
+          "name": "~Window",
+          "startLine": 31,
+          "endLine": 31,
+          "params": []
+        },
+        {
+          "name": "SetTitle",
+          "startLine": 44,
+          "endLine": 44,
+          "params": [
+            "title"
+          ]
+        },
+        {
+          "name": "SetClientSize",
+          "startLine": 46,
+          "endLine": 46,
+          "params": [
+            "width",
+            "height"
+          ]
+        },
+        {
+          "name": "CenterOnScreen",
+          "startLine": 48,
+          "endLine": 48,
+          "params": []
+        },
+        {
+          "name": "MaximizeForEditor",
+          "startLine": 50,
+          "endLine": 50,
+          "params": []
+        },
+        {
+          "name": "SetDecorated",
+          "startLine": 52,
+          "endLine": 52,
+          "params": [
+            "decorated"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "WindowProps",
+          "startLine": 11,
+          "endLine": 24,
+          "methods": [
+            "WindowProps"
+          ],
+          "properties": [
+            "Title",
+            "Width",
+            "Height",
+            "Decorated",
+            "Maximized",
+            "CenterOnScreen"
+          ]
+        },
+        {
+          "name": "Window",
+          "startLine": 26,
+          "endLine": 55,
+          "methods": [
+            "~Window",
+            "Update",
+            "GetWidth",
+            "GetHeight",
+            "SetEventCallback",
+            "SetVSync",
+            "IsVSync",
+            "SetTitle",
+            "SetClientSize",
+            "CenterOnScreen",
+            "MaximizeForEditor",
+            "SetDecorated",
+            "Create"
+          ],
+          "properties": [
+            "GetNativeWindow"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "WindowProps",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "WindowProps",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "~Window",
+          "line": 31,
+          "isDefault": false
+        },
+        {
+          "name": "Update",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "GetWidth",
+          "line": 35,
+          "isDefault": false
+        },
+        {
+          "name": "GetHeight",
+          "line": 36,
+          "isDefault": false
+        },
+        {
+          "name": "SetEventCallback",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "SetVSync",
+          "line": 39,
+          "isDefault": false
+        },
+        {
+          "name": "IsVSync",
+          "line": 40,
+          "isDefault": false
+        },
+        {
+          "name": "SetTitle",
+          "line": 44,
+          "isDefault": false
+        },
+        {
+          "name": "SetClientSize",
+          "line": 46,
+          "isDefault": false
+        },
+        {
+          "name": "CenterOnScreen",
+          "line": 48,
+          "isDefault": false
+        },
+        {
+          "name": "MaximizeForEditor",
+          "line": 50,
+          "isDefault": false
+        },
+        {
+          "name": "SetDecorated",
+          "line": 52,
+          "isDefault": false
+        },
+        {
+          "name": "Create",
+          "line": 54,
+          "isDefault": false
+        },
+        {
+          "name": "Window",
+          "line": 26,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 16,
+        "functionCount": 7,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "Engine/src/Himii/ImGui/ImGuiLayer.cpp",
+      "language": "cpp",
+      "fileCategory": "code",
+      "totalLines": 321,
+      "nonEmptyLines": 251,
+      "functions": [
+        {
+          "name": "IniHasEditorDockLayout",
+          "startLine": 21,
+          "endLine": 34,
+          "params": [
+            "layout_ini_path"
+          ]
+        },
+        {
+          "name": "PrepareEditorLayoutIniOnStartup",
+          "startLine": 36,
+          "endLine": 46,
+          "params": [
+            "layout_ini_path"
+          ]
+        },
+        {
+          "name": "ImGuiLayer",
+          "startLine": 49,
+          "endLine": 51,
+          "params": []
+        },
+        {
+          "name": "OnAttach",
+          "startLine": 53,
+          "endLine": 88,
+          "params": []
+        },
+        {
+          "name": "EnableLayoutPersistence",
+          "startLine": 90,
+          "endLine": 118,
+          "params": []
+        },
+        {
+          "name": "LoadEditorFonts",
+          "startLine": 120,
+          "endLine": 145,
+          "params": []
+        },
+        {
+          "name": "OnDetach",
+          "startLine": 147,
+          "endLine": 155,
+          "params": []
+        },
+        {
+          "name": "OnEvent",
+          "startLine": 157,
+          "endLine": 165,
+          "params": [
+            "e"
+          ]
+        },
+        {
+          "name": "Begin",
+          "startLine": 167,
+          "endLine": 175,
+          "params": []
+        },
+        {
+          "name": "End",
+          "startLine": 177,
+          "endLine": 194,
+          "params": []
+        },
+        {
+          "name": "ApplyEditorTheme",
+          "startLine": 196,
+          "endLine": 311,
+          "params": []
+        },
+        {
+          "name": "GetActiveWidgetID",
+          "startLine": 313,
+          "endLine": 316,
+          "params": []
+        },
+        {
+          "name": "OnImGuiRender",
+          "startLine": 318,
+          "endLine": 320,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "PrepareEditorLayoutIniOnStartup",
+          "line": 36,
+          "isDefault": false
+        },
+        {
+          "name": "ImGuiLayer",
+          "line": 49,
+          "isDefault": false
+        },
+        {
+          "name": "OnAttach",
+          "line": 53,
+          "isDefault": false
+        },
+        {
+          "name": "EnableLayoutPersistence",
+          "line": 90,
+          "isDefault": false
+        },
+        {
+          "name": "LoadEditorFonts",
+          "line": 120,
+          "isDefault": false
+        },
+        {
+          "name": "OnDetach",
+          "line": 147,
+          "isDefault": false
+        },
+        {
+          "name": "OnEvent",
+          "line": 157,
+          "isDefault": false
+        },
+        {
+          "name": "Begin",
+          "line": 167,
+          "isDefault": false
+        },
+        {
+          "name": "End",
+          "line": 177,
+          "isDefault": false
+        },
+        {
+          "name": "ApplyEditorTheme",
+          "line": 196,
+          "isDefault": false
+        },
+        {
+          "name": "GetActiveWidgetID",
+          "line": 313,
+          "isDefault": false
+        },
+        {
+          "name": "OnImGuiRender",
+          "line": 318,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "IniHasEditorDockLayout",
+          "callee": "is_open",
+          "lineNumber": 24
+        },
+        {
+          "caller": "IniHasEditorDockLayout",
+          "callee": "rdbuf",
+          "lineNumber": 28
+        },
+        {
+          "caller": "IniHasEditorDockLayout",
+          "callee": "str",
+          "lineNumber": 29
+        },
+        {
+          "caller": "IniHasEditorDockLayout",
+          "callee": "find",
+          "lineNumber": 31
+        },
+        {
+          "caller": "IniHasEditorDockLayout",
+          "callee": "find",
+          "lineNumber": 32
+        },
+        {
+          "caller": "IniHasEditorDockLayout",
+          "callee": "find",
+          "lineNumber": 33
+        },
+        {
+          "caller": "PrepareEditorLayoutIniOnStartup",
+          "callee": "std::filesystem::exists",
+          "lineNumber": 38
+        },
+        {
+          "caller": "PrepareEditorLayoutIniOnStartup",
+          "callee": "IniHasEditorDockLayout",
+          "lineNumber": 41
+        },
+        {
+          "caller": "PrepareEditorLayoutIniOnStartup",
+          "callee": "std::filesystem::remove",
+          "lineNumber": 45
+        },
+        {
+          "caller": "OnAttach",
+          "callee": "HIMII_PROFILE_FUNCTION",
+          "lineNumber": 55
+        },
+        {
+          "caller": "OnAttach",
+          "callee": "HIMII_CORE_INFO",
+          "lineNumber": 57
+        },
+        {
+          "caller": "OnAttach",
+          "callee": "ImGui::CreateContext",
+          "lineNumber": 59
+        },
+        {
+          "caller": "OnAttach",
+          "callee": "ImGui::GetIO",
+          "lineNumber": 61
+        },
+        {
+          "caller": "OnAttach",
+          "callee": "Application::Get",
+          "lineNumber": 62
+        },
+        {
+          "caller": "OnAttach",
+          "callee": "static_cast<GLFWwindow *>",
+          "lineNumber": 63
+        },
+        {
+          "caller": "OnAttach",
+          "callee": "GetNativeWindow",
+          "lineNumber": 63
+        },
+        {
+          "caller": "OnAttach",
+          "callee": "GetWindow",
+          "lineNumber": 63
+        },
+        {
+          "caller": "OnAttach",
+          "callee": "ImGui::StyleColorsDark",
+          "lineNumber": 66
+        },
+        {
+          "caller": "OnAttach",
+          "callee": "string",
+          "lineNumber": 68
+        },
+        {
+          "caller": "OnAttach",
+          "callee": "GetExecutableDir",
+          "lineNumber": 68
+        },
+        {
+          "caller": "OnAttach",
+          "callee": "Application::Get",
+          "lineNumber": 68
+        },
+        {
+          "caller": "OnAttach",
+          "callee": "HIMII_CORE_INFO",
+          "lineNumber": 69
+        },
+        {
+          "caller": "OnAttach",
+          "callee": "ImGui::GetStyle",
+          "lineNumber": 76
+        },
+        {
+          "caller": "OnAttach",
+          "callee": "ApplyEditorTheme",
+          "lineNumber": 82
+        },
+        {
+          "caller": "OnAttach",
+          "callee": "ImGui_ImplGlfw_InitForOpenGL",
+          "lineNumber": 84
+        },
+        {
+          "caller": "OnAttach",
+          "callee": "ImGui_ImplOpenGL3_Init",
+          "lineNumber": 85
+        },
+        {
+          "caller": "OnAttach",
+          "callee": "LoadEditorFonts",
+          "lineNumber": 87
+        },
+        {
+          "caller": "EnableLayoutPersistence",
+          "callee": "PrepareEditorLayoutIniOnStartup",
+          "lineNumber": 95
+        },
+        {
+          "caller": "EnableLayoutPersistence",
+          "callee": "ImGui::GetCurrentContext",
+          "lineNumber": 99
+        },
+        {
+          "caller": "EnableLayoutPersistence",
+          "callee": "ImGui::ClearIniSettings",
+          "lineNumber": 100
+        },
+        {
+          "caller": "EnableLayoutPersistence",
+          "callee": "ImGui::GetIO",
+          "lineNumber": 103
+        },
+        {
+          "caller": "EnableLayoutPersistence",
+          "callee": "c_str",
+          "lineNumber": 104
+        },
+        {
+          "caller": "EnableLayoutPersistence",
+          "callee": "std::filesystem::exists",
+          "lineNumber": 106
+        },
+        {
+          "caller": "EnableLayoutPersistence",
+          "callee": "ImGui::LoadIniSettingsFromDisk",
+          "lineNumber": 108
+        },
+        {
+          "caller": "EnableLayoutPersistence",
+          "callee": "c_str",
+          "lineNumber": 108
+        },
+        {
+          "caller": "EnableLayoutPersistence",
+          "callee": "HIMII_CORE_INFO",
+          "lineNumber": 109
+        },
+        {
+          "caller": "EnableLayoutPersistence",
+          "callee": "HIMII_CORE_INFO",
+          "lineNumber": 114
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "ImGui::GetIO",
+          "lineNumber": 122
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "Application::Get",
+          "lineNumber": 123
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "static_cast<GLFWwindow *>",
+          "lineNumber": 124
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "GetNativeWindow",
+          "lineNumber": 124
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "GetWindow",
+          "lineNumber": 124
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "glfwGetWindowContentScale",
+          "lineNumber": 128
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "HIMII_CORE_INFO",
+          "lineNumber": 130
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "Clear",
+          "lineNumber": 132
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "FileSystem::MaterializeLooseFile",
+          "lineNumber": 133
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "AddFontFromFileTTF",
+          "lineNumber": 135
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "c_str",
+          "lineNumber": 135
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "string",
+          "lineNumber": 135
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "AddFontFromFileTTF",
+          "lineNumber": 136
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "c_str",
+          "lineNumber": 136
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "string",
+          "lineNumber": 136
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "GetGlyphRangesChineseFull",
+          "lineNumber": 137
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "Build",
+          "lineNumber": 138
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "ImGui::GetStyle",
+          "lineNumber": 140
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "ScaleAllSizes",
+          "lineNumber": 141
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "ImGui_ImplOpenGL3_DestroyDeviceObjects",
+          "lineNumber": 143
+        },
+        {
+          "caller": "LoadEditorFonts",
+          "callee": "ImGui_ImplOpenGL3_CreateDeviceObjects",
+          "lineNumber": 144
+        },
+        {
+          "caller": "OnDetach",
+          "callee": "HIMII_PROFILE_FUNCTION",
+          "lineNumber": 149
+        },
+        {
+          "caller": "OnDetach",
+          "callee": "HIMII_CORE_INFO",
+          "lineNumber": 150
+        },
+        {
+          "caller": "OnDetach",
+          "callee": "ImGui_ImplOpenGL3_Shutdown",
+          "lineNumber": 152
+        },
+        {
+          "caller": "OnDetach",
+          "callee": "ImGui_ImplGlfw_Shutdown",
+          "lineNumber": 153
+        },
+        {
+          "caller": "OnDetach",
+          "callee": "ImGui::DestroyContext",
+          "lineNumber": 154
+        },
+        {
+          "caller": "OnEvent",
+          "callee": "ImGui::GetIO",
+          "lineNumber": 161
+        },
+        {
+          "caller": "OnEvent",
+          "callee": "IsInCategroy",
+          "lineNumber": 162
+        },
+        {
+          "caller": "OnEvent",
+          "callee": "IsInCategroy",
+          "lineNumber": 163
+        },
+        {
+          "caller": "Begin",
+          "callee": "HIMII_PROFILE_FUNCTION",
+          "lineNumber": 169
+        },
+        {
+          "caller": "Begin",
+          "callee": "ImGui_ImplOpenGL3_NewFrame",
+          "lineNumber": 171
+        },
+        {
+          "caller": "Begin",
+          "callee": "ImGui_ImplGlfw_NewFrame",
+          "lineNumber": 172
+        },
+        {
+          "caller": "Begin",
+          "callee": "ImGui::NewFrame",
+          "lineNumber": 173
+        },
+        {
+          "caller": "Begin",
+          "callee": "ImGuizmo::BeginFrame",
+          "lineNumber": 174
+        },
+        {
+          "caller": "End",
+          "callee": "HIMII_PROFILE_FUNCTION",
+          "lineNumber": 179
+        },
+        {
+          "caller": "End",
+          "callee": "ImGui::GetIO",
+          "lineNumber": 181
+        },
+        {
+          "caller": "End",
+          "callee": "Application::Get",
+          "lineNumber": 182
+        },
+        {
+          "caller": "End",
+          "callee": "ImVec2",
+          "lineNumber": 183
+        },
+        {
+          "caller": "End",
+          "callee": "GetWidth",
+          "lineNumber": 183
+        },
+        {
+          "caller": "End",
+          "callee": "GetWindow",
+          "lineNumber": 183
+        },
+        {
+          "caller": "End",
+          "callee": "GetHeight",
+          "lineNumber": 183
+        },
+        {
+          "caller": "End",
+          "callee": "GetWindow",
+          "lineNumber": 183
+        },
+        {
+          "caller": "End",
+          "callee": "ImGui::Render",
+          "lineNumber": 185
+        },
+        {
+          "caller": "End",
+          "callee": "ImGui_ImplOpenGL3_RenderDrawData",
+          "lineNumber": 186
+        },
+        {
+          "caller": "End",
+          "callee": "ImGui::GetDrawData",
+          "lineNumber": 186
+        },
+        {
+          "caller": "End",
+          "callee": "glfwGetCurrentContext",
+          "lineNumber": 189
+        },
+        {
+          "caller": "End",
+          "callee": "ImGui::UpdatePlatformWindows",
+          "lineNumber": 190
+        },
+        {
+          "caller": "End",
+          "callee": "ImGui::RenderPlatformWindowsDefault",
+          "lineNumber": 191
+        },
+        {
+          "caller": "End",
+          "callee": "glfwMakeContextCurrent",
+          "lineNumber": 192
+        },
+        {
+          "caller": "ApplyEditorTheme",
+          "callee": "ImGui::GetStyle",
+          "lineNumber": 198
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 12,
+        "functionCount": 13,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Himii/ImGui/ImGuiLayer.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 37,
+      "nonEmptyLines": 33,
+      "functions": [
+        {
+          "name": "~ImGuiLayer",
+          "startLine": 13,
+          "endLine": 13,
+          "params": []
+        },
+        {
+          "name": "BlockEvents",
+          "startLine": 23,
+          "endLine": 26,
+          "params": [
+            "block"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "ImGuiLayer",
+          "startLine": 9,
+          "endLine": 36,
+          "methods": [
+            "~ImGuiLayer",
+            "OnAttach",
+            "OnDetach",
+            "OnImGuiRender",
+            "OnEvent",
+            "Begin",
+            "End",
+            "BlockEvents",
+            "ApplyEditorTheme",
+            "LoadEditorFonts",
+            "EnableLayoutPersistence",
+            "GetActiveWidgetID"
+          ],
+          "properties": [
+            "m_BlockEvents",
+            "m_LayoutPersistenceEnabled",
+            "m_IniFilePath"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "~ImGuiLayer",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "OnAttach",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "OnDetach",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "OnImGuiRender",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "OnEvent",
+          "line": 18,
+          "isDefault": false
+        },
+        {
+          "name": "Begin",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "End",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "BlockEvents",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "ApplyEditorTheme",
+          "line": 27,
+          "isDefault": false
+        },
+        {
+          "name": "LoadEditorFonts",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "EnableLayoutPersistence",
+          "line": 29,
+          "isDefault": false
+        },
+        {
+          "name": "GetActiveWidgetID",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "ImGuiLayer",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 13,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Math/Math.cpp",
+      "language": "cpp",
+      "fileCategory": "code",
+      "totalLines": 83,
+      "nonEmptyLines": 67,
+      "functions": [
+        {
+          "name": "DecomposeTransform",
+          "startLine": 10,
+          "endLine": 81,
+          "params": [
+            "transform",
+            "translation",
+            "rotation",
+            "scale"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DecomposeTransform",
+          "line": 10,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "DecomposeTransform",
+          "callee": "epsilonEqual",
+          "lineNumber": 20
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "static_cast<float>",
+          "lineNumber": 20
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "epsilon<T>",
+          "lineNumber": 20
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "epsilonNotEqual",
+          "lineNumber": 24
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "static_cast<T>",
+          "lineNumber": 24
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "epsilon<T>",
+          "lineNumber": 24
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "epsilonNotEqual",
+          "lineNumber": 25
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "static_cast<T>",
+          "lineNumber": 25
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "epsilon<T>",
+          "lineNumber": 25
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "epsilonNotEqual",
+          "lineNumber": 26
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "static_cast<T>",
+          "lineNumber": 26
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "epsilon<T>",
+          "lineNumber": 26
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "static_cast<T>",
+          "lineNumber": 29
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "static_cast<T>",
+          "lineNumber": 30
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "vec3",
+          "lineNumber": 34
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "vec4",
+          "lineNumber": 35
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "length",
+          "lineNumber": 45
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "detail::scale",
+          "lineNumber": 46
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "static_cast<T>",
+          "lineNumber": 46
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "length",
+          "lineNumber": 47
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "detail::scale",
+          "lineNumber": 48
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "static_cast<T>",
+          "lineNumber": 48
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "length",
+          "lineNumber": 49
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "detail::scale",
+          "lineNumber": 50
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "static_cast<T>",
+          "lineNumber": 50
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "cross",
+          "lineNumber": 56
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "dot",
+          "lineNumber": 57
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "static_cast<T>",
+          "lineNumber": 61
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "static_cast<T>",
+          "lineNumber": 62
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "asin",
+          "lineNumber": 67
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "cos",
+          "lineNumber": 68
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "atan2",
+          "lineNumber": 70
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "atan2",
+          "lineNumber": 71
+        },
+        {
+          "caller": "DecomposeTransform",
+          "callee": "atan2",
+          "lineNumber": 75
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Math/Math.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 9,
+      "nonEmptyLines": 6,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Camera.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 47,
+      "nonEmptyLines": 36,
+      "functions": [
+        {
+          "name": "Camera",
+          "startLine": 32,
+          "endLine": 32,
+          "params": []
+        },
+        {
+          "name": "~Camera",
+          "startLine": 33,
+          "endLine": 33,
+          "params": []
+        },
+        {
+          "name": "Camera",
+          "startLine": 35,
+          "endLine": 37,
+          "params": [
+            "projection"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Camera",
+          "startLine": 14,
+          "endLine": 46,
+          "methods": [
+            "Camera",
+            "~Camera",
+            "Camera"
+          ],
+          "properties": [
+            "m_Projection"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Camera",
+          "line": 32,
+          "isDefault": false
+        },
+        {
+          "name": "~Camera",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "Camera",
+          "line": 35,
+          "isDefault": false
+        },
+        {
+          "name": "Camera",
+          "line": 14,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 3,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Font.cpp",
+      "language": "cpp",
+      "fileCategory": "code",
+      "totalLines": 80,
+      "nonEmptyLines": 64,
+      "functions": [
+        {
+          "name": "InitDefault",
+          "startLine": 10,
+          "endLine": 13,
+          "params": [
+            "path"
+          ]
+        },
+        {
+          "name": "GetDefault",
+          "startLine": 14,
+          "endLine": 17,
+          "params": []
+        },
+        {
+          "name": "Font",
+          "startLine": 19,
+          "endLine": 74,
+          "params": [
+            "filepath"
+          ]
+        },
+        {
+          "name": "~Font",
+          "startLine": 76,
+          "endLine": 79,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "InitDefault",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "GetDefault",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "Font",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "~Font",
+          "line": 76,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "InitDefault",
+          "callee": "CreateRef<Font>",
+          "lineNumber": 12
+        },
+        {
+          "caller": "Font",
+          "callee": "msdfgen::initializeFreetype",
+          "lineNumber": 24
+        },
+        {
+          "caller": "Font",
+          "callee": "HIMII_CORE_ASSERT",
+          "lineNumber": 25
+        },
+        {
+          "caller": "Font",
+          "callee": "FileSystem::MaterializeLooseFile",
+          "lineNumber": 28
+        },
+        {
+          "caller": "Font",
+          "callee": "string",
+          "lineNumber": 28
+        },
+        {
+          "caller": "Font",
+          "callee": "msdfgen::loadFont",
+          "lineNumber": 29
+        },
+        {
+          "caller": "Font",
+          "callee": "c_str",
+          "lineNumber": 29
+        },
+        {
+          "caller": "Font",
+          "callee": "string",
+          "lineNumber": 29
+        },
+        {
+          "caller": "Font",
+          "callee": "add",
+          "lineNumber": 36
+        },
+        {
+          "caller": "Font",
+          "callee": "msdf_atlas::FontGeometry",
+          "lineNumber": 38
+        },
+        {
+          "caller": "Font",
+          "callee": "loadCharset",
+          "lineNumber": 39
+        },
+        {
+          "caller": "Font",
+          "callee": "setDimensionsConstraint",
+          "lineNumber": 43
+        },
+        {
+          "caller": "Font",
+          "callee": "setMinimumScale",
+          "lineNumber": 44
+        },
+        {
+          "caller": "Font",
+          "callee": "setPixelRange",
+          "lineNumber": 45
+        },
+        {
+          "caller": "Font",
+          "callee": "pack",
+          "lineNumber": 46
+        },
+        {
+          "caller": "Font",
+          "callee": "data",
+          "lineNumber": 46
+        },
+        {
+          "caller": "Font",
+          "callee": "size",
+          "lineNumber": 46
+        },
+        {
+          "caller": "Font",
+          "callee": "getDimensions",
+          "lineNumber": 49
+        },
+        {
+          "caller": "Font",
+          "callee": "setAttributes",
+          "lineNumber": 57
+        },
+        {
+          "caller": "Font",
+          "callee": "setThreadCount",
+          "lineNumber": 58
+        },
+        {
+          "caller": "Font",
+          "callee": "generate",
+          "lineNumber": 59
+        },
+        {
+          "caller": "Font",
+          "callee": "data",
+          "lineNumber": 59
+        },
+        {
+          "caller": "Font",
+          "callee": "size",
+          "lineNumber": 59
+        },
+        {
+          "caller": "Font",
+          "callee": "atlasStorage",
+          "lineNumber": 61
+        },
+        {
+          "caller": "Font",
+          "callee": "Texture2D::Create",
+          "lineNumber": 65
+        },
+        {
+          "caller": "Font",
+          "callee": "SetData",
+          "lineNumber": 69
+        },
+        {
+          "caller": "Font",
+          "callee": "msdfgen::destroyFont",
+          "lineNumber": 72
+        },
+        {
+          "caller": "Font",
+          "callee": "msdfgen::deinitializeFreetype",
+          "lineNumber": 73
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Font.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 52,
+      "nonEmptyLines": 43,
+      "functions": [
+        {
+          "name": "GetAtlasTexture",
+          "startLine": 28,
+          "endLine": 31,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "MSDFData",
+          "startLine": 18,
+          "endLine": 21,
+          "methods": [],
+          "properties": [
+            "Glyphs",
+            "FontGeometry"
+          ]
+        },
+        {
+          "name": "Font",
+          "startLine": 23,
+          "endLine": 51,
+          "methods": [
+            "GetAtlasTexture",
+            "GetDefault",
+            "InitDefault"
+          ],
+          "properties": [
+            "m_Data",
+            "m_AtlasTexture",
+            "s_DefaultFont",
+            "m_FilePath"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "MSDFData",
+          "line": 18,
+          "isDefault": false
+        },
+        {
+          "name": "GetAtlasTexture",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "GetDefault",
+          "line": 37,
+          "isDefault": false
+        },
+        {
+          "name": "InitDefault",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "Font",
+          "line": 23,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 5,
+        "functionCount": 1,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Framebuffer.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 70,
+      "nonEmptyLines": 50,
+      "functions": [
+        {
+          "name": "FramebufferTextureSpecification",
+          "startLine": 22,
+          "endLine": 22,
+          "params": []
+        },
+        {
+          "name": "FramebufferTextureSpecification",
+          "startLine": 23,
+          "endLine": 25,
+          "params": [
+            "format"
+          ]
+        },
+        {
+          "name": "FramebufferAttachmentSpecification",
+          "startLine": 32,
+          "endLine": 32,
+          "params": []
+        },
+        {
+          "name": "FramebufferAttachmentSpecification",
+          "startLine": 33,
+          "endLine": 36,
+          "params": [
+            "attachments"
+          ]
+        },
+        {
+          "name": "~Framebuffer",
+          "startLine": 54,
+          "endLine": 54,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "FramebufferTextureSpecification",
+          "startLine": 20,
+          "endLine": 28,
+          "methods": [
+            "FramebufferTextureSpecification",
+            "FramebufferTextureSpecification"
+          ],
+          "properties": [
+            "TextureFormat"
+          ]
+        },
+        {
+          "name": "FramebufferAttachmentSpecification",
+          "startLine": 30,
+          "endLine": 39,
+          "methods": [
+            "FramebufferAttachmentSpecification",
+            "FramebufferAttachmentSpecification"
+          ],
+          "properties": [
+            "Attachments"
+          ]
+        },
+        {
+          "name": "FramebufferSpecification",
+          "startLine": 41,
+          "endLine": 50,
+          "methods": [],
+          "properties": [
+            "Width",
+            "Height",
+            "Attachments",
+            "Samples",
+            "SwapChainTarget"
+          ]
+        },
+        {
+          "name": "Framebuffer",
+          "startLine": 52,
+          "endLine": 69,
+          "methods": [
+            "~Framebuffer",
+            "Bind",
+            "Unbind",
+            "Resize",
+            "ReadPixel",
+            "ClearAttachment",
+            "GetColorAttachmentRendererID",
+            "Create"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "FramebufferTextureSpecification",
+          "line": 22,
+          "isDefault": false
+        },
+        {
+          "name": "FramebufferTextureSpecification",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "FramebufferTextureSpecification",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "FramebufferAttachmentSpecification",
+          "line": 32,
+          "isDefault": false
+        },
+        {
+          "name": "FramebufferAttachmentSpecification",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "FramebufferAttachmentSpecification",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "FramebufferSpecification",
+          "line": 41,
+          "isDefault": false
+        },
+        {
+          "name": "~Framebuffer",
+          "line": 54,
+          "isDefault": false
+        },
+        {
+          "name": "Bind",
+          "line": 56,
+          "isDefault": false
+        },
+        {
+          "name": "Unbind",
+          "line": 57,
+          "isDefault": false
+        },
+        {
+          "name": "Resize",
+          "line": 59,
+          "isDefault": false
+        },
+        {
+          "name": "ReadPixel",
+          "line": 60,
+          "isDefault": false
+        },
+        {
+          "name": "ClearAttachment",
+          "line": 62,
+          "isDefault": false
+        },
+        {
+          "name": "GetColorAttachmentRendererID",
+          "line": 64,
+          "isDefault": false
+        },
+        {
+          "name": "Create",
+          "line": 68,
+          "isDefault": false
+        },
+        {
+          "name": "Framebuffer",
+          "line": 52,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 16,
+        "functionCount": 5,
+        "classCount": 4
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/GraphicsContext.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 11,
+      "nonEmptyLines": 10,
+      "classes": [
+        {
+          "name": "GraphicsContext",
+          "startLine": 5,
+          "endLine": 10,
+          "methods": [
+            "Init",
+            "SwapBuffers"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Init",
+          "line": 8,
+          "isDefault": false
+        },
+        {
+          "name": "SwapBuffers",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "GraphicsContext",
+          "line": 5,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/OrthographicCamera.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 55,
+      "nonEmptyLines": 48,
+      "functions": [
+        {
+          "name": "SetPosition",
+          "startLine": 16,
+          "endLine": 20,
+          "params": [
+            "position"
+          ]
+        },
+        {
+          "name": "GetRotation",
+          "startLine": 21,
+          "endLine": 24,
+          "params": []
+        },
+        {
+          "name": "SetRotation",
+          "startLine": 25,
+          "endLine": 29,
+          "params": [
+            "rotation"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "OrthographicCamera",
+          "startLine": 7,
+          "endLine": 54,
+          "methods": [
+            "SetProjection",
+            "SetPosition",
+            "GetRotation",
+            "SetRotation",
+            "RecalculateViewMatrix"
+          ],
+          "properties": [
+            "m_ProjectionMatrix",
+            "m_ViewMatrix",
+            "m_ViewProjectionMatrix",
+            "m_Position",
+            "m_Rotation"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SetProjection",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "SetPosition",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "GetRotation",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "SetRotation",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "OrthographicCamera",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SetPosition",
+          "callee": "RecalculateViewMatrix",
+          "lineNumber": 19
+        },
+        {
+          "caller": "SetRotation",
+          "callee": "RecalculateViewMatrix",
+          "lineNumber": 28
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 5,
+        "functionCount": 3,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/OrthographicCameraController.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 60,
+      "nonEmptyLines": 51,
+      "functions": [
+        {
+          "name": "GetZoomLevel",
+          "startLine": 28,
+          "endLine": 31,
+          "params": []
+        },
+        {
+          "name": "SetZoomLevel",
+          "startLine": 32,
+          "endLine": 35,
+          "params": [
+            "level"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "OrthographicCameraController",
+          "startLine": 9,
+          "endLine": 59,
+          "methods": [
+            "OnUpdate",
+            "OnEvent",
+            "OnResize",
+            "GetZoomLevel",
+            "SetZoomLevel",
+            "OnMouseScrolled",
+            "OnMouseMoved",
+            "OnMouseButtonPressed",
+            "OnMouseButtonReleased",
+            "OnWindowResize"
+          ],
+          "properties": [
+            "m_AspectRatio",
+            "m_ZoomLevel",
+            "m_Camera",
+            "m_Rotation",
+            "m_CameraPosition",
+            "m_CameraRotation",
+            "m_CameraTranslationSpeed",
+            "m_MiddleDragging",
+            "m_LastMousePos",
+            "m_ViewportWidth",
+            "m_ViewportHeight"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "OnUpdate",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "OnEvent",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "OnResize",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "GetZoomLevel",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "SetZoomLevel",
+          "line": 32,
+          "isDefault": false
+        },
+        {
+          "name": "OrthographicCameraController",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 6,
+        "functionCount": 2,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/RenderCommand.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 77,
+      "nonEmptyLines": 63,
+      "functions": [
+        {
+          "name": "Init",
+          "startLine": 9,
+          "endLine": 12,
+          "params": []
+        },
+        {
+          "name": "SetViewport",
+          "startLine": 14,
+          "endLine": 17,
+          "params": [
+            "x",
+            "y",
+            "width",
+            "height"
+          ]
+        },
+        {
+          "name": "SetClearColor",
+          "startLine": 19,
+          "endLine": 22,
+          "params": [
+            "color"
+          ]
+        },
+        {
+          "name": "Clear",
+          "startLine": 23,
+          "endLine": 26,
+          "params": []
+        },
+        {
+          "name": "DrawIndexed",
+          "startLine": 28,
+          "endLine": 31,
+          "params": [
+            "vertexArray"
+          ]
+        },
+        {
+          "name": "DrawIndexedInstanced",
+          "startLine": 33,
+          "endLine": 36,
+          "params": [
+            "vertexArray",
+            "indexCount",
+            "instanceCount"
+          ]
+        },
+        {
+          "name": "DrawArrays",
+          "startLine": 38,
+          "endLine": 41,
+          "params": [
+            "vertexArray"
+          ]
+        },
+        {
+          "name": "DrawLines",
+          "startLine": 43,
+          "endLine": 46,
+          "params": [
+            "vertexArray"
+          ]
+        },
+        {
+          "name": "SetLineWidth",
+          "startLine": 48,
+          "endLine": 51,
+          "params": [
+            "width"
+          ]
+        },
+        {
+          "name": "SetDepthTest",
+          "startLine": 53,
+          "endLine": 56,
+          "params": [
+            "enabled"
+          ]
+        },
+        {
+          "name": "SetDepthMask",
+          "startLine": 58,
+          "endLine": 61,
+          "params": [
+            "enabled"
+          ]
+        },
+        {
+          "name": "SetDepthFunc",
+          "startLine": 63,
+          "endLine": 66,
+          "params": [
+            "func"
+          ]
+        },
+        {
+          "name": "SetCullMode",
+          "startLine": 68,
+          "endLine": 71,
+          "params": [
+            "mode"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "RenderCommand",
+          "startLine": 6,
+          "endLine": 75,
+          "methods": [
+            "Init",
+            "SetViewport",
+            "SetClearColor",
+            "Clear",
+            "DrawIndexed",
+            "DrawIndexedInstanced",
+            "DrawArrays",
+            "DrawLines",
+            "SetLineWidth",
+            "SetDepthTest",
+            "SetDepthMask",
+            "SetDepthFunc",
+            "SetCullMode"
+          ],
+          "properties": [
+            "s_RendererAPI"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Init",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "SetViewport",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "SetClearColor",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "Clear",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "DrawIndexed",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "DrawIndexedInstanced",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "DrawArrays",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "DrawLines",
+          "line": 43,
+          "isDefault": false
+        },
+        {
+          "name": "SetLineWidth",
+          "line": 48,
+          "isDefault": false
+        },
+        {
+          "name": "SetDepthTest",
+          "line": 53,
+          "isDefault": false
+        },
+        {
+          "name": "SetDepthMask",
+          "line": 58,
+          "isDefault": false
+        },
+        {
+          "name": "SetDepthFunc",
+          "line": 63,
+          "isDefault": false
+        },
+        {
+          "name": "SetCullMode",
+          "line": 68,
+          "isDefault": false
+        },
+        {
+          "name": "RenderCommand",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "Init",
+          "callee": "Init",
+          "lineNumber": 11
+        },
+        {
+          "caller": "SetViewport",
+          "callee": "SetViewport",
+          "lineNumber": 16
+        },
+        {
+          "caller": "SetClearColor",
+          "callee": "SetClearColor",
+          "lineNumber": 21
+        },
+        {
+          "caller": "Clear",
+          "callee": "Clear",
+          "lineNumber": 25
+        },
+        {
+          "caller": "DrawIndexed",
+          "callee": "DrawIndexed",
+          "lineNumber": 30
+        },
+        {
+          "caller": "DrawIndexedInstanced",
+          "callee": "DrawIndexedInstanced",
+          "lineNumber": 35
+        },
+        {
+          "caller": "DrawArrays",
+          "callee": "DrawArrays",
+          "lineNumber": 40
+        },
+        {
+          "caller": "DrawLines",
+          "callee": "DrawLines",
+          "lineNumber": 45
+        },
+        {
+          "caller": "SetLineWidth",
+          "callee": "SetLineWidth",
+          "lineNumber": 50
+        },
+        {
+          "caller": "SetDepthTest",
+          "callee": "SetDepthTest",
+          "lineNumber": 55
+        },
+        {
+          "caller": "SetDepthMask",
+          "callee": "SetDepthMask",
+          "lineNumber": 60
+        },
+        {
+          "caller": "SetDepthFunc",
+          "callee": "SetDepthFunc",
+          "lineNumber": 65
+        },
+        {
+          "caller": "SetCullMode",
+          "callee": "SetCullMode",
+          "lineNumber": 70
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 14,
+        "functionCount": 13,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Renderer2D.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 107,
+      "nonEmptyLines": 86,
+      "classes": [
+        {
+          "name": "Renderer2D",
+          "startLine": 14,
+          "endLine": 106,
+          "methods": [
+            "Init",
+            "Shutdown",
+            "BeginScene",
+            "BeginScene",
+            "BeginScene",
+            "EndScene",
+            "Flush",
+            "DrawQuad",
+            "DrawQuad",
+            "DrawQuad",
+            "DrawQuad",
+            "DrawQuad",
+            "DrawQuad",
+            "DrawRotatedQuad",
+            "DrawRotatedQuad",
+            "DrawRotatedQuad",
+            "DrawRotatedQuad",
+            "DrawCircle",
+            "DrawLine",
+            "DrawRect",
+            "DrawRect",
+            "DrawSprite",
+            "DrawTilemap",
+            "DrawString",
+            "GetLineWidth",
+            "SetLineWidth",
+            "DrawQuadUV",
+            "DrawQuadUV",
+            "DrawQuadUV",
+            "ResetStats",
+            "GetStatistics",
+            "StartBatch",
+            "NextBatch"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "Init",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "Shutdown",
+          "line": 18,
+          "isDefault": false
+        },
+        {
+          "name": "BeginScene",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "BeginScene",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "BeginScene",
+          "line": 22,
+          "isDefault": false
+        },
+        {
+          "name": "EndScene",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "Flush",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "DrawQuad",
+          "line": 27,
+          "isDefault": false
+        },
+        {
+          "name": "DrawQuad",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "DrawQuad",
+          "line": 29,
+          "isDefault": false
+        },
+        {
+          "name": "DrawQuad",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "DrawQuad",
+          "line": 32,
+          "isDefault": false
+        },
+        {
+          "name": "DrawQuad",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "DrawRotatedQuad",
+          "line": 35,
+          "isDefault": false
+        },
+        {
+          "name": "DrawRotatedQuad",
+          "line": 36,
+          "isDefault": false
+        },
+        {
+          "name": "DrawRotatedQuad",
+          "line": 37,
+          "isDefault": false
+        },
+        {
+          "name": "DrawRotatedQuad",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "DrawCircle",
+          "line": 40,
+          "isDefault": false
+        },
+        {
+          "name": "DrawLine",
+          "line": 42,
+          "isDefault": false
+        },
+        {
+          "name": "DrawRect",
+          "line": 44,
+          "isDefault": false
+        },
+        {
+          "name": "DrawRect",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "DrawSprite",
+          "line": 47,
+          "isDefault": false
+        },
+        {
+          "name": "DrawTilemap",
+          "line": 52,
+          "isDefault": false
+        },
+        {
+          "name": "DrawString",
+          "line": 54,
+          "isDefault": false
+        },
+        {
+          "name": "GetLineWidth",
+          "line": 56,
+          "isDefault": false
+        },
+        {
+          "name": "SetLineWidth",
+          "line": 57,
+          "isDefault": false
+        },
+        {
+          "name": "DrawQuadUV",
+          "line": 60,
+          "isDefault": false
+        },
+        {
+          "name": "DrawQuadUV",
+          "line": 65,
+          "isDefault": false
+        },
+        {
+          "name": "DrawQuadUV",
+          "line": 72,
+          "isDefault": false
+        },
+        {
+          "name": "ResetStats",
+          "line": 100,
+          "isDefault": false
+        },
+        {
+          "name": "GetStatistics",
+          "line": 101,
+          "isDefault": false
+        },
+        {
+          "name": "Renderer2D",
+          "line": 14,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 32,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/RendererAPI.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 45,
+      "nonEmptyLines": 40,
+      "functions": [
+        {
+          "name": "GetAPI",
+          "startLine": 36,
+          "endLine": 39,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "RendererAPI",
+          "startLine": 8,
+          "endLine": 44,
+          "methods": [
+            "Init",
+            "SetViewport",
+            "SetClearColor",
+            "Clear",
+            "DrawIndexed",
+            "DrawIndexedInstanced",
+            "DrawArrays",
+            "DrawLines",
+            "SetLineWidth",
+            "SetDepthTest",
+            "SetDepthMask",
+            "SetDepthFunc",
+            "SetCullMode",
+            "GetAPI",
+            "Create"
+          ],
+          "properties": [
+            "s_API"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Init",
+          "line": 22,
+          "isDefault": false
+        },
+        {
+          "name": "SetViewport",
+          "line": 23,
+          "isDefault": false
+        },
+        {
+          "name": "SetClearColor",
+          "line": 24,
+          "isDefault": false
+        },
+        {
+          "name": "Clear",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "DrawIndexed",
+          "line": 27,
+          "isDefault": false
+        },
+        {
+          "name": "DrawIndexedInstanced",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "DrawArrays",
+          "line": 29,
+          "isDefault": false
+        },
+        {
+          "name": "DrawLines",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "SetLineWidth",
+          "line": 31,
+          "isDefault": false
+        },
+        {
+          "name": "SetDepthTest",
+          "line": 32,
+          "isDefault": false
+        },
+        {
+          "name": "SetDepthMask",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "SetDepthFunc",
+          "line": 34,
+          "isDefault": false
+        },
+        {
+          "name": "SetCullMode",
+          "line": 35,
+          "isDefault": false
+        },
+        {
+          "name": "GetAPI",
+          "line": 36,
+          "isDefault": false
+        },
+        {
+          "name": "Create",
+          "line": 40,
+          "isDefault": false
+        },
+        {
+          "name": "RendererAPI",
+          "line": 8,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 16,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Texture.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 64,
+      "nonEmptyLines": 50,
+      "functions": [
+        {
+          "name": "~Texture",
+          "startLine": 28,
+          "endLine": 28,
+          "params": []
+        },
+        {
+          "name": "GetType",
+          "startLine": 46,
+          "endLine": 49,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "TextureSpecification",
+          "startLine": 19,
+          "endLine": 24,
+          "methods": [],
+          "properties": [
+            "Width",
+            "Height",
+            "Format",
+            "GenerateMips"
+          ]
+        },
+        {
+          "name": "Texture",
+          "startLine": 26,
+          "endLine": 52,
+          "methods": [
+            "~Texture",
+            "GetWidth",
+            "GetHeight",
+            "GetRendererID",
+            "SetData",
+            "Bind",
+            "IsLoaded",
+            "operator==",
+            "GetType"
+          ],
+          "properties": []
+        },
+        {
+          "name": "Texture2D",
+          "startLine": 54,
+          "endLine": 58,
+          "methods": [
+            "Create",
+            "Create"
+          ],
+          "properties": []
+        },
+        {
+          "name": "TextureCube",
+          "startLine": 60,
+          "endLine": 63,
+          "methods": [
+            "Create"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "TextureSpecification",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "~Texture",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "GetWidth",
+          "line": 32,
+          "isDefault": false
+        },
+        {
+          "name": "GetHeight",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "GetRendererID",
+          "line": 34,
+          "isDefault": false
+        },
+        {
+          "name": "SetData",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "Bind",
+          "line": 40,
+          "isDefault": false
+        },
+        {
+          "name": "IsLoaded",
+          "line": 42,
+          "isDefault": false
+        },
+        {
+          "name": "operator==",
+          "line": 44,
+          "isDefault": false
+        },
+        {
+          "name": "GetType",
+          "line": 46,
+          "isDefault": false
+        },
+        {
+          "name": "Texture",
+          "line": 26,
+          "isDefault": false
+        },
+        {
+          "name": "Create",
+          "line": 56,
+          "isDefault": false
+        },
+        {
+          "name": "Create",
+          "line": 57,
+          "isDefault": false
+        },
+        {
+          "name": "Texture2D",
+          "line": 54,
+          "isDefault": false
+        },
+        {
+          "name": "Create",
+          "line": 62,
+          "isDefault": false
+        },
+        {
+          "name": "TextureCube",
+          "line": 60,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 16,
+        "functionCount": 2,
+        "classCount": 4
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/VertexArray.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 25,
+      "nonEmptyLines": 19,
+      "functions": [
+        {
+          "name": "~VertexArray",
+          "startLine": 8,
+          "endLine": 10,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "VertexArray",
+          "startLine": 6,
+          "endLine": 24,
+          "methods": [
+            "~VertexArray",
+            "Bind",
+            "Unbind",
+            "AddVertexBuffer",
+            "SetIndexBuffer",
+            "Create"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "~VertexArray",
+          "line": 8,
+          "isDefault": false
+        },
+        {
+          "name": "Bind",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "Unbind",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "AddVertexBuffer",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "SetIndexBuffer",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "Create",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "VertexArray",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 7,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Scene/Components.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 275,
+      "nonEmptyLines": 217,
+      "functions": [
+        {
+          "name": "IDComponent",
+          "startLine": 30,
+          "endLine": 30,
+          "params": []
+        },
+        {
+          "name": "IDComponent",
+          "startLine": 31,
+          "endLine": 31,
+          "params": []
+        },
+        {
+          "name": "TagComponent",
+          "startLine": 37,
+          "endLine": 37,
+          "params": []
+        },
+        {
+          "name": "TagComponent",
+          "startLine": 38,
+          "endLine": 38,
+          "params": []
+        },
+        {
+          "name": "TagComponent",
+          "startLine": 39,
+          "endLine": 41,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "TransformComponent",
+          "startLine": 49,
+          "endLine": 49,
+          "params": []
+        },
+        {
+          "name": "TransformComponent",
+          "startLine": 50,
+          "endLine": 50,
+          "params": []
+        },
+        {
+          "name": "TransformComponent",
+          "startLine": 51,
+          "endLine": 53,
+          "params": [
+            "position"
+          ]
+        },
+        {
+          "name": "GetTransform",
+          "startLine": 54,
+          "endLine": 58,
+          "params": []
+        },
+        {
+          "name": "CameraComponent",
+          "startLine": 66,
+          "endLine": 66,
+          "params": []
+        },
+        {
+          "name": "CameraComponent",
+          "startLine": 67,
+          "endLine": 67,
+          "params": []
+        },
+        {
+          "name": "SpriteRendererComponent",
+          "startLine": 78,
+          "endLine": 78,
+          "params": []
+        },
+        {
+          "name": "SpriteRendererComponent",
+          "startLine": 79,
+          "endLine": 79,
+          "params": []
+        },
+        {
+          "name": "SpriteRendererComponent",
+          "startLine": 80,
+          "endLine": 82,
+          "params": [
+            "color"
+          ]
+        },
+        {
+          "name": "CircleRendererComponent",
+          "startLine": 91,
+          "endLine": 91,
+          "params": []
+        },
+        {
+          "name": "CircleRendererComponent",
+          "startLine": 92,
+          "endLine": 92,
+          "params": []
+        },
+        {
+          "name": "MeshComponent",
+          "startLine": 107,
+          "endLine": 107,
+          "params": []
+        },
+        {
+          "name": "MeshComponent",
+          "startLine": 108,
+          "endLine": 108,
+          "params": []
+        },
+        {
+          "name": "ScriptComponent",
+          "startLine": 116,
+          "endLine": 116,
+          "params": []
+        },
+        {
+          "name": "ScriptComponent",
+          "startLine": 117,
+          "endLine": 117,
+          "params": []
+        },
+        {
+          "name": "Rigidbody2DComponent",
+          "startLine": 150,
+          "endLine": 150,
+          "params": []
+        },
+        {
+          "name": "Rigidbody2DComponent",
+          "startLine": 151,
+          "endLine": 151,
+          "params": [
+            "other"
+          ]
+        },
+        {
+          "name": "BoxCollider2DComponent",
+          "startLine": 167,
+          "endLine": 167,
+          "params": []
+        },
+        {
+          "name": "BoxCollider2DComponent",
+          "startLine": 168,
+          "endLine": 168,
+          "params": []
+        },
+        {
+          "name": "CircleCollider2DComponent",
+          "startLine": 183,
+          "endLine": 183,
+          "params": []
+        },
+        {
+          "name": "CircleCollider2DComponent",
+          "startLine": 184,
+          "endLine": 184,
+          "params": []
+        },
+        {
+          "name": "SpriteAnimationComponent",
+          "startLine": 198,
+          "endLine": 198,
+          "params": []
+        },
+        {
+          "name": "SpriteAnimationComponent",
+          "startLine": 199,
+          "endLine": 199,
+          "params": []
+        },
+        {
+          "name": "TilemapComponent",
+          "startLine": 206,
+          "endLine": 206,
+          "params": []
+        },
+        {
+          "name": "TilemapComponent",
+          "startLine": 207,
+          "endLine": 207,
+          "params": []
+        },
+        {
+          "name": "TilemapCollider2DComponent",
+          "startLine": 215,
+          "endLine": 215,
+          "params": []
+        },
+        {
+          "name": "TilemapCollider2DComponent",
+          "startLine": 216,
+          "endLine": 216,
+          "params": []
+        },
+        {
+          "name": "ParticleEmitterComponent",
+          "startLine": 226,
+          "endLine": 226,
+          "params": []
+        },
+        {
+          "name": "ParticleEmitterComponent",
+          "startLine": 227,
+          "endLine": 227,
+          "params": []
+        },
+        {
+          "name": "UITransformComponent",
+          "startLine": 236,
+          "endLine": 236,
+          "params": []
+        },
+        {
+          "name": "UITransformComponent",
+          "startLine": 237,
+          "endLine": 240,
+          "params": [
+            "position",
+            "size",
+            "rotation"
+          ]
+        },
+        {
+          "name": "GetTransform",
+          "startLine": 242,
+          "endLine": 246,
+          "params": []
+        },
+        {
+          "name": "UIImageComponent",
+          "startLine": 254,
+          "endLine": 254,
+          "params": []
+        },
+        {
+          "name": "UIImageComponent",
+          "startLine": 255,
+          "endLine": 255,
+          "params": []
+        },
+        {
+          "name": "UITextComponent",
+          "startLine": 267,
+          "endLine": 267,
+          "params": []
+        },
+        {
+          "name": "UITextComponent",
+          "startLine": 268,
+          "endLine": 268,
+          "params": []
+        },
+        {
+          "name": "UITextComponent",
+          "startLine": 269,
+          "endLine": 271,
+          "params": [
+            "text"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "ScriptableEntity",
+          "startLine": 24,
+          "endLine": 24,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "IDComponent",
+          "startLine": 27,
+          "endLine": 32,
+          "methods": [
+            "IDComponent",
+            "IDComponent"
+          ],
+          "properties": [
+            "ID"
+          ]
+        },
+        {
+          "name": "TagComponent",
+          "startLine": 34,
+          "endLine": 42,
+          "methods": [
+            "TagComponent",
+            "TagComponent",
+            "TagComponent"
+          ],
+          "properties": [
+            "Tag"
+          ]
+        },
+        {
+          "name": "TransformComponent",
+          "startLine": 44,
+          "endLine": 59,
+          "methods": [
+            "TransformComponent",
+            "TransformComponent",
+            "TransformComponent",
+            "GetTransform"
+          ],
+          "properties": [
+            "Position",
+            "Rotation",
+            "Scale"
+          ]
+        },
+        {
+          "name": "CameraComponent",
+          "startLine": 61,
+          "endLine": 68,
+          "methods": [
+            "CameraComponent",
+            "CameraComponent"
+          ],
+          "properties": [
+            "Camera",
+            "Primary",
+            "FixedAspectRatio"
+          ]
+        },
+        {
+          "name": "AssetManager",
+          "startLine": 70,
+          "endLine": 70,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "SpriteRendererComponent",
+          "startLine": 72,
+          "endLine": 83,
+          "methods": [
+            "SpriteRendererComponent",
+            "SpriteRendererComponent",
+            "SpriteRendererComponent"
+          ],
+          "properties": [
+            "Color",
+            "SpriteAssetHandle",
+            "TilingFactor",
+            "FlipHorizontal"
+          ]
+        },
+        {
+          "name": "CircleRendererComponent",
+          "startLine": 85,
+          "endLine": 93,
+          "methods": [
+            "CircleRendererComponent",
+            "CircleRendererComponent"
+          ],
+          "properties": [
+            "Color",
+            "Radius",
+            "Thickness",
+            "Fade"
+          ]
+        },
+        {
+          "name": "MeshComponent",
+          "startLine": 95,
+          "endLine": 109,
+          "methods": [
+            "MeshComponent",
+            "MeshComponent"
+          ],
+          "properties": [
+            "Type",
+            "Color"
+          ]
+        },
+        {
+          "name": "ScriptComponent",
+          "startLine": 111,
+          "endLine": 118,
+          "methods": [
+            "ScriptComponent",
+            "ScriptComponent"
+          ],
+          "properties": [
+            "ClassName",
+            "Fields"
+          ]
+        },
+        {
+          "name": "ScriptableEntity",
+          "startLine": 120,
+          "endLine": 120,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "NativeScriptComponent",
+          "startLine": 122,
+          "endLine": 134,
+          "methods": [
+            "(*DestroyScript)"
+          ],
+          "properties": [
+            "Instance"
+          ]
+        },
+        {
+          "name": "Rigidbody2DComponent",
+          "startLine": 136,
+          "endLine": 152,
+          "methods": [
+            "Rigidbody2DComponent",
+            "Rigidbody2DComponent"
+          ],
+          "properties": [
+            "Type",
+            "FixedRotation",
+            "RuntimeBody"
+          ]
+        },
+        {
+          "name": "BoxCollider2DComponent",
+          "startLine": 154,
+          "endLine": 169,
+          "methods": [
+            "BoxCollider2DComponent",
+            "BoxCollider2DComponent"
+          ],
+          "properties": [
+            "Offset",
+            "Size",
+            "Density",
+            "Friction",
+            "Restitution",
+            "RestitutionThreshold",
+            "RuntimeFixture"
+          ]
+        },
+        {
+          "name": "CircleCollider2DComponent",
+          "startLine": 171,
+          "endLine": 185,
+          "methods": [
+            "CircleCollider2DComponent",
+            "CircleCollider2DComponent"
+          ],
+          "properties": [
+            "Offset",
+            "Radius",
+            "Density",
+            "Friction",
+            "Restitution",
+            "RestitutionThreshold",
+            "RuntimeFixture"
+          ]
+        },
+        {
+          "name": "SpriteAnimationComponent",
+          "startLine": 187,
+          "endLine": 200,
+          "methods": [
+            "SpriteAnimationComponent",
+            "SpriteAnimationComponent"
+          ],
+          "properties": [
+            "AnimationHandle",
+            "CurrentAnimationName",
+            "Timer",
+            "CurrentFrame",
+            "PlaybackDirection",
+            "FrameRate",
+            "Playing",
+            "PreviewInScene"
+          ]
+        },
+        {
+          "name": "TilemapComponent",
+          "startLine": 202,
+          "endLine": 208,
+          "methods": [
+            "TilemapComponent",
+            "TilemapComponent"
+          ],
+          "properties": [
+            "TileMapHandle"
+          ]
+        },
+        {
+          "name": "TilemapCollider2DComponent",
+          "startLine": 210,
+          "endLine": 217,
+          "methods": [
+            "TilemapCollider2DComponent",
+            "TilemapCollider2DComponent"
+          ],
+          "properties": [
+            "Enabled",
+            "MergeAdjacentCells"
+          ]
+        },
+        {
+          "name": "ParticleEmitterComponent",
+          "startLine": 219,
+          "endLine": 228,
+          "methods": [
+            "ParticleEmitterComponent",
+            "ParticleEmitterComponent"
+          ],
+          "properties": [
+            "EmitterHandle",
+            "EmissionAccumulator"
+          ]
+        },
+        {
+          "name": "UITransformComponent",
+          "startLine": 231,
+          "endLine": 247,
+          "methods": [
+            "UITransformComponent",
+            "UITransformComponent",
+            "GetTransform"
+          ],
+          "properties": [
+            "Position",
+            "Size",
+            "Rotation"
+          ]
+        },
+        {
+          "name": "UIImageComponent",
+          "startLine": 249,
+          "endLine": 256,
+          "methods": [
+            "UIImageComponent",
+            "UIImageComponent"
+          ],
+          "properties": [
+            "Texture",
+            "TextureHandle",
+            "Color"
+          ]
+        },
+        {
+          "name": "UITextComponent",
+          "startLine": 258,
+          "endLine": 272,
+          "methods": [
+            "UITextComponent",
+            "UITextComponent",
+            "UITextComponent"
+          ],
+          "properties": [
+            "TextString",
+            "FontAsset",
+            "Color",
+            "Kerning",
+            "LineSpacing"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ScriptableEntity",
+          "line": 24,
+          "isDefault": false
+        },
+        {
+          "name": "IDComponent",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "IDComponent",
+          "line": 31,
+          "isDefault": false
+        },
+        {
+          "name": "IDComponent",
+          "line": 27,
+          "isDefault": false
+        },
+        {
+          "name": "TagComponent",
+          "line": 37,
+          "isDefault": false
+        },
+        {
+          "name": "TagComponent",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "TagComponent",
+          "line": 39,
+          "isDefault": false
+        },
+        {
+          "name": "TagComponent",
+          "line": 34,
+          "isDefault": false
+        },
+        {
+          "name": "TransformComponent",
+          "line": 49,
+          "isDefault": false
+        },
+        {
+          "name": "TransformComponent",
+          "line": 50,
+          "isDefault": false
+        },
+        {
+          "name": "TransformComponent",
+          "line": 51,
+          "isDefault": false
+        },
+        {
+          "name": "GetTransform",
+          "line": 54,
+          "isDefault": false
+        },
+        {
+          "name": "TransformComponent",
+          "line": 44,
+          "isDefault": false
+        },
+        {
+          "name": "CameraComponent",
+          "line": 66,
+          "isDefault": false
+        },
+        {
+          "name": "CameraComponent",
+          "line": 67,
+          "isDefault": false
+        },
+        {
+          "name": "CameraComponent",
+          "line": 61,
+          "isDefault": false
+        },
+        {
+          "name": "AssetManager",
+          "line": 70,
+          "isDefault": false
+        },
+        {
+          "name": "SpriteRendererComponent",
+          "line": 78,
+          "isDefault": false
+        },
+        {
+          "name": "SpriteRendererComponent",
+          "line": 79,
+          "isDefault": false
+        },
+        {
+          "name": "SpriteRendererComponent",
+          "line": 80,
+          "isDefault": false
+        },
+        {
+          "name": "SpriteRendererComponent",
+          "line": 72,
+          "isDefault": false
+        },
+        {
+          "name": "CircleRendererComponent",
+          "line": 91,
+          "isDefault": false
+        },
+        {
+          "name": "CircleRendererComponent",
+          "line": 92,
+          "isDefault": false
+        },
+        {
+          "name": "CircleRendererComponent",
+          "line": 85,
+          "isDefault": false
+        },
+        {
+          "name": "MeshComponent",
+          "line": 107,
+          "isDefault": false
+        },
+        {
+          "name": "MeshComponent",
+          "line": 108,
+          "isDefault": false
+        },
+        {
+          "name": "MeshComponent",
+          "line": 95,
+          "isDefault": false
+        },
+        {
+          "name": "ScriptComponent",
+          "line": 116,
+          "isDefault": false
+        },
+        {
+          "name": "ScriptComponent",
+          "line": 117,
+          "isDefault": false
+        },
+        {
+          "name": "ScriptComponent",
+          "line": 111,
+          "isDefault": false
+        },
+        {
+          "name": "ScriptableEntity",
+          "line": 120,
+          "isDefault": false
+        },
+        {
+          "name": "(*DestroyScript)",
+          "line": 126,
+          "isDefault": false
+        },
+        {
+          "name": "NativeScriptComponent",
+          "line": 122,
+          "isDefault": false
+        },
+        {
+          "name": "Rigidbody2DComponent",
+          "line": 150,
+          "isDefault": false
+        },
+        {
+          "name": "Rigidbody2DComponent",
+          "line": 151,
+          "isDefault": false
+        },
+        {
+          "name": "Rigidbody2DComponent",
+          "line": 136,
+          "isDefault": false
+        },
+        {
+          "name": "BoxCollider2DComponent",
+          "line": 167,
+          "isDefault": false
+        },
+        {
+          "name": "BoxCollider2DComponent",
+          "line": 168,
+          "isDefault": false
+        },
+        {
+          "name": "BoxCollider2DComponent",
+          "line": 154,
+          "isDefault": false
+        },
+        {
+          "name": "CircleCollider2DComponent",
+          "line": 183,
+          "isDefault": false
+        },
+        {
+          "name": "CircleCollider2DComponent",
+          "line": 184,
+          "isDefault": false
+        },
+        {
+          "name": "CircleCollider2DComponent",
+          "line": 171,
+          "isDefault": false
+        },
+        {
+          "name": "SpriteAnimationComponent",
+          "line": 198,
+          "isDefault": false
+        },
+        {
+          "name": "SpriteAnimationComponent",
+          "line": 199,
+          "isDefault": false
+        },
+        {
+          "name": "SpriteAnimationComponent",
+          "line": 187,
+          "isDefault": false
+        },
+        {
+          "name": "TilemapComponent",
+          "line": 206,
+          "isDefault": false
+        },
+        {
+          "name": "TilemapComponent",
+          "line": 207,
+          "isDefault": false
+        },
+        {
+          "name": "TilemapComponent",
+          "line": 202,
+          "isDefault": false
+        },
+        {
+          "name": "TilemapCollider2DComponent",
+          "line": 215,
+          "isDefault": false
+        },
+        {
+          "name": "TilemapCollider2DComponent",
+          "line": 216,
+          "isDefault": false
+        },
+        {
+          "name": "TilemapCollider2DComponent",
+          "line": 210,
+          "isDefault": false
+        },
+        {
+          "name": "ParticleEmitterComponent",
+          "line": 226,
+          "isDefault": false
+        },
+        {
+          "name": "ParticleEmitterComponent",
+          "line": 227,
+          "isDefault": false
+        },
+        {
+          "name": "ParticleEmitterComponent",
+          "line": 219,
+          "isDefault": false
+        },
+        {
+          "name": "UITransformComponent",
+          "line": 236,
+          "isDefault": false
+        },
+        {
+          "name": "UITransformComponent",
+          "line": 237,
+          "isDefault": false
+        },
+        {
+          "name": "GetTransform",
+          "line": 242,
+          "isDefault": false
+        },
+        {
+          "name": "UITransformComponent",
+          "line": 231,
+          "isDefault": false
+        },
+        {
+          "name": "UIImageComponent",
+          "line": 254,
+          "isDefault": false
+        },
+        {
+          "name": "UIImageComponent",
+          "line": 255,
+          "isDefault": false
+        },
+        {
+          "name": "UIImageComponent",
+          "line": 249,
+          "isDefault": false
+        },
+        {
+          "name": "UITextComponent",
+          "line": 267,
+          "isDefault": false
+        },
+        {
+          "name": "UITextComponent",
+          "line": 268,
+          "isDefault": false
+        },
+        {
+          "name": "UITextComponent",
+          "line": 269,
+          "isDefault": false
+        },
+        {
+          "name": "UITextComponent",
+          "line": 258,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "GetTransform",
+          "callee": "glm::toMat4",
+          "lineNumber": 56
+        },
+        {
+          "caller": "GetTransform",
+          "callee": "glm::quat",
+          "lineNumber": 56
+        },
+        {
+          "caller": "GetTransform",
+          "callee": "glm::translate",
+          "lineNumber": 57
+        },
+        {
+          "caller": "GetTransform",
+          "callee": "glm::mat4",
+          "lineNumber": 57
+        },
+        {
+          "caller": "GetTransform",
+          "callee": "glm::scale",
+          "lineNumber": 57
+        },
+        {
+          "caller": "GetTransform",
+          "callee": "glm::mat4",
+          "lineNumber": 57
+        },
+        {
+          "caller": "Bind",
+          "callee": "static_cast<ScriptableEntity*>",
+          "lineNumber": 130
+        },
+        {
+          "caller": "GetTransform",
+          "callee": "glm::toMat4",
+          "lineNumber": 244
+        },
+        {
+          "caller": "GetTransform",
+          "callee": "glm::quat",
+          "lineNumber": 244
+        },
+        {
+          "caller": "GetTransform",
+          "callee": "glm::translate",
+          "lineNumber": 245
+        },
+        {
+          "caller": "GetTransform",
+          "callee": "glm::mat4",
+          "lineNumber": 245
+        },
+        {
+          "caller": "GetTransform",
+          "callee": "glm::scale",
+          "lineNumber": 245
+        },
+        {
+          "caller": "GetTransform",
+          "callee": "glm::mat4",
+          "lineNumber": 245
+        },
+        {
+          "caller": "GetTransform",
+          "callee": "glm::vec3",
+          "lineNumber": 245
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 65,
+        "functionCount": 42,
+        "classCount": 22
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Scene/Entity.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 93,
+      "nonEmptyLines": 75,
+      "functions": [
+        {
+          "name": "Entity",
+          "startLine": 14,
+          "endLine": 14,
+          "params": []
+        },
+        {
+          "name": "Entity",
+          "startLine": 16,
+          "endLine": 16,
+          "params": [
+            "other"
+          ]
+        },
+        {
+          "name": "GetUUID",
+          "startLine": 68,
+          "endLine": 71,
+          "params": []
+        },
+        {
+          "name": "operator==",
+          "startLine": 78,
+          "endLine": 81,
+          "params": [
+            "other"
+          ]
+        },
+        {
+          "name": "operator!=",
+          "startLine": 83,
+          "endLine": 86,
+          "params": [
+            "other"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "Entity",
+          "startLine": 12,
+          "endLine": 91,
+          "methods": [
+            "Entity",
+            "Entity",
+            "GetUUID",
+            "operator==",
+            "operator!="
+          ],
+          "properties": [
+            "m_EntityHandle",
+            "m_Scene"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Entity",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "Entity",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "GetUUID",
+          "line": 68,
+          "isDefault": false
+        },
+        {
+          "name": "operator==",
+          "line": 78,
+          "isDefault": false
+        },
+        {
+          "name": "operator!=",
+          "line": 83,
+          "isDefault": false
+        },
+        {
+          "name": "Entity",
+          "line": 12,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "HasComponent",
+          "callee": "all_of<T>",
+          "lineNumber": 38
+        },
+        {
+          "caller": "HasComponent",
+          "callee": "Registry",
+          "lineNumber": 38
+        },
+        {
+          "caller": "RemoveComponent",
+          "callee": "remove<T>",
+          "lineNumber": 50
+        },
+        {
+          "caller": "RemoveComponent",
+          "callee": "Registry",
+          "lineNumber": 50
+        },
+        {
+          "caller": "GetUUID",
+          "callee": "GetComponent<IDComponent>",
+          "lineNumber": 70
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 6,
+        "functionCount": 5,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Scene/Scene.cpp",
+      "language": "cpp",
+      "fileCategory": "code",
+      "totalLines": 1215,
+      "nonEmptyLines": 1021,
+      "functions": [
+        {
+          "name": "Scene",
+          "startLine": 30,
+          "endLine": 32,
+          "params": []
+        },
+        {
+          "name": "~Scene",
+          "startLine": 34,
+          "endLine": 40,
+          "params": []
+        },
+        {
+          "name": "ToBodyId",
+          "startLine": 46,
+          "endLine": 50,
+          "params": [
+            "ptr"
+          ]
+        },
+        {
+          "name": "AttachBoxColliderToBody",
+          "startLine": 52,
+          "endLine": 76,
+          "params": [
+            "bodyId",
+            "boxCollider",
+            "transform"
+          ]
+        },
+        {
+          "name": "AttachCircleColliderToBody",
+          "startLine": 78,
+          "endLine": 102,
+          "params": [
+            "bodyId",
+            "circleCollider",
+            "transform"
+          ]
+        },
+        {
+          "name": "CreateStaticPhysicsBody",
+          "startLine": 104,
+          "endLine": 114,
+          "params": [
+            "world",
+            "entityHandle",
+            "transform"
+          ]
+        },
+        {
+          "name": "CreateEntityWithUUID",
+          "startLine": 116,
+          "endLine": 128,
+          "params": [
+            "uuid",
+            "name"
+          ]
+        },
+        {
+          "name": "CreateEntity",
+          "startLine": 130,
+          "endLine": 133,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "CreateUIEntity",
+          "startLine": 135,
+          "endLine": 138,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "CreateUIEntityWithUUID",
+          "startLine": 140,
+          "endLine": 152,
+          "params": [
+            "uuid",
+            "name"
+          ]
+        },
+        {
+          "name": "DestroyEntity",
+          "startLine": 154,
+          "endLine": 178,
+          "params": [
+            "e"
+          ]
+        },
+        {
+          "name": "ClearEntities",
+          "startLine": 180,
+          "endLine": 191,
+          "params": []
+        },
+        {
+          "name": "OnRuntimeStart",
+          "startLine": 193,
+          "endLine": 215,
+          "params": []
+        },
+        {
+          "name": "OnSimulationStart",
+          "startLine": 217,
+          "endLine": 220,
+          "params": []
+        },
+        {
+          "name": "OnSimulationStop",
+          "startLine": 222,
+          "endLine": 225,
+          "params": []
+        },
+        {
+          "name": "OnRuntimeStop",
+          "startLine": 227,
+          "endLine": 231,
+          "params": []
+        },
+        {
+          "name": "OnUpdateEditor",
+          "startLine": 233,
+          "endLine": 238,
+          "params": [
+            "ts",
+            "camera"
+          ]
+        },
+        {
+          "name": "UpdateSpriteAnimations",
+          "startLine": 240,
+          "endLine": 280,
+          "params": [
+            "timestep",
+            "allowEditorPreview"
+          ]
+        },
+        {
+          "name": "RunScriptFixedUpdate",
+          "startLine": 282,
+          "endLine": 290,
+          "params": [
+            "ts"
+          ]
+        },
+        {
+          "name": "OnUpdateRuntime",
+          "startLine": 292,
+          "endLine": 510,
+          "params": [
+            "ts"
+          ]
+        },
+        {
+          "name": "RayCastCallback",
+          "startLine": 512,
+          "endLine": 534,
+          "params": [
+            "shapeId",
+            "point",
+            "normal",
+            "fraction",
+            "context"
+          ]
+        },
+        {
+          "name": "Raycast2D",
+          "startLine": 536,
+          "endLine": 558,
+          "params": [
+            "start",
+            "end"
+          ]
+        },
+        {
+          "name": "OnUpdateSimulation",
+          "startLine": 560,
+          "endLine": 594,
+          "params": [
+            "ts",
+            "camera"
+          ]
+        },
+        {
+          "name": "Copy",
+          "startLine": 614,
+          "endLine": 658,
+          "params": [
+            "other"
+          ]
+        },
+        {
+          "name": "DuplicateEntity",
+          "startLine": 660,
+          "endLine": 715,
+          "params": [
+            "entity"
+          ]
+        },
+        {
+          "name": "FindEntityByName",
+          "startLine": 717,
+          "endLine": 727,
+          "params": [
+            "name"
+          ]
+        },
+        {
+          "name": "GetEntityByUUID",
+          "startLine": 729,
+          "endLine": 736,
+          "params": [
+            "uuid"
+          ]
+        },
+        {
+          "name": "OnViewportResize",
+          "startLine": 738,
+          "endLine": 753,
+          "params": [
+            "width",
+            "height"
+          ]
+        },
+        {
+          "name": "GetPrimaryCameraEntity",
+          "startLine": 755,
+          "endLine": 767,
+          "params": []
+        },
+        {
+          "name": "OnPhysics2DStart",
+          "startLine": 769,
+          "endLine": 889,
+          "params": []
+        },
+        {
+          "name": "OnPhysics2DStop",
+          "startLine": 891,
+          "endLine": 898,
+          "params": []
+        },
+        {
+          "name": "GetEntityFromShape",
+          "startLine": 900,
+          "endLine": 918,
+          "params": [
+            "shapeId"
+          ]
+        },
+        {
+          "name": "ProcessPhysics2DContacts",
+          "startLine": 920,
+          "endLine": 975,
+          "params": []
+        },
+        {
+          "name": "RenderScene",
+          "startLine": 977,
+          "endLine": 1064,
+          "params": [
+            "camera"
+          ]
+        },
+        {
+          "name": "RenderUI",
+          "startLine": 1066,
+          "endLine": 1110,
+          "params": [
+            "viewportWidth",
+            "viewportHeight"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Scene",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "~Scene",
+          "line": 34,
+          "isDefault": false
+        },
+        {
+          "name": "CreateEntityWithUUID",
+          "line": 116,
+          "isDefault": false
+        },
+        {
+          "name": "CreateEntity",
+          "line": 130,
+          "isDefault": false
+        },
+        {
+          "name": "CreateUIEntity",
+          "line": 135,
+          "isDefault": false
+        },
+        {
+          "name": "CreateUIEntityWithUUID",
+          "line": 140,
+          "isDefault": false
+        },
+        {
+          "name": "DestroyEntity",
+          "line": 154,
+          "isDefault": false
+        },
+        {
+          "name": "ClearEntities",
+          "line": 180,
+          "isDefault": false
+        },
+        {
+          "name": "OnRuntimeStart",
+          "line": 193,
+          "isDefault": false
+        },
+        {
+          "name": "OnSimulationStart",
+          "line": 217,
+          "isDefault": false
+        },
+        {
+          "name": "OnSimulationStop",
+          "line": 222,
+          "isDefault": false
+        },
+        {
+          "name": "OnRuntimeStop",
+          "line": 227,
+          "isDefault": false
+        },
+        {
+          "name": "OnUpdateEditor",
+          "line": 233,
+          "isDefault": false
+        },
+        {
+          "name": "UpdateSpriteAnimations",
+          "line": 240,
+          "isDefault": false
+        },
+        {
+          "name": "RunScriptFixedUpdate",
+          "line": 282,
+          "isDefault": false
+        },
+        {
+          "name": "OnUpdateRuntime",
+          "line": 292,
+          "isDefault": false
+        },
+        {
+          "name": "Raycast2D",
+          "line": 536,
+          "isDefault": false
+        },
+        {
+          "name": "OnUpdateSimulation",
+          "line": 560,
+          "isDefault": false
+        },
+        {
+          "name": "Copy",
+          "line": 614,
+          "isDefault": false
+        },
+        {
+          "name": "DuplicateEntity",
+          "line": 660,
+          "isDefault": false
+        },
+        {
+          "name": "FindEntityByName",
+          "line": 717,
+          "isDefault": false
+        },
+        {
+          "name": "GetEntityByUUID",
+          "line": 729,
+          "isDefault": false
+        },
+        {
+          "name": "OnViewportResize",
+          "line": 738,
+          "isDefault": false
+        },
+        {
+          "name": "GetPrimaryCameraEntity",
+          "line": 755,
+          "isDefault": false
+        },
+        {
+          "name": "OnPhysics2DStart",
+          "line": 769,
+          "isDefault": false
+        },
+        {
+          "name": "OnPhysics2DStop",
+          "line": 891,
+          "isDefault": false
+        },
+        {
+          "name": "GetEntityFromShape",
+          "line": 900,
+          "isDefault": false
+        },
+        {
+          "name": "ProcessPhysics2DContacts",
+          "line": 920,
+          "isDefault": false
+        },
+        {
+          "name": "RenderScene",
+          "line": 977,
+          "isDefault": false
+        },
+        {
+          "name": "RenderUI",
+          "line": 1066,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "~Scene",
+          "callee": "b2World_IsValid",
+          "lineNumber": 36
+        },
+        {
+          "caller": "~Scene",
+          "callee": "b2DestroyWorld",
+          "lineNumber": 38
+        },
+        {
+          "caller": "ToBodyId",
+          "callee": "reinterpret_cast<uintptr_t>",
+          "lineNumber": 48
+        },
+        {
+          "caller": "ToBodyId",
+          "callee": "reinterpret_cast<b2BodyId *>",
+          "lineNumber": 49
+        },
+        {
+          "caller": "AttachBoxColliderToBody",
+          "callee": "b2Body_IsValid",
+          "lineNumber": 56
+        },
+        {
+          "caller": "AttachBoxColliderToBody",
+          "callee": "b2DefaultShapeDef",
+          "lineNumber": 59
+        },
+        {
+          "caller": "AttachBoxColliderToBody",
+          "callee": "std::abs",
+          "lineNumber": 66
+        },
+        {
+          "caller": "AttachBoxColliderToBody",
+          "callee": "std::abs",
+          "lineNumber": 67
+        },
+        {
+          "caller": "AttachBoxColliderToBody",
+          "callee": "b2MakeOffsetBox",
+          "lineNumber": 70
+        },
+        {
+          "caller": "AttachBoxColliderToBody",
+          "callee": "b2MakeRot",
+          "lineNumber": 73
+        },
+        {
+          "caller": "AttachBoxColliderToBody",
+          "callee": "b2CreatePolygonShape",
+          "lineNumber": 75
+        },
+        {
+          "caller": "AttachCircleColliderToBody",
+          "callee": "b2Body_IsValid",
+          "lineNumber": 82
+        },
+        {
+          "caller": "AttachCircleColliderToBody",
+          "callee": "b2DefaultShapeDef",
+          "lineNumber": 85
+        },
+        {
+          "caller": "AttachCircleColliderToBody",
+          "callee": "std::abs",
+          "lineNumber": 96
+        },
+        {
+          "caller": "AttachCircleColliderToBody",
+          "callee": "std::abs",
+          "lineNumber": 97
+        },
+        {
+          "caller": "AttachCircleColliderToBody",
+          "callee": "std::max",
+          "lineNumber": 98
+        },
+        {
+          "caller": "AttachCircleColliderToBody",
+          "callee": "b2CreateCircleShape",
+          "lineNumber": 101
+        },
+        {
+          "caller": "CreateStaticPhysicsBody",
+          "callee": "b2DefaultBodyDef",
+          "lineNumber": 108
+        },
+        {
+          "caller": "CreateStaticPhysicsBody",
+          "callee": "b2MakeRot",
+          "lineNumber": 111
+        },
+        {
+          "caller": "CreateStaticPhysicsBody",
+          "callee": "b2CreateBody",
+          "lineNumber": 113
+        },
+        {
+          "caller": "CreateEntityWithUUID",
+          "callee": "create",
+          "lineNumber": 118
+        },
+        {
+          "caller": "CreateEntityWithUUID",
+          "callee": "AddComponent<IDComponent>",
+          "lineNumber": 120
+        },
+        {
+          "caller": "CreateEntityWithUUID",
+          "callee": "AddComponent<TransformComponent>",
+          "lineNumber": 121
+        },
+        {
+          "caller": "CreateEntityWithUUID",
+          "callee": "AddComponent<TagComponent>",
+          "lineNumber": 122
+        },
+        {
+          "caller": "CreateEntityWithUUID",
+          "callee": "empty",
+          "lineNumber": 123
+        },
+        {
+          "caller": "CreateEntity",
+          "callee": "CreateEntityWithUUID",
+          "lineNumber": 132
+        },
+        {
+          "caller": "CreateEntity",
+          "callee": "UUID",
+          "lineNumber": 132
+        },
+        {
+          "caller": "CreateUIEntity",
+          "callee": "CreateUIEntityWithUUID",
+          "lineNumber": 137
+        },
+        {
+          "caller": "CreateUIEntity",
+          "callee": "UUID",
+          "lineNumber": 137
+        },
+        {
+          "caller": "CreateUIEntityWithUUID",
+          "callee": "create",
+          "lineNumber": 142
+        },
+        {
+          "caller": "CreateUIEntityWithUUID",
+          "callee": "AddComponent<IDComponent>",
+          "lineNumber": 144
+        },
+        {
+          "caller": "CreateUIEntityWithUUID",
+          "callee": "AddComponent<UITransformComponent>",
+          "lineNumber": 145
+        },
+        {
+          "caller": "CreateUIEntityWithUUID",
+          "callee": "AddComponent<TagComponent>",
+          "lineNumber": 146
+        },
+        {
+          "caller": "CreateUIEntityWithUUID",
+          "callee": "empty",
+          "lineNumber": 147
+        },
+        {
+          "caller": "DestroyEntity",
+          "callee": "valid",
+          "lineNumber": 156
+        },
+        {
+          "caller": "DestroyEntity",
+          "callee": "try_get<IDComponent>",
+          "lineNumber": 159
+        },
+        {
+          "caller": "DestroyEntity",
+          "callee": "find",
+          "lineNumber": 161
+        },
+        {
+          "caller": "DestroyEntity",
+          "callee": "end",
+          "lineNumber": 162
+        },
+        {
+          "caller": "DestroyEntity",
+          "callee": "erase",
+          "lineNumber": 163
+        },
+        {
+          "caller": "DestroyEntity",
+          "callee": "try_get<NativeScriptComponent>",
+          "lineNumber": 166
+        },
+        {
+          "caller": "DestroyEntity",
+          "callee": "OnDestroy",
+          "lineNumber": 170
+        },
+        {
+          "caller": "DestroyEntity",
+          "callee": "DestroyScript",
+          "lineNumber": 174
+        },
+        {
+          "caller": "DestroyEntity",
+          "callee": "destroy",
+          "lineNumber": 177
+        },
+        {
+          "caller": "ClearEntities",
+          "callee": "each",
+          "lineNumber": 183
+        },
+        {
+          "caller": "ClearEntities",
+          "callee": "view<IDComponent>",
+          "lineNumber": 183
+        },
+        {
+          "caller": "ClearEntities",
+          "callee": "push_back",
+          "lineNumber": 186
+        },
+        {
+          "caller": "ClearEntities",
+          "callee": "DestroyEntity",
+          "lineNumber": 190
+        },
+        {
+          "caller": "OnRuntimeStart",
+          "callee": "ScriptEngine::OnRuntimeStart",
+          "lineNumber": 195
+        },
+        {
+          "caller": "OnRuntimeStart",
+          "callee": "OnPhysics2DStart",
+          "lineNumber": 196
+        },
+        {
+          "caller": "OnRuntimeStart",
+          "callee": "view<SpriteAnimationComponent>",
+          "lineNumber": 199
+        },
+        {
+          "caller": "OnRuntimeStart",
+          "callee": "ResetSpriteAnimationPlayback",
+          "lineNumber": 203
+        },
+        {
+          "caller": "OnRuntimeStart",
+          "callee": "GetComponent<SpriteAnimationComponent>",
+          "lineNumber": 203
+        },
+        {
+          "caller": "OnRuntimeStart",
+          "callee": "view<ScriptComponent>",
+          "lineNumber": 208
+        },
+        {
+          "caller": "OnRuntimeStart",
+          "callee": "ScriptEngine::OnCreateEntity",
+          "lineNumber": 212
+        },
+        {
+          "caller": "OnSimulationStart",
+          "callee": "OnPhysics2DStart",
+          "lineNumber": 219
+        },
+        {
+          "caller": "OnSimulationStop",
+          "callee": "OnPhysics2DStop",
+          "lineNumber": 224
+        },
+        {
+          "caller": "OnRuntimeStop",
+          "callee": "OnPhysics2DStop",
+          "lineNumber": 229
+        },
+        {
+          "caller": "OnRuntimeStop",
+          "callee": "ScriptEngine::OnRuntimeStop",
+          "lineNumber": 230
+        },
+        {
+          "caller": "OnUpdateEditor",
+          "callee": "UpdateSpriteAnimations",
+          "lineNumber": 235
+        },
+        {
+          "caller": "OnUpdateEditor",
+          "callee": "RenderScene",
+          "lineNumber": 236
+        },
+        {
+          "caller": "OnUpdateEditor",
+          "callee": "RenderUI",
+          "lineNumber": 237
+        },
+        {
+          "caller": "UpdateSpriteAnimations",
+          "callee": "view<SpriteAnimationComponent, SpriteRendererComponent>",
+          "lineNumber": 242
+        },
+        {
+          "caller": "UpdateSpriteAnimations",
+          "callee": "Project::TryGetAssetManager",
+          "lineNumber": 243
+        },
+        {
+          "caller": "UpdateSpriteAnimations",
+          "callee": "GetSeconds",
+          "lineNumber": 247
+        },
+        {
+          "caller": "UpdateSpriteAnimations",
+          "callee": "get<SpriteAnimationComponent, SpriteRendererComponent>",
+          "lineNumber": 252
+        },
+        {
+          "caller": "UpdateSpriteAnimations",
+          "callee": "IsAssetHandleValid",
+          "lineNumber": 255
+        },
+        {
+          "caller": "UpdateSpriteAnimations",
+          "callee": "std::static_pointer_cast<SpriteAnimation>",
+          "lineNumber": 258
+        },
+        {
+          "caller": "UpdateSpriteAnimations",
+          "callee": "GetAsset",
+          "lineNumber": 259
+        },
+        {
+          "caller": "UpdateSpriteAnimations",
+          "callee": "empty",
+          "lineNumber": 263
+        },
+        {
+          "caller": "UpdateSpriteAnimations",
+          "callee": "HasAnimation",
+          "lineNumber": 264
+        },
+        {
+          "caller": "UpdateSpriteAnimations",
+          "callee": "GetPrimaryClip",
+          "lineNumber": 266
+        },
+        {
+          "caller": "UpdateSpriteAnimations",
+          "callee": "GetFrameCount",
+          "lineNumber": 270
+        },
+        {
+          "caller": "UpdateSpriteAnimations",
+          "callee": "AdvanceSpriteAnimation",
+          "lineNumber": 278
+        },
+        {
+          "caller": "RunScriptFixedUpdate",
+          "callee": "view<ScriptComponent>",
+          "lineNumber": 284
+        },
+        {
+          "caller": "RunScriptFixedUpdate",
+          "callee": "ScriptEngine::OnFixedUpdateScript",
+          "lineNumber": 288
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "view<ScriptComponent>",
+          "lineNumber": 295
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "ScriptEngine::OnUpdateScript",
+          "lineNumber": 299
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "each",
+          "lineNumber": 302
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "view<NativeScriptComponent>",
+          "lineNumber": 302
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "InstantiateScript",
+          "lineNumber": 308
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "OnCreate",
+          "lineNumber": 310
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "OnUpdate",
+          "lineNumber": 313
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "UpdateSpriteAnimations",
+          "lineNumber": 317
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "b2World_Step",
+          "lineNumber": 322
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "ProcessPhysics2DContacts",
+          "lineNumber": 323
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "view<Rigidbody2DComponent>",
+          "lineNumber": 325
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "GetComponent<TransformComponent>",
+          "lineNumber": 329
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "GetComponent<Rigidbody2DComponent>",
+          "lineNumber": 330
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "ToBodyId",
+          "lineNumber": 334
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "b2Body_IsValid",
+          "lineNumber": 335
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "b2Body_GetPosition",
+          "lineNumber": 337
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "b2Body_GetRotation",
+          "lineNumber": 341
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "b2Rot_GetAngle",
+          "lineNumber": 342
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "RunScriptFixedUpdate",
+          "lineNumber": 348
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Project::GetActive",
+          "lineNumber": 351
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Project::GetAssetManager",
+          "lineNumber": 353
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "group<TransformComponent, ParticleEmitterComponent>",
+          "lineNumber": 356
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "get<TransformComponent, ParticleEmitterComponent>",
+          "lineNumber": 359
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "GetAsset",
+          "lineNumber": 362
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "std::static_pointer_cast<ParticleEmitterAsset>",
+          "lineNumber": 365
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "static_cast<int>",
+          "lineNumber": 369
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "std::floor",
+          "lineNumber": 369
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "static_cast<float>",
+          "lineNumber": 372
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "glm::vec3",
+          "lineNumber": 374
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Emit",
+          "lineNumber": 377
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "OnUpdate",
+          "lineNumber": 381
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "view<TransformComponent, CameraComponent>",
+          "lineNumber": 386
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "each",
+          "lineNumber": 387
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "GetTransform",
+          "lineNumber": 393
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Renderer2D::BeginScene",
+          "lineNumber": 400
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Project::TryGetAssetManager",
+          "lineNumber": 402
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "view<TransformComponent, SpriteRendererComponent>",
+          "lineNumber": 403
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "each",
+          "lineNumber": 404
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "ResolveSpriteRendererDrawable",
+          "lineNumber": 411
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "get",
+          "lineNumber": 411
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Himii::Renderer2D::DrawSprite",
+          "lineNumber": 412
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "GetTransform",
+          "lineNumber": 412
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Project::GetActive",
+          "lineNumber": 416
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Project::GetAssetManager",
+          "lineNumber": 418
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "view<TransformComponent, TilemapComponent>",
+          "lineNumber": 419
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "each",
+          "lineNumber": 420
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "GetAsset",
+          "lineNumber": 424
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "std::static_pointer_cast<TileMapData>",
+          "lineNumber": 426
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "GetTileSetHandle",
+          "lineNumber": 429
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "GetAsset",
+          "lineNumber": 431
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "GetTileSetHandle",
+          "lineNumber": 431
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "std::static_pointer_cast<TileSet>",
+          "lineNumber": 433
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Himii::Renderer2D::DrawTilemap",
+          "lineNumber": 436
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "GetTransform",
+          "lineNumber": 436
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "view<TransformComponent, CircleRendererComponent>",
+          "lineNumber": 441
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "each",
+          "lineNumber": 442
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Himii::Renderer2D::DrawCircle",
+          "lineNumber": 444
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "GetTransform",
+          "lineNumber": 444
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Project::GetActive",
+          "lineNumber": 449
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Project::GetAssetManager",
+          "lineNumber": 449
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "ForEachAlive",
+          "lineNumber": 450
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "glm::mix",
+          "lineNumber": 453
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "glm::mix",
+          "lineNumber": 454
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "glm::translate",
+          "lineNumber": 455
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "glm::mat4",
+          "lineNumber": 455
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "glm::rotate",
+          "lineNumber": 456
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "glm::mat4",
+          "lineNumber": 456
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "glm::vec3",
+          "lineNumber": 456
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "glm::scale",
+          "lineNumber": 457
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "glm::mat4",
+          "lineNumber": 457
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "glm::vec3",
+          "lineNumber": 457
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "IsAssetHandleValid",
+          "lineNumber": 460
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "static_cast<AssetHandle>",
+          "lineNumber": 460
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "GetAsset",
+          "lineNumber": 462
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "static_cast<AssetHandle>",
+          "lineNumber": 462
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "std::dynamic_pointer_cast<Texture2D>",
+          "lineNumber": 463
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Renderer2D::DrawCircle",
+          "lineNumber": 467
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Renderer2D::DrawQuad",
+          "lineNumber": 471
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Renderer2D::DrawQuad",
+          "lineNumber": 473
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Renderer2D::EndScene",
+          "lineNumber": 476
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Renderer3D::BeginScene",
+          "lineNumber": 483
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Project::GetActive",
+          "lineNumber": 486
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "GetConfig",
+          "lineNumber": 487
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Project::GetActive",
+          "lineNumber": 487
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Renderer3D::DrawSkybox",
+          "lineNumber": 490
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "view<TransformComponent, MeshComponent>",
+          "lineNumber": 494
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "each",
+          "lineNumber": 495
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Renderer3D::DrawCube",
+          "lineNumber": 498
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "GetTransform",
+          "lineNumber": 498
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Renderer3D::DrawPlane",
+          "lineNumber": 500
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "GetTransform",
+          "lineNumber": 500
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Renderer3D::DrawSphere",
+          "lineNumber": 502
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "GetTransform",
+          "lineNumber": 502
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Renderer3D::DrawCapsule",
+          "lineNumber": 504
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "GetTransform",
+          "lineNumber": 504
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "Renderer3D::EndScene",
+          "lineNumber": 506
+        },
+        {
+          "caller": "OnUpdateRuntime",
+          "callee": "RenderUI",
+          "lineNumber": 509
+        },
+        {
+          "caller": "RayCastCallback",
+          "callee": "b2Shape_GetBody",
+          "lineNumber": 523
+        },
+        {
+          "caller": "RayCastCallback",
+          "callee": "b2Body_GetUserData",
+          "lineNumber": 524
+        },
+        {
+          "caller": "RayCastCallback",
+          "callee": "valid",
+          "lineNumber": 528
+        },
+        {
+          "caller": "RayCastCallback",
+          "callee": "Registry",
+          "lineNumber": 528
+        },
+        {
+          "caller": "RayCastCallback",
+          "callee": "get<IDComponent>",
+          "lineNumber": 530
+        },
+        {
+          "caller": "RayCastCallback",
+          "callee": "Registry",
+          "lineNumber": 530
+        },
+        {
+          "caller": "Raycast2D",
+          "callee": "b2World_IsValid",
+          "lineNumber": 542
+        },
+        {
+          "caller": "Raycast2D",
+          "callee": "b2DefaultQueryFilter",
+          "lineNumber": 546
+        },
+        {
+          "caller": "Raycast2D",
+          "callee": "b2World_CastRay",
+          "lineNumber": 550
+        },
+        {
+          "caller": "Raycast2D",
+          "callee": "glm::length",
+          "lineNumber": 553
+        },
+        {
+          "caller": "OnUpdateSimulation",
+          "callee": "b2World_Step",
+          "lineNumber": 565
+        },
+        {
+          "caller": "OnUpdateSimulation",
+          "callee": "ProcessPhysics2DContacts",
+          "lineNumber": 566
+        },
+        {
+          "caller": "OnUpdateSimulation",
+          "callee": "view<Rigidbody2DComponent>",
+          "lineNumber": 568
+        },
+        {
+          "caller": "OnUpdateSimulation",
+          "callee": "GetComponent<TransformComponent>",
+          "lineNumber": 572
+        },
+        {
+          "caller": "OnUpdateSimulation",
+          "callee": "GetComponent<Rigidbody2DComponent>",
+          "lineNumber": 573
+        },
+        {
+          "caller": "OnUpdateSimulation",
+          "callee": "ToBodyId",
+          "lineNumber": 577
+        },
+        {
+          "caller": "OnUpdateSimulation",
+          "callee": "b2Body_IsValid",
+          "lineNumber": 578
+        },
+        {
+          "caller": "OnUpdateSimulation",
+          "callee": "b2Body_GetPosition",
+          "lineNumber": 580
+        },
+        {
+          "caller": "OnUpdateSimulation",
+          "callee": "b2Body_GetRotation",
+          "lineNumber": 584
+        },
+        {
+          "caller": "OnUpdateSimulation",
+          "callee": "b2Rot_GetAngle",
+          "lineNumber": 585
+        },
+        {
+          "caller": "OnUpdateSimulation",
+          "callee": "UpdateSpriteAnimations",
+          "lineNumber": 591
+        },
+        {
+          "caller": "OnUpdateSimulation",
+          "callee": "RunScriptFixedUpdate",
+          "lineNumber": 592
+        },
+        {
+          "caller": "OnUpdateSimulation",
+          "callee": "RenderScene",
+          "lineNumber": 593
+        },
+        {
+          "caller": "CopyComponent",
+          "callee": "view<Component>",
+          "lineNumber": 600
+        },
+        {
+          "caller": "CopyComponent",
+          "callee": "get<IDComponent>",
+          "lineNumber": 603
+        },
+        {
+          "caller": "CopyComponent",
+          "callee": "find",
+          "lineNumber": 605
+        },
+        {
+          "caller": "CopyComponent",
+          "callee": "end",
+          "lineNumber": 605
+        },
+        {
+          "caller": "CopyComponent",
+          "callee": "at",
+          "lineNumber": 608
+        },
+        {
+          "caller": "CopyComponent",
+          "callee": "get<Component>",
+          "lineNumber": 609
+        },
+        {
+          "caller": "CopyComponent",
+          "callee": "emplace_or_replace<Component>",
+          "lineNumber": 610
+        },
+        {
+          "caller": "Copy",
+          "callee": "CreateRef<Scene>",
+          "lineNumber": 616
+        },
+        {
+          "caller": "Copy",
+          "callee": "view<IDComponent>",
+          "lineNumber": 628
+        },
+        {
+          "caller": "Copy",
+          "callee": "get<IDComponent>",
+          "lineNumber": 631
+        },
+        {
+          "caller": "Copy",
+          "callee": "get<TagComponent>",
+          "lineNumber": 632
+        },
+        {
+          "caller": "Copy",
+          "callee": "CreateEntityWithUUID",
+          "lineNumber": 633
+        },
+        {
+          "caller": "Copy",
+          "callee": "CopyComponent<TransformComponent>",
+          "lineNumber": 638
+        },
+        {
+          "caller": "Copy",
+          "callee": "CopyComponent<SpriteRendererComponent>",
+          "lineNumber": 639
+        },
+        {
+          "caller": "Copy",
+          "callee": "CopyComponent<CircleRendererComponent>",
+          "lineNumber": 640
+        },
+        {
+          "caller": "Copy",
+          "callee": "CopyComponent<CameraComponent>",
+          "lineNumber": 641
+        },
+        {
+          "caller": "Copy",
+          "callee": "CopyComponent<ScriptComponent>",
+          "lineNumber": 642
+        },
+        {
+          "caller": "Copy",
+          "callee": "CopyComponent<NativeScriptComponent>",
+          "lineNumber": 643
+        },
+        {
+          "caller": "Copy",
+          "callee": "CopyComponent<Rigidbody2DComponent>",
+          "lineNumber": 644
+        },
+        {
+          "caller": "Copy",
+          "callee": "CopyComponent<BoxCollider2DComponent>",
+          "lineNumber": 645
+        },
+        {
+          "caller": "Copy",
+          "callee": "CopyComponent<CircleCollider2DComponent>",
+          "lineNumber": 646
+        },
+        {
+          "caller": "Copy",
+          "callee": "CopyComponent<SpriteAnimationComponent>",
+          "lineNumber": 647
+        },
+        {
+          "caller": "Copy",
+          "callee": "CopyComponent<MeshComponent>",
+          "lineNumber": 648
+        },
+        {
+          "caller": "Copy",
+          "callee": "CopyComponent<TilemapComponent>",
+          "lineNumber": 649
+        },
+        {
+          "caller": "Copy",
+          "callee": "CopyComponent<TilemapCollider2DComponent>",
+          "lineNumber": 650
+        },
+        {
+          "caller": "Copy",
+          "callee": "CopyComponent<ParticleEmitterComponent>",
+          "lineNumber": 651
+        },
+        {
+          "caller": "Copy",
+          "callee": "CopyComponent<UITransformComponent>",
+          "lineNumber": 653
+        },
+        {
+          "caller": "Copy",
+          "callee": "CopyComponent<UIImageComponent>",
+          "lineNumber": 654
+        },
+        {
+          "caller": "Copy",
+          "callee": "CopyComponent<UITextComponent>",
+          "lineNumber": 655
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "GetName",
+          "lineNumber": 662
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "CreateEntity",
+          "lineNumber": 663
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "HasComponent<TransformComponent>",
+          "lineNumber": 665
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "GetComponent<TransformComponent>",
+          "lineNumber": 666
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "GetComponent<TransformComponent>",
+          "lineNumber": 666
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "HasComponent<SpriteRendererComponent>",
+          "lineNumber": 668
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "AddComponent<SpriteRendererComponent>",
+          "lineNumber": 669
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "GetComponent<SpriteRendererComponent>",
+          "lineNumber": 669
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "HasComponent<CircleRendererComponent>",
+          "lineNumber": 671
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "AddComponent<CircleRendererComponent>",
+          "lineNumber": 672
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "GetComponent<CircleRendererComponent>",
+          "lineNumber": 672
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "HasComponent<CameraComponent>",
+          "lineNumber": 674
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "AddComponent<CameraComponent>",
+          "lineNumber": 675
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "GetComponent<CameraComponent>",
+          "lineNumber": 675
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "HasComponent<NativeScriptComponent>",
+          "lineNumber": 677
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "AddComponent<NativeScriptComponent>",
+          "lineNumber": 678
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "GetComponent<NativeScriptComponent>",
+          "lineNumber": 678
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "HasComponent<ScriptComponent>",
+          "lineNumber": 680
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "AddComponent<ScriptComponent>",
+          "lineNumber": 681
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "GetComponent<ScriptComponent>",
+          "lineNumber": 681
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "HasComponent<Rigidbody2DComponent>",
+          "lineNumber": 683
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "AddComponent<Rigidbody2DComponent>",
+          "lineNumber": 684
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "GetComponent<Rigidbody2DComponent>",
+          "lineNumber": 684
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "HasComponent<BoxCollider2DComponent>",
+          "lineNumber": 686
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "AddComponent<BoxCollider2DComponent>",
+          "lineNumber": 687
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "GetComponent<BoxCollider2DComponent>",
+          "lineNumber": 687
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "HasComponent<CircleCollider2DComponent>",
+          "lineNumber": 689
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "AddComponent<CircleCollider2DComponent>",
+          "lineNumber": 690
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "GetComponent<CircleCollider2DComponent>",
+          "lineNumber": 690
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "HasComponent<SpriteAnimationComponent>",
+          "lineNumber": 692
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "AddComponent<SpriteAnimationComponent>",
+          "lineNumber": 693
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "GetComponent<SpriteAnimationComponent>",
+          "lineNumber": 693
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "HasComponent<MeshComponent>",
+          "lineNumber": 695
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "AddComponent<MeshComponent>",
+          "lineNumber": 696
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "GetComponent<MeshComponent>",
+          "lineNumber": 696
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "HasComponent<TilemapComponent>",
+          "lineNumber": 698
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "AddComponent<TilemapComponent>",
+          "lineNumber": 699
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "GetComponent<TilemapComponent>",
+          "lineNumber": 699
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "HasComponent<TilemapCollider2DComponent>",
+          "lineNumber": 700
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "AddComponent<TilemapCollider2DComponent>",
+          "lineNumber": 701
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "GetComponent<TilemapCollider2DComponent>",
+          "lineNumber": 702
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "HasComponent<ParticleEmitterComponent>",
+          "lineNumber": 703
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "AddComponent<ParticleEmitterComponent>",
+          "lineNumber": 704
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "GetComponent<ParticleEmitterComponent>",
+          "lineNumber": 704
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "HasComponent<UITransformComponent>",
+          "lineNumber": 707
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "AddComponent<UITransformComponent>",
+          "lineNumber": 708
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "GetComponent<UITransformComponent>",
+          "lineNumber": 708
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "HasComponent<UIImageComponent>",
+          "lineNumber": 709
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "AddComponent<UIImageComponent>",
+          "lineNumber": 710
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "GetComponent<UIImageComponent>",
+          "lineNumber": 710
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "HasComponent<UITextComponent>",
+          "lineNumber": 711
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "AddComponent<UITextComponent>",
+          "lineNumber": 712
+        },
+        {
+          "caller": "DuplicateEntity",
+          "callee": "GetComponent<UITextComponent>",
+          "lineNumber": 712
+        },
+        {
+          "caller": "FindEntityByName",
+          "callee": "view<TagComponent>",
+          "lineNumber": 719
+        },
+        {
+          "caller": "FindEntityByName",
+          "callee": "get<TagComponent>",
+          "lineNumber": 722
+        },
+        {
+          "caller": "GetEntityByUUID",
+          "callee": "find",
+          "lineNumber": 732
+        },
+        {
+          "caller": "GetEntityByUUID",
+          "callee": "end",
+          "lineNumber": 732
+        },
+        {
+          "caller": "GetEntityByUUID",
+          "callee": "at",
+          "lineNumber": 733
+        },
+        {
+          "caller": "OnViewportResize",
+          "callee": "view<CameraComponent>",
+          "lineNumber": 746
+        },
+        {
+          "caller": "OnViewportResize",
+          "callee": "get<CameraComponent>",
+          "lineNumber": 749
+        },
+        {
+          "caller": "OnViewportResize",
+          "callee": "SetViewportSize",
+          "lineNumber": 751
+        },
+        {
+          "caller": "GetPrimaryCameraEntity",
+          "callee": "view<CameraComponent>",
+          "lineNumber": 757
+        },
+        {
+          "caller": "GetPrimaryCameraEntity",
+          "callee": "get<CameraComponent>",
+          "lineNumber": 760
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "b2DefaultWorldDef",
+          "lineNumber": 771
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "b2CreateWorld",
+          "lineNumber": 773
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "view<Rigidbody2DComponent>",
+          "lineNumber": 775
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "GetComponent<TransformComponent>",
+          "lineNumber": 779
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "GetComponent<Rigidbody2DComponent>",
+          "lineNumber": 780
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "b2DefaultBodyDef",
+          "lineNumber": 782
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "b2MakeRot",
+          "lineNumber": 798
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "b2CreateBody",
+          "lineNumber": 802
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "ToPtr",
+          "lineNumber": 803
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "HasComponent<BoxCollider2DComponent>",
+          "lineNumber": 805
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "AttachBoxColliderToBody",
+          "lineNumber": 806
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "GetComponent<BoxCollider2DComponent>",
+          "lineNumber": 806
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "HasComponent<CircleCollider2DComponent>",
+          "lineNumber": 808
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "AttachCircleColliderToBody",
+          "lineNumber": 809
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "GetComponent<CircleCollider2DComponent>",
+          "lineNumber": 809
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "view<TransformComponent>",
+          "lineNumber": 813
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "any_of<Rigidbody2DComponent>",
+          "lineNumber": 816
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "all_of<BoxCollider2DComponent>",
+          "lineNumber": 819
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "all_of<CircleCollider2DComponent>",
+          "lineNumber": 821
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "GetComponent<TransformComponent>",
+          "lineNumber": 826
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "CreateStaticPhysicsBody",
+          "lineNumber": 828
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "AttachBoxColliderToBody",
+          "lineNumber": 831
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "GetComponent<BoxCollider2DComponent>",
+          "lineNumber": 832
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "AttachCircleColliderToBody",
+          "lineNumber": 834
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "GetComponent<CircleCollider2DComponent>",
+          "lineNumber": 835
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "view<TransformComponent, TilemapComponent, TilemapCollider2DComponent>",
+          "lineNumber": 840
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "GetComponent<TransformComponent>",
+          "lineNumber": 844
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "GetComponent<TilemapComponent>",
+          "lineNumber": 845
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "GetComponent<TilemapCollider2DComponent>",
+          "lineNumber": 846
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "Project::GetAssetManager",
+          "lineNumber": 851
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "std::static_pointer_cast<TileMapData>",
+          "lineNumber": 855
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "GetAsset",
+          "lineNumber": 856
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "GetCellSize",
+          "lineNumber": 860
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "GetTileSetHandle",
+          "lineNumber": 864
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "std::static_pointer_cast<TileSet>",
+          "lineNumber": 866
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "GetAsset",
+          "lineNumber": 867
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "GetTileSetHandle",
+          "lineNumber": 867
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "HIMII_CORE_WARNING",
+          "lineNumber": 872
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "GetName",
+          "lineNumber": 874
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "TilemapColliderBuilder::CreateColliderShapes",
+          "lineNumber": 879
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "TilemapColliderBuilder::LogBuildReport",
+          "lineNumber": 887
+        },
+        {
+          "caller": "OnPhysics2DStart",
+          "callee": "GetName",
+          "lineNumber": 887
+        },
+        {
+          "caller": "OnPhysics2DStop",
+          "callee": "b2World_IsValid",
+          "lineNumber": 893
+        },
+        {
+          "caller": "OnPhysics2DStop",
+          "callee": "b2DestroyWorld",
+          "lineNumber": 895
+        },
+        {
+          "caller": "GetEntityFromShape",
+          "callee": "b2Shape_IsValid",
+          "lineNumber": 902
+        },
+        {
+          "caller": "GetEntityFromShape",
+          "callee": "b2Shape_GetBody",
+          "lineNumber": 905
+        },
+        {
+          "caller": "GetEntityFromShape",
+          "callee": "b2Body_IsValid",
+          "lineNumber": 906
+        },
+        {
+          "caller": "GetEntityFromShape",
+          "callee": "b2Body_GetUserData",
+          "lineNumber": 909
+        },
+        {
+          "caller": "GetEntityFromShape",
+          "callee": "static_cast<entt::entity>",
+          "lineNumber": 913
+        },
+        {
+          "caller": "GetEntityFromShape",
+          "callee": "static_cast<uint32_t>",
+          "lineNumber": 913
+        },
+        {
+          "caller": "GetEntityFromShape",
+          "callee": "reinterpret_cast<uintptr_t>",
+          "lineNumber": 913
+        },
+        {
+          "caller": "GetEntityFromShape",
+          "callee": "valid",
+          "lineNumber": 914
+        },
+        {
+          "caller": "ProcessPhysics2DContacts",
+          "callee": "b2World_IsValid",
+          "lineNumber": 922
+        },
+        {
+          "caller": "ProcessPhysics2DContacts",
+          "callee": "b2World_GetContactEvents",
+          "lineNumber": 925
+        },
+        {
+          "caller": "ProcessPhysics2DContacts",
+          "callee": "GetEntityFromShape",
+          "lineNumber": 930
+        },
+        {
+          "caller": "ProcessPhysics2DContacts",
+          "callee": "GetEntityFromShape",
+          "lineNumber": 931
+        },
+        {
+          "caller": "ProcessPhysics2DContacts",
+          "callee": "GetUUID",
+          "lineNumber": 937
+        },
+        {
+          "caller": "ProcessPhysics2DContacts",
+          "callee": "GetEntityFromShape",
+          "lineNumber": 939
+        },
+        {
+          "caller": "ProcessPhysics2DContacts",
+          "callee": "ScriptEngine::OnCollisionEnter2D",
+          "lineNumber": 956
+        },
+        {
+          "caller": "ProcessPhysics2DContacts",
+          "callee": "buildCollisionInterop",
+          "lineNumber": 956
+        },
+        {
+          "caller": "ProcessPhysics2DContacts",
+          "callee": "ScriptEngine::OnCollisionEnter2D",
+          "lineNumber": 957
+        },
+        {
+          "caller": "ProcessPhysics2DContacts",
+          "callee": "buildCollisionInterop",
+          "lineNumber": 957
+        },
+        {
+          "caller": "ProcessPhysics2DContacts",
+          "callee": "b2Shape_IsValid",
+          "lineNumber": 964
+        },
+        {
+          "caller": "ProcessPhysics2DContacts",
+          "callee": "b2Shape_IsValid",
+          "lineNumber": 964
+        },
+        {
+          "caller": "ProcessPhysics2DContacts",
+          "callee": "GetEntityFromShape",
+          "lineNumber": 967
+        },
+        {
+          "caller": "ProcessPhysics2DContacts",
+          "callee": "GetEntityFromShape",
+          "lineNumber": 968
+        },
+        {
+          "caller": "ProcessPhysics2DContacts",
+          "callee": "ScriptEngine::OnCollisionExit2D",
+          "lineNumber": 971
+        },
+        {
+          "caller": "ProcessPhysics2DContacts",
+          "callee": "ScriptEngine::OnCollisionExit2D",
+          "lineNumber": 972
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "Renderer2D::BeginScene",
+          "lineNumber": 979
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "Project::TryGetAssetManager",
+          "lineNumber": 983
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "view<TransformComponent, SpriteRendererComponent>",
+          "lineNumber": 984
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "each",
+          "lineNumber": 985
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "ResolveSpriteRendererDrawable",
+          "lineNumber": 992
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "get",
+          "lineNumber": 992
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "Himii::Renderer2D::DrawSprite",
+          "lineNumber": 993
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "GetTransform",
+          "lineNumber": 993
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "Project::GetActive",
+          "lineNumber": 999
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "Project::GetAssetManager",
+          "lineNumber": 1001
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "view<TransformComponent, TilemapComponent>",
+          "lineNumber": 1002
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "each",
+          "lineNumber": 1003
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "GetAsset",
+          "lineNumber": 1007
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "std::static_pointer_cast<TileMapData>",
+          "lineNumber": 1009
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "GetTileSetHandle",
+          "lineNumber": 1012
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "GetAsset",
+          "lineNumber": 1014
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "GetTileSetHandle",
+          "lineNumber": 1014
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "std::static_pointer_cast<TileSet>",
+          "lineNumber": 1016
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "Himii::Renderer2D::DrawTilemap",
+          "lineNumber": 1019
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "GetTransform",
+          "lineNumber": 1019
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "view<TransformComponent, CircleRendererComponent>",
+          "lineNumber": 1026
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "each",
+          "lineNumber": 1027
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "Himii::Renderer2D::DrawCircle",
+          "lineNumber": 1029
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "GetTransform",
+          "lineNumber": 1029
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "Renderer2D::EndScene",
+          "lineNumber": 1034
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "Renderer3D::BeginScene",
+          "lineNumber": 1038
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "Project::GetActive",
+          "lineNumber": 1041
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "GetConfig",
+          "lineNumber": 1042
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "Project::GetActive",
+          "lineNumber": 1042
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "Renderer3D::DrawSkybox",
+          "lineNumber": 1045
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "view<TransformComponent, MeshComponent>",
+          "lineNumber": 1050
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "each",
+          "lineNumber": 1051
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "Renderer3D::DrawCube",
+          "lineNumber": 1054
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "GetTransform",
+          "lineNumber": 1054
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "Renderer3D::DrawPlane",
+          "lineNumber": 1056
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "GetTransform",
+          "lineNumber": 1056
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "Renderer3D::DrawSphere",
+          "lineNumber": 1058
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "GetTransform",
+          "lineNumber": 1058
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "Renderer3D::DrawCapsule",
+          "lineNumber": 1060
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "GetTransform",
+          "lineNumber": 1060
+        },
+        {
+          "caller": "RenderScene",
+          "callee": "Renderer3D::EndScene",
+          "lineNumber": 1062
+        },
+        {
+          "caller": "RenderUI",
+          "callee": "glm::ortho",
+          "lineNumber": 1071
+        },
+        {
+          "caller": "RenderUI",
+          "callee": "glm::mat4",
+          "lineNumber": 1072
+        },
+        {
+          "caller": "RenderUI",
+          "callee": "RenderCommand::SetDepthTest",
+          "lineNumber": 1075
+        },
+        {
+          "caller": "RenderUI",
+          "callee": "Renderer2D::BeginScene",
+          "lineNumber": 1077
+        },
+        {
+          "caller": "RenderUI",
+          "callee": "view<UITransformComponent,UIImageComponent>",
+          "lineNumber": 1080
+        },
+        {
+          "caller": "RenderUI",
+          "callee": "each",
+          "lineNumber": 1081
+        },
+        {
+          "caller": "RenderUI",
+          "callee": "GetTransform",
+          "lineNumber": 1084
+        },
+        {
+          "caller": "RenderUI",
+          "callee": "Renderer2D::DrawQuad",
+          "lineNumber": 1088
+        },
+        {
+          "caller": "RenderUI",
+          "callee": "Renderer2D::DrawQuad",
+          "lineNumber": 1092
+        },
+        {
+          "caller": "RenderUI",
+          "callee": "view<UITransformComponent, UITextComponent>",
+          "lineNumber": 1095
+        },
+        {
+          "caller": "RenderUI",
+          "callee": "each",
+          "lineNumber": 1096
+        },
+        {
+          "caller": "RenderUI",
+          "callee": "Renderer2D::DrawString",
+          "lineNumber": 1101
+        },
+        {
+          "caller": "RenderUI",
+          "callee": "GetTransform",
+          "lineNumber": 1101
+        },
+        {
+          "caller": "RenderUI",
+          "callee": "Renderer2D::EndScene",
+          "lineNumber": 1106
+        },
+        {
+          "caller": "RenderUI",
+          "callee": "RenderCommand::SetDepthTest",
+          "lineNumber": 1109
+        },
+        {
+          "caller": "OnComponentAdded<CameraComponent>",
+          "callee": "SetViewportSize",
+          "lineNumber": 1122
+        },
+        {
+          "caller": "OnComponentAdded<SpriteAnimationComponent>",
+          "callee": "HasComponent<SpriteRendererComponent>",
+          "lineNumber": 1179
+        },
+        {
+          "caller": "OnComponentAdded<SpriteAnimationComponent>",
+          "callee": "HIMII_CORE_WARNING",
+          "lineNumber": 1180
+        },
+        {
+          "caller": "OnComponentAdded<SpriteAnimationComponent>",
+          "callee": "GetName",
+          "lineNumber": 1181
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 30,
+        "functionCount": 35,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Scene/Scene.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 128,
+      "nonEmptyLines": 100,
+      "functions": [
+        {
+          "name": "SetExternalViewProjection",
+          "startLine": 61,
+          "endLine": 72,
+          "params": [
+            "vp"
+          ]
+        },
+        {
+          "name": "SetSkybox",
+          "startLine": 89,
+          "endLine": 92,
+          "params": [
+            "skybox"
+          ]
+        },
+        {
+          "name": "GetSkybox",
+          "startLine": 93,
+          "endLine": 96,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "Entity",
+          "startLine": 17,
+          "endLine": 17,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "Scene",
+          "startLine": 19,
+          "endLine": 127,
+          "methods": [
+            "Copy",
+            "Raycast2D",
+            "CreateEntityWithUUID",
+            "CreateEntity",
+            "CreateUIEntity",
+            "CreateUIEntityWithUUID",
+            "DestroyEntity",
+            "ClearEntities",
+            "OnRuntimeStart",
+            "OnSimulationStart",
+            "RunScriptFixedUpdate",
+            "OnRuntimeStop",
+            "OnSimulationStop",
+            "OnUpdateEditor",
+            "OnUpdateRuntime",
+            "OnUpdateSimulation",
+            "UpdateSpriteAnimations",
+            "SetExternalViewProjection",
+            "OnViewportResize",
+            "DuplicateEntity",
+            "FindEntityByName",
+            "GetEntityByUUID",
+            "GetPrimaryCameraEntity",
+            "SetSkybox",
+            "GetSkybox",
+            "OnPhysics2DStart",
+            "OnPhysics2DStop",
+            "ProcessPhysics2DContacts",
+            "GetEntityFromShape",
+            "RenderScene",
+            "RenderUI"
+          ],
+          "properties": [
+            "m_Registry",
+            "m_ViewportWidth",
+            "m_EntityMap",
+            "m_UseExternalVP",
+            "m_ExternalVP",
+            "m_SkyboxTexture",
+            "m_Box2DWorld",
+            "m_ParticleSystem"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Entity",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "Copy",
+          "line": 24,
+          "isDefault": false
+        },
+        {
+          "name": "Raycast2D",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "CreateEntityWithUUID",
+          "line": 35,
+          "isDefault": false
+        },
+        {
+          "name": "CreateEntity",
+          "line": 36,
+          "isDefault": false
+        },
+        {
+          "name": "CreateUIEntity",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "CreateUIEntityWithUUID",
+          "line": 39,
+          "isDefault": false
+        },
+        {
+          "name": "DestroyEntity",
+          "line": 41,
+          "isDefault": false
+        },
+        {
+          "name": "ClearEntities",
+          "line": 42,
+          "isDefault": false
+        },
+        {
+          "name": "OnRuntimeStart",
+          "line": 49,
+          "isDefault": false
+        },
+        {
+          "name": "OnSimulationStart",
+          "line": 50,
+          "isDefault": false
+        },
+        {
+          "name": "RunScriptFixedUpdate",
+          "line": 51,
+          "isDefault": false
+        },
+        {
+          "name": "OnRuntimeStop",
+          "line": 52,
+          "isDefault": false
+        },
+        {
+          "name": "OnSimulationStop",
+          "line": 53,
+          "isDefault": false
+        },
+        {
+          "name": "OnUpdateEditor",
+          "line": 55,
+          "isDefault": false
+        },
+        {
+          "name": "OnUpdateRuntime",
+          "line": 56,
+          "isDefault": false
+        },
+        {
+          "name": "OnUpdateSimulation",
+          "line": 57,
+          "isDefault": false
+        },
+        {
+          "name": "UpdateSpriteAnimations",
+          "line": 59,
+          "isDefault": false
+        },
+        {
+          "name": "SetExternalViewProjection",
+          "line": 61,
+          "isDefault": false
+        },
+        {
+          "name": "OnViewportResize",
+          "line": 74,
+          "isDefault": false
+        },
+        {
+          "name": "DuplicateEntity",
+          "line": 76,
+          "isDefault": false
+        },
+        {
+          "name": "FindEntityByName",
+          "line": 78,
+          "isDefault": false
+        },
+        {
+          "name": "GetEntityByUUID",
+          "line": 79,
+          "isDefault": false
+        },
+        {
+          "name": "GetPrimaryCameraEntity",
+          "line": 81,
+          "isDefault": false
+        },
+        {
+          "name": "SetSkybox",
+          "line": 89,
+          "isDefault": false
+        },
+        {
+          "name": "GetSkybox",
+          "line": 93,
+          "isDefault": false
+        },
+        {
+          "name": "Scene",
+          "line": 19,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "GetAllEntitiesWith",
+          "callee": "view<Components...>",
+          "lineNumber": 86
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 27,
+        "functionCount": 3,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Scene/SceneCamera.cpp",
+      "language": "cpp",
+      "fileCategory": "code",
+      "totalLines": 43,
+      "nonEmptyLines": 36,
+      "functions": [
+        {
+          "name": "SceneCamera",
+          "startLine": 8,
+          "endLine": 11,
+          "params": []
+        },
+        {
+          "name": "SetOrthographic",
+          "startLine": 13,
+          "endLine": 19,
+          "params": [
+            "size",
+            "nearClip",
+            "farClip"
+          ]
+        },
+        {
+          "name": "SetViewportSize",
+          "startLine": 21,
+          "endLine": 25,
+          "params": [
+            "width",
+            "height"
+          ]
+        },
+        {
+          "name": "RecalculateProjection",
+          "startLine": 27,
+          "endLine": 42,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "SceneCamera",
+          "line": 8,
+          "isDefault": false
+        },
+        {
+          "name": "SetOrthographic",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "SetViewportSize",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "RecalculateProjection",
+          "line": 27,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SceneCamera",
+          "callee": "RecalculateProjection",
+          "lineNumber": 10
+        },
+        {
+          "caller": "SetOrthographic",
+          "callee": "RecalculateProjection",
+          "lineNumber": 18
+        },
+        {
+          "caller": "SetViewportSize",
+          "callee": "RecalculateProjection",
+          "lineNumber": 24
+        },
+        {
+          "caller": "RecalculateProjection",
+          "callee": "glm::perspective",
+          "lineNumber": 30
+        },
+        {
+          "caller": "RecalculateProjection",
+          "callee": "glm::ortho",
+          "lineNumber": 39
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Scene/SceneCamera.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 110,
+      "nonEmptyLines": 95,
+      "functions": [
+        {
+          "name": "~SceneCamera",
+          "startLine": 16,
+          "endLine": 16,
+          "params": []
+        },
+        {
+          "name": "GetPerspectiveVerticalFOV",
+          "startLine": 24,
+          "endLine": 27,
+          "params": []
+        },
+        {
+          "name": "SetPerspectiveVerticalFOV",
+          "startLine": 28,
+          "endLine": 32,
+          "params": [
+            "fov"
+          ]
+        },
+        {
+          "name": "GetPerspectiveNearClip",
+          "startLine": 33,
+          "endLine": 36,
+          "params": []
+        },
+        {
+          "name": "SetPerspectiveNearClip",
+          "startLine": 37,
+          "endLine": 41,
+          "params": [
+            "nearClip"
+          ]
+        },
+        {
+          "name": "GetPerspectiveFarClip",
+          "startLine": 42,
+          "endLine": 45,
+          "params": []
+        },
+        {
+          "name": "SetPerspectiveFarClip",
+          "startLine": 46,
+          "endLine": 50,
+          "params": [
+            "farClip"
+          ]
+        },
+        {
+          "name": "GetOrthographicSize",
+          "startLine": 53,
+          "endLine": 56,
+          "params": []
+        },
+        {
+          "name": "SetOrthographicSize",
+          "startLine": 57,
+          "endLine": 61,
+          "params": [
+            "size"
+          ]
+        },
+        {
+          "name": "GetOrthographicNearClip",
+          "startLine": 62,
+          "endLine": 65,
+          "params": []
+        },
+        {
+          "name": "SetOrthographicNearClip",
+          "startLine": 66,
+          "endLine": 70,
+          "params": [
+            "nearClip"
+          ]
+        },
+        {
+          "name": "GetOrthographicFarClip",
+          "startLine": 71,
+          "endLine": 74,
+          "params": []
+        },
+        {
+          "name": "SetOrthographicFarClip",
+          "startLine": 75,
+          "endLine": 79,
+          "params": [
+            "farClip"
+          ]
+        },
+        {
+          "name": "GetProjectionType",
+          "startLine": 81,
+          "endLine": 84,
+          "params": []
+        },
+        {
+          "name": "SetProjectionType",
+          "startLine": 85,
+          "endLine": 89,
+          "params": [
+            "type"
+          ]
+        },
+        {
+          "name": "SetBackgroundColor",
+          "startLine": 92,
+          "endLine": 92,
+          "params": [
+            "color"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "SceneCamera",
+          "startLine": 7,
+          "endLine": 108,
+          "methods": [
+            "~SceneCamera",
+            "SetPerspective",
+            "SetOrthographic",
+            "SetViewportSize",
+            "GetPerspectiveVerticalFOV",
+            "SetPerspectiveVerticalFOV",
+            "GetPerspectiveNearClip",
+            "SetPerspectiveNearClip",
+            "GetPerspectiveFarClip",
+            "SetPerspectiveFarClip",
+            "GetOrthographicSize",
+            "SetOrthographicSize",
+            "GetOrthographicNearClip",
+            "SetOrthographicNearClip",
+            "GetOrthographicFarClip",
+            "SetOrthographicFarClip",
+            "GetProjectionType",
+            "SetProjectionType",
+            "SetBackgroundColor",
+            "RecalculateProjection"
+          ],
+          "properties": [
+            "m_ProjectionType",
+            "m_BackgroundColor",
+            "m_PerspectiveFOV",
+            "m_PerspectiveNear",
+            "m_OrthographicSize",
+            "m_OrthographicNear",
+            "m_AspectRatio"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "~SceneCamera",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "SetPerspective",
+          "line": 18,
+          "isDefault": false
+        },
+        {
+          "name": "SetOrthographic",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "SetViewportSize",
+          "line": 21,
+          "isDefault": false
+        },
+        {
+          "name": "GetPerspectiveVerticalFOV",
+          "line": 24,
+          "isDefault": false
+        },
+        {
+          "name": "SetPerspectiveVerticalFOV",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "GetPerspectiveNearClip",
+          "line": 33,
+          "isDefault": false
+        },
+        {
+          "name": "SetPerspectiveNearClip",
+          "line": 37,
+          "isDefault": false
+        },
+        {
+          "name": "GetPerspectiveFarClip",
+          "line": 42,
+          "isDefault": false
+        },
+        {
+          "name": "SetPerspectiveFarClip",
+          "line": 46,
+          "isDefault": false
+        },
+        {
+          "name": "GetOrthographicSize",
+          "line": 53,
+          "isDefault": false
+        },
+        {
+          "name": "SetOrthographicSize",
+          "line": 57,
+          "isDefault": false
+        },
+        {
+          "name": "GetOrthographicNearClip",
+          "line": 62,
+          "isDefault": false
+        },
+        {
+          "name": "SetOrthographicNearClip",
+          "line": 66,
+          "isDefault": false
+        },
+        {
+          "name": "GetOrthographicFarClip",
+          "line": 71,
+          "isDefault": false
+        },
+        {
+          "name": "SetOrthographicFarClip",
+          "line": 75,
+          "isDefault": false
+        },
+        {
+          "name": "GetProjectionType",
+          "line": 81,
+          "isDefault": false
+        },
+        {
+          "name": "SetProjectionType",
+          "line": 85,
+          "isDefault": false
+        },
+        {
+          "name": "SetBackgroundColor",
+          "line": 92,
+          "isDefault": false
+        },
+        {
+          "name": "SceneCamera",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "SetPerspectiveVerticalFOV",
+          "callee": "RecalculateProjection",
+          "lineNumber": 31
+        },
+        {
+          "caller": "SetPerspectiveNearClip",
+          "callee": "RecalculateProjection",
+          "lineNumber": 40
+        },
+        {
+          "caller": "SetPerspectiveFarClip",
+          "callee": "RecalculateProjection",
+          "lineNumber": 49
+        },
+        {
+          "caller": "SetOrthographicSize",
+          "callee": "RecalculateProjection",
+          "lineNumber": 60
+        },
+        {
+          "caller": "SetOrthographicNearClip",
+          "callee": "RecalculateProjection",
+          "lineNumber": 69
+        },
+        {
+          "caller": "SetOrthographicFarClip",
+          "callee": "RecalculateProjection",
+          "lineNumber": 78
+        },
+        {
+          "caller": "SetProjectionType",
+          "callee": "RecalculateProjection",
+          "lineNumber": 88
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 20,
+        "functionCount": 16,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Scene/SceneSerializer.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 24,
+      "nonEmptyLines": 18,
+      "classes": [
+        {
+          "name": "SceneSerializer",
+          "startLine": 8,
+          "endLine": 23,
+          "methods": [
+            "Serialize",
+            "SerializeRuntime",
+            "Deserialize",
+            "DeserializeRuntime",
+            "SerializeEntity",
+            "DeserializeEntity"
+          ],
+          "properties": [
+            "m_Scene"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Serialize",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "SerializeRuntime",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "Deserialize",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "DeserializeRuntime",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "SerializeEntity",
+          "line": 18,
+          "isDefault": false
+        },
+        {
+          "name": "DeserializeEntity",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "SceneSerializer",
+          "line": 8,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 7,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "Engine/src/Himii/Scene/ScriptableEntity.h",
+      "language": "c",
+      "fileCategory": "code",
+      "totalLines": 24,
+      "nonEmptyLines": 18,
+      "functions": [
+        {
+          "name": "~ScriptableEntity",
+          "startLine": 9,
+          "endLine": 9,
+          "params": []
+        },
+        {
+          "name": "OnCreate",
+          "startLine": 15,
+          "endLine": 15,
+          "params": []
+        },
+        {
+          "name": "OnDestroy",
+          "startLine": 16,
+          "endLine": 16,
+          "params": []
+        },
+        {
+          "name": "OnUpdate",
+          "startLine": 17,
+          "endLine": 17,
+          "params": []
+        }
+      ],
+      "classes": [
+        {
+          "name": "ScriptableEntity",
+          "startLine": 7,
+          "endLine": 22,
+          "methods": [
+            "~ScriptableEntity",
+            "OnCreate",
+            "OnDestroy",
+            "OnUpdate"
+          ],
+          "properties": [
+            "m_Entity"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "~ScriptableEntity",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "ScriptableEntity",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 4,
+        "classCount": 1
+      }
+    }
+  ]
+}

@@ -1,0 +1,593 @@
+{
+  "nodes": [
+    {
+      "id": "file:Engine/src/Himii/Renderer/Buffer.cpp",
+      "type": "file",
+      "name": "Buffer.cpp",
+      "filePath": "Engine/src/Himii/Renderer/Buffer.cpp",
+      "summary": "实现 VertexBuffer 和 IndexBuffer 的静态工厂方法，根据当前渲染后端 API（目前仅支持 OpenGL）创建对应的平台缓冲区对象。其他后端（Vulkan、DirectX12、Metal）会触发断言报错。",
+      "tags": ["工厂方法", "渲染后端", "缓冲区", "api-abstraction"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:Engine/src/Himii/Renderer/Buffer.h",
+      "type": "file",
+      "name": "Buffer.h",
+      "filePath": "Engine/src/Himii/Renderer/Buffer.h",
+      "summary": "定义 GPU 缓冲区布局系统的核心数据结构：ShaderDataType 枚举、描述单个顶点属性的 BufferElement 结构体、管理多个属性的 BufferLayout 类，以及 VertexBuffer 和 IndexBuffer 的抽象接口。为几何数据输入管线提供配置基础设施。",
+      "tags": ["数据结构", "顶点缓冲布局", "抽象接口", "图形管线", "shader-data-type"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:Engine/src/Himii/Renderer/Renderer.cpp",
+      "type": "file",
+      "name": "Renderer.cpp",
+      "filePath": "Engine/src/Himii/Renderer/Renderer.cpp",
+      "summary": "实现渲染管线核心功能：Init 初始化 2D/3D 渲染子系统和渲染命令、Submit 执行着色器绑定、矩阵 Uniform 传参和索引绘制调用。BeginScene/EndScene 管理场景视图投影矩阵状态。",
+      "tags": ["渲染管线", "绘制调度", "初始化", "着色器绑定"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:Engine/src/Himii/Renderer/Renderer.h",
+      "type": "file",
+      "name": "Renderer.h",
+      "filePath": "Engine/src/Himii/Renderer/Renderer.h",
+      "summary": "声明 Renderer 类，提供渲染管线的静态方法入口（Init、OnWindowResize、BeginScene、EndScene、Submit），包含内部 SceneData 结构体存储视图投影矩阵，以及获取当前渲染 API 的 GetAPI 内联方法。",
+      "tags": ["渲染器", "静态门面", "渲染入口", "场景状态"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:Engine/src/Himii/Renderer/Shader.cpp",
+      "type": "file",
+      "name": "Shader.cpp",
+      "filePath": "Engine/src/Himii/Renderer/Shader.cpp",
+      "summary": "实现 Shader 的静态工厂方法（依据当前渲染 API 创建 OpenGLShader 实例）和 ShaderLibrary 类的方法：Add 管理着色器注册、Load 创建并缓存着色器、Get/Exists 提供查询功能。ShaderLibrary 充当带名字索引的着色器缓存。",
+      "tags": ["着色器工厂", "着色器缓存", "资源管理", "后端抽象"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:Engine/src/Himii/Renderer/Shader.h",
+      "type": "file",
+      "name": "Shader.h",
+      "filePath": "Engine/src/Himii/Renderer/Shader.h",
+      "summary": "定义 Shader 抽象接口（Uniform 参数设置、绑定/解绑等纯虚方法）和 ShaderLibrary 类（基于 unordered_map 的着色器缓存）。Shader 采用纯虚接口模式，支持后端无关的着色器操作。",
+      "tags": ["着色器接口", "uniform设置", "纯虚接口", "着色器库"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Renderer/Buffer.cpp:Create(size)",
+      "type": "function",
+      "name": "Create(size)",
+      "filePath": "Engine/src/Himii/Renderer/Buffer.cpp",
+      "lineRange": [9, 30],
+      "summary": "VertexBuffer 的静态工厂方法，按指定大小分配 GPU 顶点缓冲区。通过 Renderer::GetAPI() 查询当前后端，目前仅支持创建 OpenGLVertexBuffer。",
+      "tags": ["工厂方法", "跨平台", "顶点缓冲"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Renderer/Buffer.cpp:Create(vertices, size)",
+      "type": "function",
+      "name": "Create(vertices, size)",
+      "filePath": "Engine/src/Himii/Renderer/Buffer.cpp",
+      "lineRange": [32, 53],
+      "summary": "VertexBuffer 的静态工厂方法重载，接收浮点顶点数据指针和大小创建带初始数据的 GPU 顶点缓冲区。",
+      "tags": ["工厂方法", "跨平台", "顶点缓冲"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Renderer/Buffer.cpp:Create(indices, size)",
+      "type": "function",
+      "name": "Create(indices, size)",
+      "filePath": "Engine/src/Himii/Renderer/Buffer.cpp",
+      "lineRange": [54, 75],
+      "summary": "IndexBuffer 的静态工厂方法，接收索引数据指针和数量创建 GPU 索引缓冲区。",
+      "tags": ["工厂方法", "跨平台", "索引缓冲"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Renderer/Buffer.h:ShaderDataTypeSize",
+      "type": "function",
+      "name": "ShaderDataTypeSize",
+      "filePath": "Engine/src/Himii/Renderer/Buffer.h",
+      "lineRange": [11, 42],
+      "summary": "根据 ShaderDataType 枚举值返回对应数据类型的字节大小。用于缓冲区布局的偏移计算和步长累加，未知类型会触发断言报错。",
+      "tags": ["工具函数", "枚举映射", "缓冲区布局"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:Engine/src/Himii/Renderer/Buffer.h:BufferElement",
+      "type": "class",
+      "name": "BufferElement",
+      "filePath": "Engine/src/Himii/Renderer/Buffer.h",
+      "lineRange": [44, 91],
+      "summary": "描述单个顶点属性的结构体，包含名称、着色器数据类型、偏移量、字节大小、是否归一化和是否实例化等字段。提供带类型推导的构造函数和组件数量查询方法 GetComponentCount。",
+      "tags": ["顶点属性", "数据结构", "着色器类型"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:Engine/src/Himii/Renderer/Buffer.h:BufferLayout",
+      "type": "class",
+      "name": "BufferLayout",
+      "filePath": "Engine/src/Himii/Renderer/Buffer.h",
+      "lineRange": [93, 142],
+      "summary": "管理一组 BufferElement 的布局类，支持初始化列表构造、自动计算偏移量和跨顶点步长，提供可变/不可变迭代器访问内部元素集合。",
+      "tags": ["布局管理", "步长计算", "迭代器"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:Engine/src/Himii/Renderer/Buffer.h:VertexBuffer",
+      "type": "class",
+      "name": "VertexBuffer",
+      "filePath": "Engine/src/Himii/Renderer/Buffer.h",
+      "lineRange": [144, 160],
+      "summary": "GPU 顶点缓冲区的抽象基类，定义纯虚接口（Bind/Unbind/SetData/SetLayout/GetLayout），通过静态工厂方法 Create 创建平台具体实现。",
+      "tags": ["抽象接口", "顶点缓冲", "GPU"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Renderer/Buffer.h:IndexBuffer",
+      "type": "class",
+      "name": "IndexBuffer",
+      "filePath": "Engine/src/Himii/Renderer/Buffer.h",
+      "lineRange": [162, 174],
+      "summary": "GPU 索引缓冲区的抽象基类，定义纯虚接口（Bind/Unbind/GetCount），通过静态工厂方法 Create 创建平台具体实现。",
+      "tags": ["抽象接口", "索引缓冲", "GPU"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Renderer/Renderer.h:Renderer",
+      "type": "class",
+      "name": "Renderer",
+      "filePath": "Engine/src/Himii/Renderer/Renderer.h",
+      "lineRange": [8, 33],
+      "summary": "渲染器静态门面类，提供全部静态方法：Init 初始化、OnWindowResize 视口调整、BeginScene/EndScene 场景生命周期管理、Submit 提交绘制调用、GetAPI 查询渲染后端。内部使用 SceneData 存储当前视图投影矩阵。",
+      "tags": ["渲染器", "静态门面", "单例"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Renderer/Renderer.cpp:Init",
+      "type": "function",
+      "name": "Init",
+      "filePath": "Engine/src/Himii/Renderer/Renderer.cpp",
+      "lineRange": [11, 18],
+      "summary": "初始化渲染管线，依次调用 RenderCommand、Renderer2D、Renderer3D 的初始化方法，启动所有渲染子系统。",
+      "tags": ["初始化", "子系统", "渲染管线"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Renderer/Renderer.cpp:Submit",
+      "type": "function",
+      "name": "Submit",
+      "filePath": "Engine/src/Himii/Renderer/Renderer.cpp",
+      "lineRange": [36, 44],
+      "summary": "提交一次绘制调用：绑定着色器、设置视图投影和模型变换 Uniform 矩阵、绑定顶点数组并执行索引绘制。是渲染管线中实际发出 GPU 绘制指令的核心方法。",
+      "tags": ["绘制调用", "着色器绑定", "uniform"],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:Engine/src/Himii/Renderer/Shader.h:Shader",
+      "type": "class",
+      "name": "Shader",
+      "filePath": "Engine/src/Himii/Renderer/Shader.h",
+      "lineRange": [8, 27],
+      "summary": "着色器抽象基类，定义纯虚接口：Bind/Unbind 控制着色器程序激活，SetInt/SetFloat/SetMat4 等系列方法设置 Uniform 参数，GetName 获取名称。通过静态工厂方法 Create 创建平台具体实现。",
+      "tags": ["着色器", "抽象接口", "uniform"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:Engine/src/Himii/Renderer/Shader.h:ShaderLibrary",
+      "type": "class",
+      "name": "ShaderLibrary",
+      "filePath": "Engine/src/Himii/Renderer/Shader.h",
+      "lineRange": [29, 41],
+      "summary": "着色器资源库，基于 unordered_map 管理着色器实例的注册、加载和查询。提供 Add/Load 用于注册和缓存着色器，Get/Exists 用于按名称检索。",
+      "tags": ["着色器管理", "缓存", "资源注册"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Renderer/Shader.cpp:Create(filepath)",
+      "type": "function",
+      "name": "Create(filepath)",
+      "filePath": "Engine/src/Himii/Renderer/Shader.cpp",
+      "lineRange": [9, 20],
+      "summary": "Shader 的静态工厂方法，从文件路径加载着色器源码并创建平台着色器实例。根据 Renderer::GetAPI() 选择后端，当前仅支持 OpenGLShader。",
+      "tags": ["工厂方法", "着色器创建", "后端抽象"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Renderer/Shader.cpp:Create(name, vertexSrc, fragmentSrc)",
+      "type": "function",
+      "name": "Create(name, vertexSrc, fragmentSrc)",
+      "filePath": "Engine/src/Himii/Renderer/Shader.cpp",
+      "lineRange": [22, 33],
+      "summary": "Shader 的静态工厂方法重载，直接传入名称和顶点/片段着色器源码字符串创建着色器实例，适用于从内存编译着色器的场景。",
+      "tags": ["工厂方法", "着色器创建", "后端抽象"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:Engine/src/Himii/Renderer/Shader.cpp:Add(shader)",
+      "type": "function",
+      "name": "Add(shader)",
+      "filePath": "Engine/src/Himii/Renderer/Shader.cpp",
+      "lineRange": [35, 39],
+      "summary": "ShaderLibrary 的着色器注册方法，自动提取着色器的 GetName 作为键名存入内部映射表。",
+      "tags": ["注册", "着色器缓存"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Renderer/Shader.cpp:Add(name, shader)",
+      "type": "function",
+      "name": "Add(name, shader)",
+      "filePath": "Engine/src/Himii/Renderer/Shader.cpp",
+      "lineRange": [41, 44],
+      "summary": "ShaderLibrary 的着色器注册方法重载，以指定名称作为键名将着色器存入内部映射表。",
+      "tags": ["注册", "着色器缓存"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Renderer/Shader.cpp:Load(filepath)",
+      "type": "function",
+      "name": "Load(filepath)",
+      "filePath": "Engine/src/Himii/Renderer/Shader.cpp",
+      "lineRange": [46, 51],
+      "summary": "ShaderLibrary 的着色器加载方法，从文件路径创建着色器并以着色器自身名称注册到库中，返回着色器引用。",
+      "tags": ["加载", "缓存", "着色器"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:Engine/src/Himii/Renderer/Shader.cpp:Load(name, filepath)",
+      "type": "function",
+      "name": "Load(name, filepath)",
+      "filePath": "Engine/src/Himii/Renderer/Shader.cpp",
+      "lineRange": [52, 57],
+      "summary": "ShaderLibrary 的着色器加载方法重载，从文件路径创建着色器并以指定名称注册到库中，返回着色器引用。",
+      "tags": ["加载", "缓存", "着色器"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:Engine/src/Himii/Renderer/Buffer.h",
+      "target": "function:Engine/src/Himii/Renderer/Buffer.h:ShaderDataTypeSize",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Buffer.h",
+      "target": "class:Engine/src/Himii/Renderer/Buffer.h:BufferElement",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Buffer.h",
+      "target": "class:Engine/src/Himii/Renderer/Buffer.h:BufferLayout",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Buffer.h",
+      "target": "class:Engine/src/Himii/Renderer/Buffer.h:VertexBuffer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Buffer.h",
+      "target": "class:Engine/src/Himii/Renderer/Buffer.h:IndexBuffer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Buffer.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Buffer.cpp:Create(size)",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Buffer.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Buffer.cpp:Create(vertices, size)",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Buffer.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Buffer.cpp:Create(indices, size)",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Renderer.h",
+      "target": "class:Engine/src/Himii/Renderer/Renderer.h:Renderer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Renderer.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Renderer.cpp:Init",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Renderer.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Renderer.cpp:Submit",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Shader.h",
+      "target": "class:Engine/src/Himii/Renderer/Shader.h:Shader",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Shader.h",
+      "target": "class:Engine/src/Himii/Renderer/Shader.h:ShaderLibrary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Shader.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Shader.cpp:Create(filepath)",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Shader.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Shader.cpp:Create(name, vertexSrc, fragmentSrc)",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Shader.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Shader.cpp:Add(shader)",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Shader.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Shader.cpp:Add(name, shader)",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Shader.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Shader.cpp:Load(filepath)",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Shader.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Shader.cpp:Load(name, filepath)",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Buffer.cpp",
+      "target": "file:Engine/src/Himii/Renderer/Buffer.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Buffer.cpp",
+      "target": "file:Engine/src/Himii/Renderer/Renderer.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Renderer.cpp",
+      "target": "file:Engine/src/Himii/Renderer/Renderer.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Shader.cpp",
+      "target": "file:Engine/src/Himii/Renderer/Renderer.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Shader.cpp",
+      "target": "file:Engine/src/Himii/Renderer/Shader.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Buffer.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Buffer.cpp:Create(size)",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Buffer.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Buffer.cpp:Create(vertices, size)",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Buffer.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Buffer.cpp:Create(indices, size)",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Buffer.h",
+      "target": "function:Engine/src/Himii/Renderer/Buffer.h:ShaderDataTypeSize",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Buffer.h",
+      "target": "class:Engine/src/Himii/Renderer/Buffer.h:BufferElement",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Buffer.h",
+      "target": "class:Engine/src/Himii/Renderer/Buffer.h:BufferLayout",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Buffer.h",
+      "target": "class:Engine/src/Himii/Renderer/Buffer.h:VertexBuffer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Buffer.h",
+      "target": "class:Engine/src/Himii/Renderer/Buffer.h:IndexBuffer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Renderer.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Renderer.cpp:Init",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Renderer.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Renderer.cpp:Submit",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Renderer.h",
+      "target": "class:Engine/src/Himii/Renderer/Renderer.h:Renderer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Shader.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Shader.cpp:Create(filepath)",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Shader.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Shader.cpp:Create(name, vertexSrc, fragmentSrc)",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Shader.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Shader.cpp:Add(shader)",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Shader.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Shader.cpp:Add(name, shader)",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Shader.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Shader.cpp:Load(filepath)",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Shader.cpp",
+      "target": "function:Engine/src/Himii/Renderer/Shader.cpp:Load(name, filepath)",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Shader.h",
+      "target": "class:Engine/src/Himii/Renderer/Shader.h:Shader",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:Engine/src/Himii/Renderer/Shader.h",
+      "target": "class:Engine/src/Himii/Renderer/Shader.h:ShaderLibrary",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Renderer/Buffer.cpp:Create(size)",
+      "target": "class:Engine/src/Himii/Renderer/Renderer.h:Renderer",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Renderer/Buffer.cpp:Create(vertices, size)",
+      "target": "class:Engine/src/Himii/Renderer/Renderer.h:Renderer",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Renderer/Buffer.cpp:Create(indices, size)",
+      "target": "class:Engine/src/Himii/Renderer/Renderer.h:Renderer",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Renderer/Renderer.cpp:Submit",
+      "target": "class:Engine/src/Himii/Renderer/Shader.h:Shader",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Renderer/Shader.cpp:Create(filepath)",
+      "target": "class:Engine/src/Himii/Renderer/Renderer.h:Renderer",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:Engine/src/Himii/Renderer/Shader.cpp:Create(name, vertexSrc, fragmentSrc)",
+      "target": "class:Engine/src/Himii/Renderer/Renderer.h:Renderer",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

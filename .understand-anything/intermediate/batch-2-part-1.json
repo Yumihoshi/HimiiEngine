@@ -1,0 +1,1790 @@
+{
+  "nodes": [
+    {
+      "id": "file:HimiiEditor/src/EditorLayer.h",
+      "type": "file",
+      "name": "EditorLayer.h",
+      "filePath": "HimiiEditor/src/EditorLayer.h",
+      "summary": "编辑器核心层主类头文件，管理编辑器生命周期、所有子面板的创建与协调、场景编辑操作、Tilemap 绘制系统以及启动画面过渡流程。",
+      "tags": [
+        "entry-point",
+        "coordinator",
+        "panel-manager",
+        "tilemap"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:HimiiEditor/src/HimiiApp.cpp",
+      "type": "file",
+      "name": "HimiiApp.cpp",
+      "filePath": "HimiiEditor/src/HimiiApp.cpp",
+      "summary": "Himii 编辑器应用程序入口实现，负责创建应用实例、配置启动画面窗口属性并将 EditorLayer 作为覆盖层推入。",
+      "tags": [
+        "entry-point",
+        "application",
+        "initialization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "type": "file",
+      "name": "AnimationEditorPanel.cpp",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "summary": "动画编辑器面板实现，提供图集拾取、时间轴帧调整、动画创建/保存和帧预览等完整的 2D 动画编辑工作流。",
+      "tags": [
+        "animation-editor",
+        "editor-panel",
+        "ui",
+        "asset-editing",
+        "timeline"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:HimiiEditor/src/panel/AnimationEditorPanel.h",
+      "type": "file",
+      "name": "AnimationEditorPanel.h",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.h",
+      "summary": "动画编辑器面板头文件，声明 AnimationEditorPanel 类及其公共接口，包括上下文设置、动画保存和帧管理方法。",
+      "tags": [
+        "animation-editor",
+        "editor-panel",
+        "header",
+        "class-definition"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:HimiiEditor/src/panel/ConsolePanel.cpp",
+      "type": "file",
+      "name": "ConsolePanel.cpp",
+      "filePath": "HimiiEditor/src/panel/ConsolePanel.cpp",
+      "summary": "控制台面板实现，显示引擎运行日志并按日志级别着色输出。",
+      "tags": [
+        "console",
+        "editor-panel",
+        "logging",
+        "ui"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:HimiiEditor/src/panel/ConsolePanel.h",
+      "type": "file",
+      "name": "ConsolePanel.h",
+      "filePath": "HimiiEditor/src/panel/ConsolePanel.h",
+      "summary": "控制台面板头文件，声明 ConsolePanel 类及其 ImGui 渲染接口。",
+      "tags": [
+        "console",
+        "editor-panel",
+        "header"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "type": "file",
+      "name": "ContentBrowserPanel.cpp",
+      "filePath": "HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "summary": "内容浏览器面板实现，支持文件树浏览、资源缩略图预览、文件导入、拖放操作以及 C# 脚本创建功能。",
+      "tags": [
+        "content-browser",
+        "editor-panel",
+        "file-management",
+        "asset-browser",
+        "ui"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:HimiiEditor/src/panel/ContentBrowserPanel.h",
+      "type": "file",
+      "name": "ContentBrowserPanel.h",
+      "filePath": "HimiiEditor/src/panel/ContentBrowserPanel.h",
+      "summary": "内容浏览器面板头文件，声明 ContentBrowserPanel 类，包含文件浏览、刷新和资源导入等公共接口。",
+      "tags": [
+        "content-browser",
+        "editor-panel",
+        "header",
+        "class-definition"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:HimiiEditor/src/EditorLayer.h:EditorLayer",
+      "type": "class",
+      "name": "EditorLayer",
+      "filePath": "HimiiEditor/src/EditorLayer.h",
+      "lineRange": [
+        21,
+        215
+      ],
+      "summary": "编辑器核心层类，负责管理编辑器完整生命周期：启动画面过渡、面板系统协调、场景编辑、Tilemap 绘制、脚本编译和项目序列化。",
+      "tags": [
+        "entry-point",
+        "coordinator",
+        "lifecycle-management"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:HimiiEditor/src/HimiiApp.cpp:HimiiApp",
+      "type": "class",
+      "name": "HimiiApp",
+      "filePath": "HimiiEditor/src/HimiiApp.cpp",
+      "lineRange": [
+        7,
+        27
+      ],
+      "summary": "编辑器应用程序类，继承自 Application，负责创建启动窗口并将 EditorLayer 推入层栈。",
+      "tags": [
+        "application",
+        "entry-point",
+        "initialization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:HimiiEditor/src/panel/AnimationEditorPanel.h:AnimationEditorPanel",
+      "type": "class",
+      "name": "AnimationEditorPanel",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.h",
+      "lineRange": [
+        13,
+        84
+      ],
+      "summary": "动画编辑器面板类，提供动画资产（AnimationAsset）的创建、编辑、保存功能，支持图集帧和时间轴操作。",
+      "tags": [
+        "animation-editor",
+        "editor-panel",
+        "asset-editing"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:HimiiEditor/src/panel/ConsolePanel.h:ConsolePanel",
+      "type": "class",
+      "name": "ConsolePanel",
+      "filePath": "HimiiEditor/src/panel/ConsolePanel.h",
+      "lineRange": [
+        5,
+        13
+      ],
+      "summary": "引擎控制台面板类，收集并带颜色分类显示运行时日志消息。",
+      "tags": [
+        "console",
+        "editor-panel",
+        "logging"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:HimiiEditor/src/panel/ContentBrowserPanel.h:ContentBrowserPanel",
+      "type": "class",
+      "name": "ContentBrowserPanel",
+      "filePath": "HimiiEditor/src/panel/ContentBrowserPanel.h",
+      "lineRange": [
+        11,
+        63
+      ],
+      "summary": "内容浏览器面板类，管理项目资产目录的文件浏览、导入、C# 脚本创建和缩略图显示。",
+      "tags": [
+        "content-browser",
+        "editor-panel",
+        "file-management"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:OnImGuiRender",
+      "type": "function",
+      "name": "OnImGuiRender",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        24,
+        89
+      ],
+      "summary": "ImGui 渲染入口，绘制面板的全部 UI 布局和交互元素。",
+      "tags": [
+        "ui-render",
+        "entry-point",
+        "imgui"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawMenuBar",
+      "type": "function",
+      "name": "DrawMenuBar",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        91,
+        122
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawLeftPanel",
+      "type": "function",
+      "name": "DrawLeftPanel",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        124,
+        135
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_Overview",
+      "type": "function",
+      "name": "UI_Overview",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        137,
+        172
+      ],
+      "summary": "ImGui UI 子区域渲染方法。",
+      "tags": [
+        "ui-render",
+        "panel-section"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_AnimationList",
+      "type": "function",
+      "name": "UI_AnimationList",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        174,
+        249
+      ],
+      "summary": "ImGui UI 子区域渲染方法。",
+      "tags": [
+        "ui-render",
+        "panel-section"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_PlaybackSettings",
+      "type": "function",
+      "name": "UI_PlaybackSettings",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        251,
+        283
+      ],
+      "summary": "ImGui UI 子区域渲染方法。",
+      "tags": [
+        "ui-render",
+        "panel-section"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_AtlasSource",
+      "type": "function",
+      "name": "UI_AtlasSource",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        285,
+        330
+      ],
+      "summary": "ImGui UI 子区域渲染方法。",
+      "tags": [
+        "ui-render",
+        "panel-section"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_FrameListSource",
+      "type": "function",
+      "name": "UI_FrameListSource",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        332,
+        376
+      ],
+      "summary": "ImGui UI 子区域渲染方法。",
+      "tags": [
+        "ui-render",
+        "panel-section"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawRightPanel",
+      "type": "function",
+      "name": "DrawRightPanel",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        378,
+        414
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawAtlasPickerRegion",
+      "type": "function",
+      "name": "DrawAtlasPickerRegion",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        416,
+        540
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawTimelineRegion",
+      "type": "function",
+      "name": "DrawTimelineRegion",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        542,
+        618
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:ApplyAtlasCellPick",
+      "type": "function",
+      "name": "ApplyAtlasCellPick",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        620,
+        650
+      ],
+      "summary": "应用图集单元拾取或地图编辑工具到指定位置。",
+      "tags": [
+        "tool-application",
+        "editing"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:MoveSelectedTimelineFrame",
+      "type": "function",
+      "name": "MoveSelectedTimelineFrame",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        652,
+        684
+      ],
+      "summary": "在时间轴中移动选中的帧。",
+      "tags": [
+        "timeline",
+        "frame-manipulation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:IsAtlasCellUsedInTimeline",
+      "type": "function",
+      "name": "IsAtlasCellUsedInTimeline",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        686,
+        703
+      ],
+      "summary": "面板辅助方法，定义于 HimiiEditor/src/panel/AnimationEditorPanel.cpp。",
+      "tags": [
+        "helper",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:GetSelectedAtlasCellCoordinates",
+      "type": "function",
+      "name": "GetSelectedAtlasCellCoordinates",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        705,
+        715
+      ],
+      "summary": "面板辅助方法，定义于 HimiiEditor/src/panel/AnimationEditorPanel.cpp。",
+      "tags": [
+        "helper",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:CreateNewAnimation",
+      "type": "function",
+      "name": "CreateNewAnimation",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        717,
+        728
+      ],
+      "summary": "创建新资产（C# 脚本或动画）的文件生成方法。",
+      "tags": [
+        "asset-creation",
+        "file-generation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:SetContext",
+      "type": "function",
+      "name": "SetContext",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        730,
+        756
+      ],
+      "summary": "设置面板的当前编辑上下文或打开指定资产。",
+      "tags": [
+        "context-management",
+        "initialization"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:SaveAnimation",
+      "type": "function",
+      "name": "SaveAnimation",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        773,
+        806
+      ],
+      "summary": "资产序列化并保存到文件的方法。",
+      "tags": [
+        "serialization",
+        "asset-saving"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:FillAtlasGridAllCells",
+      "type": "function",
+      "name": "FillAtlasGridAllCells",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        824,
+        847
+      ],
+      "summary": "图集网格切片方法，将图集纹理按行列切分为子区域。",
+      "tags": [
+        "atlas-slicing",
+        "grid-processing"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:ImportTextureAsAtlas",
+      "type": "function",
+      "name": "ImportTextureAsAtlas",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        849,
+        869
+      ],
+      "summary": "文件/资源导入方法，将外部文件复制到项目资产目录。",
+      "tags": [
+        "file-import",
+        "asset-management"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:AppendFrameFromPayload",
+      "type": "function",
+      "name": "AppendFrameFromPayload",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        871,
+        913
+      ],
+      "summary": "从拖放负载数据向当前动画追加帧。",
+      "tags": [
+        "drag-and-drop",
+        "frame-management",
+        "animation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:ResolveFramePreview",
+      "type": "function",
+      "name": "ResolveFramePreview",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        915,
+        984
+      ],
+      "summary": "解析并获取动画帧的预览纹理，处理图集帧和帧列表两种模式。",
+      "tags": [
+        "frame-preview",
+        "texture-resolve",
+        "animation"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawFramePreview",
+      "type": "function",
+      "name": "DrawFramePreview",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        986,
+        998
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:SelectAnimationClip",
+      "type": "function",
+      "name": "SelectAnimationClip",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        1021,
+        1034
+      ],
+      "summary": "选择指定的动画剪辑作为当前编辑目标。",
+      "tags": [
+        "animation",
+        "selection"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:GetTextureFromHandle",
+      "type": "function",
+      "name": "GetTextureFromHandle",
+      "filePath": "HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "lineRange": [
+        1036,
+        1055
+      ],
+      "summary": "纹理句柄管理方法。",
+      "tags": [
+        "texture-management",
+        "handle"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ConsolePanel.cpp:GetLogColor",
+      "type": "function",
+      "name": "GetLogColor",
+      "filePath": "HimiiEditor/src/panel/ConsolePanel.cpp",
+      "lineRange": [
+        9,
+        25
+      ],
+      "summary": "根据日志级别返回对应的显示颜色。",
+      "tags": [
+        "logging",
+        "color-mapping"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ConsolePanel.cpp:OnImGuiRender",
+      "type": "function",
+      "name": "OnImGuiRender",
+      "filePath": "HimiiEditor/src/panel/ConsolePanel.cpp",
+      "lineRange": [
+        27,
+        66
+      ],
+      "summary": "ImGui 渲染入口，绘制面板的全部 UI 布局和交互元素。",
+      "tags": [
+        "ui-render",
+        "entry-point",
+        "imgui"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:GetOrLoadImageThumbnail",
+      "type": "function",
+      "name": "GetOrLoadImageThumbnail",
+      "filePath": "HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "lineRange": [
+        36,
+        59
+      ],
+      "summary": "获取或加载图片资源缩略图，带缓存机制。",
+      "tags": [
+        "thumbnail",
+        "image-cache",
+        "asset-loading"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:DrawAspectFitThumbnail",
+      "type": "function",
+      "name": "DrawAspectFitThumbnail",
+      "filePath": "HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "lineRange": [
+        61,
+        86
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:TruncateTextToWidth",
+      "type": "function",
+      "name": "TruncateTextToWidth",
+      "filePath": "HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "lineRange": [
+        97,
+        137
+      ],
+      "summary": "按像素宽度截断文本，用于在有限空间内显示文件名。",
+      "tags": [
+        "text-processing",
+        "ui-helper"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:IsOnPathToCurrentDirectory",
+      "type": "function",
+      "name": "IsOnPathToCurrentDirectory",
+      "filePath": "HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "lineRange": [
+        139,
+        155
+      ],
+      "summary": "判断给定路径是否为当前目录的祖先路径。",
+      "tags": [
+        "path-utility",
+        "validation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:DrawContentDetailBar",
+      "type": "function",
+      "name": "DrawContentDetailBar",
+      "filePath": "HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "lineRange": [
+        157,
+        182
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:OnImGuiRender",
+      "type": "function",
+      "name": "OnImGuiRender",
+      "filePath": "HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "lineRange": [
+        192,
+        491
+      ],
+      "summary": "ImGui 渲染入口，绘制面板的全部 UI 布局和交互元素。",
+      "tags": [
+        "ui-render",
+        "entry-point",
+        "imgui"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:DrawTree",
+      "type": "function",
+      "name": "DrawTree",
+      "filePath": "HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "lineRange": [
+        493,
+        525
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:ResolveUniqueDestination",
+      "type": "function",
+      "name": "ResolveUniqueDestination",
+      "filePath": "HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "lineRange": [
+        533,
+        553
+      ],
+      "summary": "为导入文件解析不重复的目标路径，自动处理命名冲突。",
+      "tags": [
+        "file-resolution",
+        "path-utility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:ImportSingleFile",
+      "type": "function",
+      "name": "ImportSingleFile",
+      "filePath": "HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "lineRange": [
+        555,
+        593
+      ],
+      "summary": "文件/资源导入方法，将外部文件复制到项目资产目录。",
+      "tags": [
+        "file-import",
+        "asset-management"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:ImportFilesFromPaths",
+      "type": "function",
+      "name": "ImportFilesFromPaths",
+      "filePath": "HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "lineRange": [
+        595,
+        624
+      ],
+      "summary": "文件/资源导入方法，将外部文件复制到项目资产目录。",
+      "tags": [
+        "file-import",
+        "asset-management"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:CreateCSharpScript",
+      "type": "function",
+      "name": "CreateCSharpScript",
+      "filePath": "HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "lineRange": [
+        626,
+        654
+      ],
+      "summary": "创建新资产（C# 脚本或动画）的文件生成方法。",
+      "tags": [
+        "asset-creation",
+        "file-generation"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.h",
+      "target": "file:HimiiEditor/src/commands/EditorCommandHistory.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.h",
+      "target": "file:HimiiEditor/src/panel/AnimationEditorPanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.h",
+      "target": "file:HimiiEditor/src/panel/ConsolePanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.h",
+      "target": "file:HimiiEditor/src/panel/ContentBrowserPanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.h",
+      "target": "file:HimiiEditor/src/panel/EditorPreferencesPanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.h",
+      "target": "file:HimiiEditor/src/panel/ParticleEmitterEditorPanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.h",
+      "target": "file:HimiiEditor/src/panel/ProjectSettingsPanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.h",
+      "target": "file:HimiiEditor/src/panel/SceneHierarchyPanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.h",
+      "target": "file:HimiiEditor/src/panel/ScriptConsolePanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.h",
+      "target": "file:HimiiEditor/src/panel/TextureInspectorPanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.h",
+      "target": "file:HimiiEditor/src/panel/TileMapEditorPanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/HimiiApp.cpp",
+      "target": "file:HimiiEditor/src/EditorLayer.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "file:HimiiEditor/src/panel/AnimationEditorPanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ConsolePanel.cpp",
+      "target": "file:HimiiEditor/src/panel/ConsolePanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "file:HimiiEditor/src/panel/ContentBrowserPanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.h",
+      "target": "class:HimiiEditor/src/EditorLayer.h:EditorLayer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/HimiiApp.cpp",
+      "target": "class:HimiiEditor/src/HimiiApp.cpp:HimiiApp",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.h",
+      "target": "class:HimiiEditor/src/panel/AnimationEditorPanel.h:AnimationEditorPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ConsolePanel.h",
+      "target": "class:HimiiEditor/src/panel/ConsolePanel.h:ConsolePanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.h",
+      "target": "class:HimiiEditor/src/panel/ContentBrowserPanel.h:ContentBrowserPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:OnImGuiRender",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawMenuBar",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawLeftPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_Overview",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_AnimationList",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_PlaybackSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_AtlasSource",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_FrameListSource",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawRightPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawAtlasPickerRegion",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawTimelineRegion",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:ApplyAtlasCellPick",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:MoveSelectedTimelineFrame",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:IsAtlasCellUsedInTimeline",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:GetSelectedAtlasCellCoordinates",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:CreateNewAnimation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:SetContext",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:SaveAnimation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:FillAtlasGridAllCells",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:ImportTextureAsAtlas",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:AppendFrameFromPayload",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:ResolveFramePreview",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawFramePreview",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:SelectAnimationClip",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:GetTextureFromHandle",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ConsolePanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ConsolePanel.cpp:GetLogColor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ConsolePanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ConsolePanel.cpp:OnImGuiRender",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:GetOrLoadImageThumbnail",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:DrawAspectFitThumbnail",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:TruncateTextToWidth",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:IsOnPathToCurrentDirectory",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:DrawContentDetailBar",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:OnImGuiRender",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:DrawTree",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:ResolveUniqueDestination",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:ImportSingleFile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:ImportFilesFromPaths",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:CreateCSharpScript",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/EditorLayer.h",
+      "target": "class:HimiiEditor/src/EditorLayer.h:EditorLayer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/HimiiApp.cpp",
+      "target": "class:HimiiEditor/src/HimiiApp.cpp:HimiiApp",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:OnImGuiRender",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawMenuBar",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawLeftPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_Overview",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_AnimationList",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_PlaybackSettings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_AtlasSource",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_FrameListSource",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawRightPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawAtlasPickerRegion",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawTimelineRegion",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:ApplyAtlasCellPick",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:MoveSelectedTimelineFrame",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:IsAtlasCellUsedInTimeline",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:GetSelectedAtlasCellCoordinates",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:CreateNewAnimation",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:SetContext",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:SaveAnimation",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:FillAtlasGridAllCells",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:ImportTextureAsAtlas",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:AppendFrameFromPayload",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:ResolveFramePreview",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawFramePreview",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:SelectAnimationClip",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:GetTextureFromHandle",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/AnimationEditorPanel.h",
+      "target": "class:HimiiEditor/src/panel/AnimationEditorPanel.h:AnimationEditorPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ConsolePanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ConsolePanel.cpp:OnImGuiRender",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ConsolePanel.h",
+      "target": "class:HimiiEditor/src/panel/ConsolePanel.h:ConsolePanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:GetOrLoadImageThumbnail",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:TruncateTextToWidth",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:IsOnPathToCurrentDirectory",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:DrawContentDetailBar",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:OnImGuiRender",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:DrawTree",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:ResolveUniqueDestination",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:ImportSingleFile",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:ImportFilesFromPaths",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:CreateCSharpScript",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ContentBrowserPanel.h",
+      "target": "class:HimiiEditor/src/panel/ContentBrowserPanel.h:ContentBrowserPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawMenuBar",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawLeftPanel",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawRightPanel",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawMenuBar",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:CreateNewAnimation",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawMenuBar",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:SetContext",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawMenuBar",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:SaveAnimation",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawLeftPanel",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_Overview",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawLeftPanel",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_AnimationList",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawLeftPanel",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_PlaybackSettings",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawLeftPanel",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_AtlasSource",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawLeftPanel",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_FrameListSource",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawLeftPanel",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:SaveAnimation",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_AnimationList",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:SelectAnimationClip",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_AtlasSource",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:FillAtlasGridAllCells",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_AtlasSource",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:ImportTextureAsAtlas",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:UI_FrameListSource",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:AppendFrameFromPayload",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawRightPanel",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawAtlasPickerRegion",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawRightPanel",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawTimelineRegion",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawAtlasPickerRegion",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:ImportTextureAsAtlas",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawAtlasPickerRegion",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:GetSelectedAtlasCellCoordinates",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawAtlasPickerRegion",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:IsAtlasCellUsedInTimeline",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawAtlasPickerRegion",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:ApplyAtlasCellPick",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawTimelineRegion",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:MoveSelectedTimelineFrame",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawTimelineRegion",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:ResolveFramePreview",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawTimelineRegion",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:AppendFrameFromPayload",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:ImportTextureAsAtlas",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:FillAtlasGridAllCells",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:AppendFrameFromPayload",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:ImportTextureAsAtlas",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:ResolveFramePreview",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:GetTextureFromHandle",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:DrawFramePreview",
+      "target": "function:HimiiEditor/src/panel/AnimationEditorPanel.cpp:ResolveFramePreview",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/ConsolePanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/ConsolePanel.cpp:GetLogColor",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:DrawTree",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:ImportFilesFromPaths",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:CreateCSharpScript",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:GetOrLoadImageThumbnail",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:DrawAspectFitThumbnail",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:TruncateTextToWidth",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:DrawContentDetailBar",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:DrawTree",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:IsOnPathToCurrentDirectory",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:ImportSingleFile",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:ResolveUniqueDestination",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:ImportFilesFromPaths",
+      "target": "function:HimiiEditor/src/panel/ContentBrowserPanel.cpp:ImportSingleFile",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

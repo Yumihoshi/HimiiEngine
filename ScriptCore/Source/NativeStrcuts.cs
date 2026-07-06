@@ -33,6 +33,28 @@ namespace HimiiEngine
         public IntPtr Rigidbody2D_GetLinearVelocity;
         public IntPtr Rigidbody2D_SetLinearVelocity;
 
+        public IntPtr BoxCollider2D_GetOffset;
+        public IntPtr BoxCollider2D_SetOffset;
+        public IntPtr BoxCollider2D_GetSize;
+        public IntPtr BoxCollider2D_SetSize;
+        public IntPtr BoxCollider2D_GetDensity;
+        public IntPtr BoxCollider2D_SetDensity;
+        public IntPtr BoxCollider2D_GetFriction;
+        public IntPtr BoxCollider2D_SetFriction;
+        public IntPtr BoxCollider2D_GetRestitution;
+        public IntPtr BoxCollider2D_SetRestitution;
+
+        public IntPtr CircleCollider2D_GetOffset;
+        public IntPtr CircleCollider2D_SetOffset;
+        public IntPtr CircleCollider2D_GetRadius;
+        public IntPtr CircleCollider2D_SetRadius;
+        public IntPtr CircleCollider2D_GetDensity;
+        public IntPtr CircleCollider2D_SetDensity;
+        public IntPtr CircleCollider2D_GetFriction;
+        public IntPtr CircleCollider2D_SetFriction;
+        public IntPtr CircleCollider2D_GetRestitution;
+        public IntPtr CircleCollider2D_SetRestitution;
+
         // Tilemap
         public IntPtr Tilemap_GetSize;
         public IntPtr Tilemap_SetSize;
@@ -68,6 +90,41 @@ namespace HimiiEngine
         public IntPtr SpriteAnimation_SetCurrentAnimationName;
 
         public IntPtr Tilemap_GetBounds;
+
+        public IntPtr Input_IsKeyPressed;
+        public IntPtr Input_IsKeyReleased;
+        public IntPtr Input_GetAxisHorizontal;
+        public IntPtr Input_GetAxisVertical;
+
+        public IntPtr Rigidbody2D_GetBodyType;
+        public IntPtr Rigidbody2D_SetBodyType;
+        public IntPtr Rigidbody2D_GetFixedRotation;
+        public IntPtr Rigidbody2D_SetFixedRotation;
+
+        public IntPtr BoxCollider2D_GetIsTrigger;
+        public IntPtr BoxCollider2D_SetIsTrigger;
+        public IntPtr BoxCollider2D_GetLayer;
+        public IntPtr BoxCollider2D_SetLayer;
+
+        public IntPtr CircleCollider2D_GetIsTrigger;
+        public IntPtr CircleCollider2D_SetIsTrigger;
+        public IntPtr CircleCollider2D_GetLayer;
+        public IntPtr CircleCollider2D_SetLayer;
+
+        public IntPtr SpriteRenderer_GetSortingLayer;
+        public IntPtr SpriteRenderer_SetSortingLayer;
+        public IntPtr SpriteRenderer_GetSortingOrder;
+        public IntPtr SpriteRenderer_SetSortingOrder;
+
+        public IntPtr Camera_GetOrthographicSize;
+        public IntPtr Camera_SetOrthographicSize;
+        public IntPtr Camera_GetBackgroundColor;
+        public IntPtr Camera_SetBackgroundColor;
+        public IntPtr Camera_GetPrimary;
+        public IntPtr Camera_SetPrimary;
+
+        public IntPtr SceneManager_GetActiveScenePath;
+        public IntPtr Scene_InstantiatePrefab;
     }
 
     [StructLayout(LayoutKind.Sequential)]

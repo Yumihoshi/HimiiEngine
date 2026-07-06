@@ -123,8 +123,8 @@ namespace Himii
 
         if (m_IsActive)
         {
-            const float mouseDeltaScale = is2D ? 0.01f : 0.01f;
-            glm::vec2 delta = (mouse - m_InitialMousePosition) * mouseDeltaScale;
+            glm::vec2 delta = is2D ? (mouse - m_InitialMousePosition)
+                                   : (mouse - m_InitialMousePosition) * 0.01f;
             m_InitialMousePosition = mouse;
             
             if (is2D)
@@ -208,14 +208,22 @@ namespace Himii
 
     void EditorCamera::MousePan(const glm::vec2 &delta, bool isTwoDimensional)
     {
-        auto [horizontalPanSpeed, verticalPanSpeed] = PanSpeed();
-
         if (isTwoDimensional)
         {
-            horizontalPanSpeed *= kTwoDimensionalPanSpeedMultiplier;
-            verticalPanSpeed *= kTwoDimensionalPanSpeedMultiplier;
+            if (m_ViewportWidth <= 0.0f || m_ViewportHeight <= 0.0f)
+                return;
+
+            const float orthographicHalfHeight = m_Distance;
+            const float orthographicHalfWidth = m_AspectRatio * m_Distance;
+            const float worldUnitsPerPixelHorizontal = (2.0f * orthographicHalfWidth) / m_ViewportWidth;
+            const float worldUnitsPerPixelVertical = (2.0f * orthographicHalfHeight) / m_ViewportHeight;
+
+            m_FocalPoint += -GetRightDirection() * delta.x * worldUnitsPerPixelHorizontal;
+            m_FocalPoint += GetUpDirection() * delta.y * worldUnitsPerPixelVertical;
+            return;
         }
 
+        auto [horizontalPanSpeed, verticalPanSpeed] = PanSpeed();
         m_FocalPoint += -GetRightDirection() * delta.x * horizontalPanSpeed * m_Distance;
         m_FocalPoint += GetUpDirection() * delta.y * verticalPanSpeed * m_Distance;
     }
@@ -229,6 +237,15 @@ namespace Himii
 
     void EditorCamera::MouseZoom(float delta)
     {
+        if (m_UseOrthographicProjection)
+        {
+            // 与 OrthographicCameraController 一致：每格滚轮约 0.25 世界单位（delta 已含 0.1 系数）
+            m_Distance -= delta * 2.5f;
+            if (m_Distance < 0.25f)
+                m_Distance = 0.25f;
+            return;
+        }
+
         m_Distance -= delta * ZoomSpeed();
         if (m_Distance < 1.0f)
         {

@@ -1,0 +1,275 @@
+{
+  "projectRoot": "D:/Himii-Engine",
+  "batchFiles": [
+    {
+      "path": "Engine/src/Engine.h",
+      "language": "c",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Core/Input.h",
+      "language": "c",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Core/KeyCodes.h",
+      "language": "c",
+      "sizeLines": 143,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Core/MouseCodes.h",
+      "language": "c",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Core/Timestep.h",
+      "language": "c",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Core/Window.cpp",
+      "language": "cpp",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Core/Window.h",
+      "language": "c",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/ImGui/ImGuiLayer.cpp",
+      "language": "cpp",
+      "sizeLines": 321,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/ImGui/ImGuiLayer.h",
+      "language": "c",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Math/Math.cpp",
+      "language": "cpp",
+      "sizeLines": 83,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Math/Math.h",
+      "language": "c",
+      "sizeLines": 9,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Camera.h",
+      "language": "c",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Font.cpp",
+      "language": "cpp",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Font.h",
+      "language": "c",
+      "sizeLines": 52,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Framebuffer.h",
+      "language": "c",
+      "sizeLines": 70,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/GraphicsContext.h",
+      "language": "c",
+      "sizeLines": 11,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/OrthographicCamera.h",
+      "language": "c",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/OrthographicCameraController.h",
+      "language": "c",
+      "sizeLines": 60,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/RenderCommand.h",
+      "language": "c",
+      "sizeLines": 77,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Renderer2D.h",
+      "language": "c",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/RendererAPI.h",
+      "language": "c",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Texture.h",
+      "language": "c",
+      "sizeLines": 64,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/VertexArray.h",
+      "language": "c",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/Components.h",
+      "language": "c",
+      "sizeLines": 275,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/Entity.h",
+      "language": "c",
+      "sizeLines": 93,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/Scene.cpp",
+      "language": "cpp",
+      "sizeLines": 1215,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/Scene.h",
+      "language": "c",
+      "sizeLines": 128,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/SceneCamera.cpp",
+      "language": "cpp",
+      "sizeLines": 43,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/SceneCamera.h",
+      "language": "c",
+      "sizeLines": 110,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/SceneSerializer.h",
+      "language": "c",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/ScriptableEntity.h",
+      "language": "c",
+      "sizeLines": 24,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Engine/src/Engine.h": [
+      "Engine/src/Himii/Core/Application.h",
+      "Engine/src/Himii/Core/Core.h",
+      "Engine/src/Himii/Core/Input.h",
+      "Engine/src/Himii/Core/KeyCodes.h",
+      "Engine/src/Himii/Core/Layer.h",
+      "Engine/src/Himii/Core/LayerStack.h",
+      "Engine/src/Himii/Core/Log.h",
+      "Engine/src/Himii/Core/MouseCodes.h",
+      "Engine/src/Himii/Core/Timestep.h",
+      "Engine/src/Himii/Core/Window.h",
+      "Engine/src/Himii/ImGui/ImGuiLayer.h",
+      "Engine/src/Himii/Math/Math.h",
+      "Engine/src/Himii/Renderer/Buffer.h",
+      "Engine/src/Himii/Renderer/Camera.h",
+      "Engine/src/Himii/Renderer/Font.h",
+      "Engine/src/Himii/Renderer/Framebuffer.h",
+      "Engine/src/Himii/Renderer/GraphicsContext.h",
+      "Engine/src/Himii/Renderer/OrthographicCamera.h",
+      "Engine/src/Himii/Renderer/OrthographicCameraController.h",
+      "Engine/src/Himii/Renderer/RenderCommand.h",
+      "Engine/src/Himii/Renderer/Renderer.h",
+      "Engine/src/Himii/Renderer/Renderer2D.h",
+      "Engine/src/Himii/Renderer/RendererAPI.h",
+      "Engine/src/Himii/Renderer/Shader.h",
+      "Engine/src/Himii/Renderer/Texture.h",
+      "Engine/src/Himii/Renderer/VertexArray.h",
+      "Engine/src/Himii/Scene/Components.h",
+      "Engine/src/Himii/Scene/Entity.h",
+      "Engine/src/Himii/Scene/Scene.h",
+      "Engine/src/Himii/Scene/SceneSerializer.h",
+      "Engine/src/Himii/Scene/ScriptableEntity.h"
+    ],
+    "Engine/src/Himii/Core/Input.h": [],
+    "Engine/src/Himii/Core/KeyCodes.h": [],
+    "Engine/src/Himii/Core/MouseCodes.h": [],
+    "Engine/src/Himii/Core/Timestep.h": [],
+    "Engine/src/Himii/Core/Window.cpp": [
+      "Engine/src/Himii/Core/Window.h"
+    ],
+    "Engine/src/Himii/Core/Window.h": [],
+    "Engine/src/Himii/ImGui/ImGuiLayer.cpp": [
+      "Engine/src/Himii/ImGui/ImGuiLayer.h"
+    ],
+    "Engine/src/Himii/ImGui/ImGuiLayer.h": [],
+    "Engine/src/Himii/Math/Math.cpp": [
+      "Engine/src/Himii/Math/Math.h"
+    ],
+    "Engine/src/Himii/Math/Math.h": [],
+    "Engine/src/Himii/Renderer/Camera.h": [],
+    "Engine/src/Himii/Renderer/Font.cpp": [
+      "Engine/src/Himii/Renderer/Font.h"
+    ],
+    "Engine/src/Himii/Renderer/Font.h": [],
+    "Engine/src/Himii/Renderer/Framebuffer.h": [],
+    "Engine/src/Himii/Renderer/GraphicsContext.h": [],
+    "Engine/src/Himii/Renderer/OrthographicCamera.h": [],
+    "Engine/src/Himii/Renderer/OrthographicCameraController.h": [],
+    "Engine/src/Himii/Renderer/RenderCommand.h": [],
+    "Engine/src/Himii/Renderer/Renderer2D.h": [],
+    "Engine/src/Himii/Renderer/RendererAPI.h": [],
+    "Engine/src/Himii/Renderer/Texture.h": [],
+    "Engine/src/Himii/Renderer/VertexArray.h": [],
+    "Engine/src/Himii/Scene/Components.h": [
+      "Engine/src/Himii/Scene/SceneCamera.h"
+    ],
+    "Engine/src/Himii/Scene/Entity.h": [
+      "Engine/src/Himii/Scene/Scene.h"
+    ],
+    "Engine/src/Himii/Scene/Scene.cpp": [
+      "Engine/src/Himii/Scene/Components.h",
+      "Engine/src/Himii/Scene/Entity.h",
+      "Engine/src/Himii/Scene/Scene.h",
+      "Engine/src/Himii/Scene/ScriptableEntity.h"
+    ],
+    "Engine/src/Himii/Scene/Scene.h": [],
+    "Engine/src/Himii/Scene/SceneCamera.cpp": [
+      "Engine/src/Himii/Scene/SceneCamera.h"
+    ],
+    "Engine/src/Himii/Scene/SceneCamera.h": [],
+    "Engine/src/Himii/Scene/SceneSerializer.h": [],
+    "Engine/src/Himii/Scene/ScriptableEntity.h": []
+  }
+}

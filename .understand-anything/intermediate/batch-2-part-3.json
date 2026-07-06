@@ -1,0 +1,1453 @@
+{
+  "nodes": [
+    {
+      "id": "file:HimiiEditor/src/panel/ScriptConsolePanel.cpp",
+      "type": "file",
+      "name": "ScriptConsolePanel.cpp",
+      "filePath": "HimiiEditor/src/panel/ScriptConsolePanel.cpp",
+      "summary": "脚本控制台面板实现，解析 C# 编译器输出中的错误位置信息，并以可点击导航方式显示编译结果。",
+      "tags": [
+        "script-console",
+        "editor-panel",
+        "scripting",
+        "compilation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:HimiiEditor/src/panel/ScriptConsolePanel.h",
+      "type": "file",
+      "name": "ScriptConsolePanel.h",
+      "filePath": "HimiiEditor/src/panel/ScriptConsolePanel.h",
+      "summary": "脚本控制台面板头文件，声明 ScriptConsolePanel 类。",
+      "tags": [
+        "script-console",
+        "editor-panel",
+        "header"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "type": "file",
+      "name": "TextureInspectorPanel.cpp",
+      "filePath": "HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "summary": "纹理检视器面板实现，提供纹理导入设置编辑、Sprite 切片工作流（自动/网格切片）、Sprite 管理（添加/删除），以及实时预览功能。",
+      "tags": [
+        "texture-inspector",
+        "editor-panel",
+        "asset-editing",
+        "sprite-slicing",
+        "ui"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:HimiiEditor/src/panel/TextureInspectorPanel.h",
+      "type": "file",
+      "name": "TextureInspectorPanel.h",
+      "filePath": "HimiiEditor/src/panel/TextureInspectorPanel.h",
+      "summary": "纹理检视器面板头文件，声明 TextureInspectorPanel 类及其纹理导入、Sprite 管理和元数据保存接口。",
+      "tags": [
+        "texture-inspector",
+        "editor-panel",
+        "header"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "type": "file",
+      "name": "TileMapEditorPanel.cpp",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "summary": "Tilemap 编辑器面板实现，提供图块地图编辑、图集设置与切片、笔刷绘制、碰撞体编辑、框选工具以及 TileMap/TileSet 资产保存等完整工作流。",
+      "tags": [
+        "tilemap-editor",
+        "editor-panel",
+        "tile-editing",
+        "atlas",
+        "ui"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:HimiiEditor/src/panel/TileMapEditorPanel.h",
+      "type": "file",
+      "name": "TileMapEditorPanel.h",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.h",
+      "summary": "Tilemap 编辑器面板头文件，声明 TileMapEditorPanel 类及其工具系统（笔刷/框选/移动实体）、图块选择和资产保存接口。",
+      "tags": [
+        "tilemap-editor",
+        "editor-panel",
+        "header"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:HimiiEditor/src/panel/ScriptConsolePanel.h:ScriptConsolePanel",
+      "type": "class",
+      "name": "ScriptConsolePanel",
+      "filePath": "HimiiEditor/src/panel/ScriptConsolePanel.h",
+      "lineRange": [
+        7,
+        11
+      ],
+      "summary": "脚本控制台面板类，解析并展示 C# 脚本编译输出，支持错误位置的点击导航。",
+      "tags": [
+        "script-console",
+        "editor-panel",
+        "compilation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:HimiiEditor/src/panel/TextureInspectorPanel.h:TextureInspectorPanel",
+      "type": "class",
+      "name": "TextureInspectorPanel",
+      "filePath": "HimiiEditor/src/panel/TextureInspectorPanel.h",
+      "lineRange": [
+        13,
+        56
+      ],
+      "summary": "纹理检视器面板类，管理纹理资产的导入设置、Sprite 切片工作流和 Sprite 增删操作。",
+      "tags": [
+        "texture-inspector",
+        "editor-panel",
+        "sprite-management"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:HimiiEditor/src/panel/TileMapEditorPanel.h:TileMapEditorPanel",
+      "type": "class",
+      "name": "TileMapEditorPanel",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.h",
+      "lineRange": [
+        14,
+        89
+      ],
+      "summary": "Tilemap 编辑器面板类，提供完整的 Tilemap 编辑工具链（笔刷、框选、碰撞编辑和图集切片），管理 TileMap/TileSet 资产的创建与保存。",
+      "tags": [
+        "tilemap-editor",
+        "editor-panel",
+        "tool-system"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ScriptConsolePanel.cpp:TryParseCompilerLocation",
+      "type": "function",
+      "name": "TryParseCompilerLocation",
+      "filePath": "HimiiEditor/src/panel/ScriptConsolePanel.cpp",
+      "lineRange": [
+        13,
+        23
+      ],
+      "summary": "解析 C# 编译器输出行，提取文件路径和行号用于错误导航。",
+      "tags": [
+        "parsing",
+        "compiler-output",
+        "error-navigation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/ScriptConsolePanel.cpp:OnImGuiRender",
+      "type": "function",
+      "name": "OnImGuiRender",
+      "filePath": "HimiiEditor/src/panel/ScriptConsolePanel.cpp",
+      "lineRange": [
+        25,
+        93
+      ],
+      "summary": "ImGui 渲染入口，绘制面板的全部 UI 布局和交互元素。",
+      "tags": [
+        "ui-render",
+        "entry-point",
+        "imgui"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:ReloadImportData",
+      "type": "function",
+      "name": "ReloadImportData",
+      "filePath": "HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "lineRange": [
+        29,
+        68
+      ],
+      "summary": "加载/重载编辑所需的纹理和资产数据。",
+      "tags": [
+        "asset-loading",
+        "data-reload"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:SyncUIToImportData",
+      "type": "function",
+      "name": "SyncUIToImportData",
+      "filePath": "HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "lineRange": [
+        70,
+        85
+      ],
+      "summary": "同步方法，在 UI 和底层数据模型之间同步状态。",
+      "tags": [
+        "data-sync",
+        "state-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:SyncPendingEditsToMemory",
+      "type": "function",
+      "name": "SyncPendingEditsToMemory",
+      "filePath": "HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "lineRange": [
+        87,
+        104
+      ],
+      "summary": "同步方法，在 UI 和底层数据模型之间同步状态。",
+      "tags": [
+        "data-sync",
+        "state-management"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:SaveActiveTextureMeta",
+      "type": "function",
+      "name": "SaveActiveTextureMeta",
+      "filePath": "HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "lineRange": [
+        106,
+        117
+      ],
+      "summary": "资产序列化并保存到文件的方法。",
+      "tags": [
+        "serialization",
+        "asset-saving"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:AddNewSprite",
+      "type": "function",
+      "name": "AddNewSprite",
+      "filePath": "HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "lineRange": [
+        119,
+        138
+      ],
+      "summary": "向当前纹理添加新的 Sprite 定义。",
+      "tags": [
+        "sprite-management",
+        "asset-editing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DeleteSelectedSprite",
+      "type": "function",
+      "name": "DeleteSelectedSprite",
+      "filePath": "HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "lineRange": [
+        140,
+        166
+      ],
+      "summary": "删除当前选中的 Sprite 定义。",
+      "tags": [
+        "sprite-management",
+        "asset-editing"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:FindSpriteIndexAtPixel",
+      "type": "function",
+      "name": "FindSpriteIndexAtPixel",
+      "filePath": "HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "lineRange": [
+        168,
+        191
+      ],
+      "summary": "根据像素坐标查找对应的 Sprite 索引，用于点击选择 Sprite。",
+      "tags": [
+        "sprite-lookup",
+        "hit-testing"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:OnImGuiRender",
+      "type": "function",
+      "name": "OnImGuiRender",
+      "filePath": "HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "lineRange": [
+        193,
+        242
+      ],
+      "summary": "ImGui 渲染入口，绘制面板的全部 UI 布局和交互元素。",
+      "tags": [
+        "ui-render",
+        "entry-point",
+        "imgui"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawImportSettings",
+      "type": "function",
+      "name": "DrawImportSettings",
+      "filePath": "HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "lineRange": [
+        252,
+        275
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawSliceSettings",
+      "type": "function",
+      "name": "DrawSliceSettings",
+      "filePath": "HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "lineRange": [
+        277,
+        348
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawSelectedSpriteThumbnail",
+      "type": "function",
+      "name": "DrawSelectedSpriteThumbnail",
+      "filePath": "HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "lineRange": [
+        350,
+        373
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawRightPreviewPanel",
+      "type": "function",
+      "name": "DrawRightPreviewPanel",
+      "filePath": "HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "lineRange": [
+        375,
+        524
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:Open",
+      "type": "function",
+      "name": "Open",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        24,
+        33
+      ],
+      "summary": "设置面板的当前编辑上下文或打开指定资产。",
+      "tags": [
+        "context-management",
+        "initialization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:SetMoveEntityModeEnabled",
+      "type": "function",
+      "name": "SetMoveEntityModeEnabled",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        45,
+        54
+      ],
+      "summary": "面板辅助方法，定义于 HimiiEditor/src/panel/TileMapEditorPanel.cpp。",
+      "tags": [
+        "helper",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:CanPaintInScene",
+      "type": "function",
+      "name": "CanPaintInScene",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        61,
+        70
+      ],
+      "summary": "面板辅助方法，定义于 HimiiEditor/src/panel/TileMapEditorPanel.cpp。",
+      "tags": [
+        "helper",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:LoadAssets",
+      "type": "function",
+      "name": "LoadAssets",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        72,
+        98
+      ],
+      "summary": "加载/重载编辑所需的纹理和资产数据。",
+      "tags": [
+        "asset-loading",
+        "data-reload"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:FindTileIDAtAtlasCell",
+      "type": "function",
+      "name": "FindTileIDAtAtlasCell",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        107,
+        124
+      ],
+      "summary": "在图集中查找指定行列位置的 Tile ID。",
+      "tags": [
+        "tile-lookup",
+        "atlas"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:OnImGuiRender",
+      "type": "function",
+      "name": "OnImGuiRender",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        126,
+        179
+      ],
+      "summary": "ImGui 渲染入口，绘制面板的全部 UI 布局和交互元素。",
+      "tags": [
+        "ui-render",
+        "entry-point",
+        "imgui"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawLeftPanel",
+      "type": "function",
+      "name": "DrawLeftPanel",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        181,
+        190
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_Overview",
+      "type": "function",
+      "name": "UI_Overview",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        192,
+        220
+      ],
+      "summary": "ImGui UI 子区域渲染方法。",
+      "tags": [
+        "ui-render",
+        "panel-section"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_ScenePaint",
+      "type": "function",
+      "name": "UI_ScenePaint",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        222,
+        235
+      ],
+      "summary": "ImGui UI 子区域渲染方法。",
+      "tags": [
+        "ui-render",
+        "panel-section"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_Toolbar",
+      "type": "function",
+      "name": "UI_Toolbar",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        237,
+        274
+      ],
+      "summary": "ImGui UI 子区域渲染方法。",
+      "tags": [
+        "ui-render",
+        "panel-section"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_Collision",
+      "type": "function",
+      "name": "UI_Collision",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        276,
+        334
+      ],
+      "summary": "ImGui UI 子区域渲染方法。",
+      "tags": [
+        "ui-render",
+        "panel-section"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_AtlasSetup",
+      "type": "function",
+      "name": "UI_AtlasSetup",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        336,
+        395
+      ],
+      "summary": "ImGui UI 子区域渲染方法。",
+      "tags": [
+        "ui-render",
+        "panel-section"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_BrushTile",
+      "type": "function",
+      "name": "UI_BrushTile",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        397,
+        407
+      ],
+      "summary": "ImGui UI 子区域渲染方法。",
+      "tags": [
+        "ui-render",
+        "panel-section"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawSelectedTileThumbnail",
+      "type": "function",
+      "name": "DrawSelectedTileThumbnail",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        409,
+        435
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawAtlasPreviewPanel",
+      "type": "function",
+      "name": "DrawAtlasPreviewPanel",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        437,
+        585
+      ],
+      "summary": "UI 绘制辅助方法，渲染面板的特定子区域。",
+      "tags": [
+        "ui-render",
+        "helper"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:SliceAtlasGrid",
+      "type": "function",
+      "name": "SliceAtlasGrid",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        587,
+        625
+      ],
+      "summary": "图集网格切片方法，将图集纹理按行列切分为子区域。",
+      "tags": [
+        "atlas-slicing",
+        "grid-processing"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_Properties",
+      "type": "function",
+      "name": "UI_Properties",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        627,
+        672
+      ],
+      "summary": "ImGui UI 子区域渲染方法。",
+      "tags": [
+        "ui-render",
+        "panel-section"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:ApplyToolAtTile",
+      "type": "function",
+      "name": "ApplyToolAtTile",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        674,
+        691
+      ],
+      "summary": "应用图集单元拾取或地图编辑工具到指定位置。",
+      "tags": [
+        "tool-application",
+        "editing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:ApplyBoxTool",
+      "type": "function",
+      "name": "ApplyBoxTool",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        693,
+        711
+      ],
+      "summary": "应用图集单元拾取或地图编辑工具到指定位置。",
+      "tags": [
+        "tool-application",
+        "editing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:SaveTileMap",
+      "type": "function",
+      "name": "SaveTileMap",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        713,
+        730
+      ],
+      "summary": "资产保存方法，将编辑结果序列化写入文件。",
+      "tags": [
+        "serialization",
+        "asset-saving"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:SaveTileSet",
+      "type": "function",
+      "name": "SaveTileSet",
+      "filePath": "HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "lineRange": [
+        732,
+        753
+      ],
+      "summary": "资产保存方法，将编辑结果序列化写入文件。",
+      "tags": [
+        "serialization",
+        "asset-saving"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:HimiiEditor/src/panel/ScriptConsolePanel.cpp",
+      "target": "file:HimiiEditor/src/panel/ScriptConsolePanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "file:HimiiEditor/src/panel/TextureInspectorPanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "file:HimiiEditor/src/panel/TileMapEditorPanel.h",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ScriptConsolePanel.h",
+      "target": "class:HimiiEditor/src/panel/ScriptConsolePanel.h:ScriptConsolePanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.h",
+      "target": "class:HimiiEditor/src/panel/TextureInspectorPanel.h:TextureInspectorPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.h",
+      "target": "class:HimiiEditor/src/panel/TileMapEditorPanel.h:TileMapEditorPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ScriptConsolePanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ScriptConsolePanel.cpp:TryParseCompilerLocation",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ScriptConsolePanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ScriptConsolePanel.cpp:OnImGuiRender",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:ReloadImportData",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:SyncUIToImportData",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:SyncPendingEditsToMemory",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:SaveActiveTextureMeta",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:AddNewSprite",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DeleteSelectedSprite",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:FindSpriteIndexAtPixel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:OnImGuiRender",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawImportSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawSliceSettings",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawSelectedSpriteThumbnail",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawRightPreviewPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:Open",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:SetMoveEntityModeEnabled",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:CanPaintInScene",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:LoadAssets",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:FindTileIDAtAtlasCell",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:OnImGuiRender",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawLeftPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_Overview",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_ScenePaint",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_Toolbar",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_Collision",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_AtlasSetup",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_BrushTile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawSelectedTileThumbnail",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawAtlasPreviewPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:SliceAtlasGrid",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_Properties",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:ApplyToolAtTile",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:ApplyBoxTool",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:SaveTileMap",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:SaveTileSet",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ScriptConsolePanel.cpp",
+      "target": "function:HimiiEditor/src/panel/ScriptConsolePanel.cpp:OnImGuiRender",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/ScriptConsolePanel.h",
+      "target": "class:HimiiEditor/src/panel/ScriptConsolePanel.h:ScriptConsolePanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:ReloadImportData",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:SyncUIToImportData",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:SyncPendingEditsToMemory",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:SaveActiveTextureMeta",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:AddNewSprite",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DeleteSelectedSprite",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:FindSpriteIndexAtPixel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:OnImGuiRender",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawImportSettings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawSliceSettings",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawSelectedSpriteThumbnail",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawRightPreviewPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TextureInspectorPanel.h",
+      "target": "class:HimiiEditor/src/panel/TextureInspectorPanel.h:TextureInspectorPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:Open",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:SetMoveEntityModeEnabled",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:CanPaintInScene",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:LoadAssets",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:FindTileIDAtAtlasCell",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:OnImGuiRender",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawLeftPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_Overview",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_ScenePaint",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_Toolbar",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_Collision",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_AtlasSetup",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_BrushTile",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawSelectedTileThumbnail",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawAtlasPreviewPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:SliceAtlasGrid",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_Properties",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:ApplyToolAtTile",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:ApplyBoxTool",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:SaveTileMap",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.cpp",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:SaveTileSet",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:HimiiEditor/src/panel/TileMapEditorPanel.h",
+      "target": "class:HimiiEditor/src/panel/TileMapEditorPanel.h:TileMapEditorPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/ScriptConsolePanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/ScriptConsolePanel.cpp:TryParseCompilerLocation",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:SyncPendingEditsToMemory",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:SyncUIToImportData",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:SaveActiveTextureMeta",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:SyncPendingEditsToMemory",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawRightPreviewPanel",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawImportSettings",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:SyncUIToImportData",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawImportSettings",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:ReloadImportData",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawSliceSettings",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:SyncUIToImportData",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawSliceSettings",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:ReloadImportData",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawSliceSettings",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:AddNewSprite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawSliceSettings",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DeleteSelectedSprite",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawSliceSettings",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawSelectedSpriteThumbnail",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawSliceSettings",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:SyncPendingEditsToMemory",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:DrawRightPreviewPanel",
+      "target": "function:HimiiEditor/src/panel/TextureInspectorPanel.cpp:FindSpriteIndexAtPixel",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:Open",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:LoadAssets",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawLeftPanel",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:OnImGuiRender",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawAtlasPreviewPanel",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawLeftPanel",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_Overview",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawLeftPanel",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_ScenePaint",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawLeftPanel",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_Toolbar",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawLeftPanel",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_Collision",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawLeftPanel",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_AtlasSetup",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawLeftPanel",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_BrushTile",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawLeftPanel",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_Properties",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_Collision",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:SaveTileSet",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_AtlasSetup",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:SliceAtlasGrid",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_BrushTile",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawSelectedTileThumbnail",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:DrawAtlasPreviewPanel",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:FindTileIDAtAtlasCell",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_Properties",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:SaveTileMap",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:UI_Properties",
+      "target": "function:HimiiEditor/src/panel/TileMapEditorPanel.cpp:SaveTileSet",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    }
+  ]
+}

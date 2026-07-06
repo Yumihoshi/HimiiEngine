@@ -74,6 +74,8 @@ namespace Himii
         AssetHandle SpriteAssetHandle = 0;
         float TilingFactor = 1.0f;
         bool FlipHorizontal = false;
+        int SortingLayer = 0;
+        int SortingOrder = 0;
 
         SpriteRendererComponent() = default;
         SpriteRendererComponent(const SpriteRendererComponent&) = default;
@@ -161,6 +163,9 @@ namespace Himii
         float Restitution = 0.0f;
         float RestitutionThreshold = 0.5f;
 
+        bool IsTrigger = false;
+        int Layer = 0;
+
         // 运行时存储 FixtureId
         void *RuntimeFixture = nullptr;
 
@@ -176,6 +181,9 @@ namespace Himii
         float Friction = 0.5f;
         float Restitution = 0.0f;
         float RestitutionThreshold = 0.5f;
+
+        bool IsTrigger = false;
+        int Layer = 0;
 
         // 运行时存储 FixtureId
         void *RuntimeFixture = nullptr;

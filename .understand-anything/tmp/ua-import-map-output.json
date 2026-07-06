@@ -1,0 +1,469 @@
+{
+  "scriptCompleted": true,
+  "stats": {
+    "filesScanned": 276,
+    "filesWithImports": 62,
+    "totalEdges": 121
+  },
+  "importMap": {
+    ".clang-format": [],
+    ".clang-tidy": [],
+    ".github/workflows/cmake-multi-platform.yml.disabled": [],
+    ".github/workflows/deploy-docs.yml": [],
+    ".github/workflows/deploy-docs.yml.disabled": [],
+    ".gitmodules": [],
+    ".understand-anything/.understandignore": [],
+    ".understand-anything/config.json": [],
+    "build_py.bat": [],
+    "build.py": [],
+    "check_namespaces.py": [],
+    "cmake/EditorPostBuild.cmake": [],
+    "cmake/RuntimePostBuild.cmake": [],
+    "CMakeLists.txt": [],
+    "CMakePresets.json": [],
+    "Docs/docs/DevManual/Architecture.md": [],
+    "Docs/docs/DevManual/BuildingFromSource.md": [],
+    "Docs/docs/DevManual/CoreSystems/Serialization.md": [],
+    "Docs/docs/DevManual/README.md": [],
+    "Docs/docs/index.md": [],
+    "Docs/docs/Roadmap.md": [],
+    "Docs/docs/UserManual/Character2D.md": [],
+    "Docs/docs/UserManual/EditorFeatures.md": [],
+    "Docs/docs/UserManual/EditorInterface.md": [],
+    "Docs/docs/UserManual/GettingStarted.md": [],
+    "Docs/docs/UserManual/Physics2D.md": [],
+    "Docs/docs/UserManual/README.md": [],
+    "Docs/docs/UserManual/ScriptingAPI.md": [],
+    "Docs/docs/UserManual/ScriptWorkflow.md": [],
+    "Docs/docs/UserManual/SpriteAnimation.md": [],
+    "Docs/docs/UserManual/Tutorial2DPlatformer.md": [],
+    "Docs/mkdocs.yml": [],
+    "Docs/releases/v1.0.0-alpha.md": [],
+    "Docs/requirements.txt": [],
+    "Engine/CMakeLists.txt": [],
+    "Engine/CMakePresets.json": [],
+    "Engine/src/Engine.h": [
+      "Engine/src/Himii/Core/Application.h",
+      "Engine/src/Himii/Core/Core.h",
+      "Engine/src/Himii/Core/Input.h",
+      "Engine/src/Himii/Core/KeyCodes.h",
+      "Engine/src/Himii/Core/Layer.h",
+      "Engine/src/Himii/Core/LayerStack.h",
+      "Engine/src/Himii/Core/Log.h",
+      "Engine/src/Himii/Core/MouseCodes.h",
+      "Engine/src/Himii/Core/Timestep.h",
+      "Engine/src/Himii/Core/Window.h",
+      "Engine/src/Himii/ImGui/ImGuiLayer.h",
+      "Engine/src/Himii/Math/Math.h",
+      "Engine/src/Himii/Renderer/Buffer.h",
+      "Engine/src/Himii/Renderer/Camera.h",
+      "Engine/src/Himii/Renderer/Font.h",
+      "Engine/src/Himii/Renderer/Framebuffer.h",
+      "Engine/src/Himii/Renderer/GraphicsContext.h",
+      "Engine/src/Himii/Renderer/OrthographicCamera.h",
+      "Engine/src/Himii/Renderer/OrthographicCameraController.h",
+      "Engine/src/Himii/Renderer/RenderCommand.h",
+      "Engine/src/Himii/Renderer/Renderer.h",
+      "Engine/src/Himii/Renderer/Renderer2D.h",
+      "Engine/src/Himii/Renderer/RendererAPI.h",
+      "Engine/src/Himii/Renderer/Shader.h",
+      "Engine/src/Himii/Renderer/Texture.h",
+      "Engine/src/Himii/Renderer/VertexArray.h",
+      "Engine/src/Himii/Scene/Components.h",
+      "Engine/src/Himii/Scene/Entity.h",
+      "Engine/src/Himii/Scene/Scene.h",
+      "Engine/src/Himii/Scene/SceneSerializer.h",
+      "Engine/src/Himii/Scene/ScriptableEntity.h"
+    ],
+    "Engine/src/Hepch.h": [
+      "Engine/src/Himii/Core/Core.h",
+      "Engine/src/Himii/Core/Log.h",
+      "Engine/src/Himii/Instrument/Instrumentor.h"
+    ],
+    "Engine/src/Himii/Asset/Asset.h": [],
+    "Engine/src/Himii/Asset/AssetManager.cpp": [],
+    "Engine/src/Himii/Asset/AssetManager.h": [],
+    "Engine/src/Himii/Asset/AssetMetadata.h": [
+      "Engine/src/Himii/Asset/Asset.h"
+    ],
+    "Engine/src/Himii/Asset/AssetSerializer.cpp": [],
+    "Engine/src/Himii/Asset/AssetSerializer.h": [],
+    "Engine/src/Himii/Asset/PackFile.cpp": [],
+    "Engine/src/Himii/Asset/PackFile.h": [],
+    "Engine/src/Himii/Asset/PackFileFormat.h": [],
+    "Engine/src/Himii/Asset/Sprite.h": [],
+    "Engine/src/Himii/Asset/SpriteSheetUtility.cpp": [],
+    "Engine/src/Himii/Asset/SpriteSheetUtility.h": [],
+    "Engine/src/Himii/Asset/TextureImportSerializer.cpp": [],
+    "Engine/src/Himii/Asset/TextureImportSerializer.h": [],
+    "Engine/src/Himii/Core/Application.cpp": [],
+    "Engine/src/Himii/Core/Application.h": [
+      "Engine/src/Himii/Core/Layer.h",
+      "Engine/src/Himii/Core/LayerStack.h"
+    ],
+    "Engine/src/Himii/Core/ConsoleLog.cpp": [
+      "Engine/src/Himii/Core/ConsoleLog.h"
+    ],
+    "Engine/src/Himii/Core/ConsoleLog.h": [],
+    "Engine/src/Himii/Core/Core.h": [],
+    "Engine/src/Himii/Core/EntryPoint.h": [],
+    "Engine/src/Himii/Core/FileSystem.cpp": [],
+    "Engine/src/Himii/Core/FileSystem.h": [],
+    "Engine/src/Himii/Core/FileWatcher.cpp": [
+      "Engine/src/Himii/Core/FileWatcher.h"
+    ],
+    "Engine/src/Himii/Core/FileWatcher.h": [],
+    "Engine/src/Himii/Core/Input.h": [],
+    "Engine/src/Himii/Core/KeyCodes.h": [],
+    "Engine/src/Himii/Core/Layer.cpp": [
+      "Engine/src/Himii/Core/Layer.h"
+    ],
+    "Engine/src/Himii/Core/Layer.h": [],
+    "Engine/src/Himii/Core/LayerStack.cpp": [
+      "Engine/src/Himii/Core/LayerStack.h"
+    ],
+    "Engine/src/Himii/Core/LayerStack.h": [
+      "Engine/src/Himii/Core/Layer.h"
+    ],
+    "Engine/src/Himii/Core/Log.cpp": [
+      "Engine/src/Himii/Core/ConsoleLog.h",
+      "Engine/src/Himii/Core/Log.h"
+    ],
+    "Engine/src/Himii/Core/Log.h": [],
+    "Engine/src/Himii/Core/MouseCodes.h": [],
+    "Engine/src/Himii/Core/Timer.h": [],
+    "Engine/src/Himii/Core/Timestep.h": [],
+    "Engine/src/Himii/Core/UUID.cpp": [
+      "Engine/src/Himii/Core/UUID.h"
+    ],
+    "Engine/src/Himii/Core/UUID.h": [],
+    "Engine/src/Himii/Core/Window.cpp": [
+      "Engine/src/Himii/Core/Window.h"
+    ],
+    "Engine/src/Himii/Core/Window.h": [],
+    "Engine/src/Himii/Editor/EditorSettings.cpp": [
+      "Engine/src/Himii/Editor/EditorSettings.h"
+    ],
+    "Engine/src/Himii/Editor/EditorSettings.h": [],
+    "Engine/src/Himii/Events/ApplicationEvent.h": [
+      "Engine/src/Himii/Events/Event.h"
+    ],
+    "Engine/src/Himii/Events/Event.h": [],
+    "Engine/src/Himii/Events/KeyEvent.h": [
+      "Engine/src/Himii/Events/Event.h"
+    ],
+    "Engine/src/Himii/Events/MouseEvent.h": [
+      "Engine/src/Himii/Events/Event.h"
+    ],
+    "Engine/src/Himii/ImGui/ImGuiLayer.cpp": [
+      "Engine/src/Himii/ImGui/ImGuiLayer.h"
+    ],
+    "Engine/src/Himii/ImGui/ImGuiLayer.h": [],
+    "Engine/src/Himii/Instrument/Instrumentor.h": [],
+    "Engine/src/Himii/Math/Math.cpp": [
+      "Engine/src/Himii/Math/Math.h"
+    ],
+    "Engine/src/Himii/Math/Math.h": [],
+    "Engine/src/Himii/Particle/ParticleSystem.cpp": [],
+    "Engine/src/Himii/Particle/ParticleSystem.h": [],
+    "Engine/src/Himii/Project/Project.cpp": [
+      "Engine/src/Himii/Project/Project.h",
+      "Engine/src/Himii/Project/ProjectSerializer.h"
+    ],
+    "Engine/src/Himii/Project/Project.h": [],
+    "Engine/src/Himii/Project/ProjectSerializer.cpp": [
+      "Engine/src/Himii/Project/ProjectSerializer.h"
+    ],
+    "Engine/src/Himii/Project/ProjectSerializer.h": [
+      "Engine/src/Himii/Project/Project.h"
+    ],
+    "Engine/src/Himii/Renderer/Buffer.cpp": [
+      "Engine/src/Himii/Renderer/Buffer.h",
+      "Engine/src/Himii/Renderer/Renderer.h"
+    ],
+    "Engine/src/Himii/Renderer/Buffer.h": [],
+    "Engine/src/Himii/Renderer/Camera.h": [],
+    "Engine/src/Himii/Renderer/EditorCamera.cpp": [],
+    "Engine/src/Himii/Renderer/EditorCamera.h": [],
+    "Engine/src/Himii/Renderer/Font.cpp": [
+      "Engine/src/Himii/Renderer/Font.h"
+    ],
+    "Engine/src/Himii/Renderer/Font.h": [],
+    "Engine/src/Himii/Renderer/Framebuffer.cpp": [],
+    "Engine/src/Himii/Renderer/Framebuffer.h": [],
+    "Engine/src/Himii/Renderer/GraphicsContext.h": [],
+    "Engine/src/Himii/Renderer/OrthographicCamera.cpp": [],
+    "Engine/src/Himii/Renderer/OrthographicCamera.h": [],
+    "Engine/src/Himii/Renderer/OrthographicCameraController.cpp": [],
+    "Engine/src/Himii/Renderer/OrthographicCameraController.h": [],
+    "Engine/src/Himii/Renderer/RenderCommand.cpp": [],
+    "Engine/src/Himii/Renderer/RenderCommand.h": [],
+    "Engine/src/Himii/Renderer/Renderer.cpp": [
+      "Engine/src/Himii/Renderer/Renderer.h"
+    ],
+    "Engine/src/Himii/Renderer/Renderer.h": [],
+    "Engine/src/Himii/Renderer/Renderer2D.cpp": [],
+    "Engine/src/Himii/Renderer/Renderer2D.h": [],
+    "Engine/src/Himii/Renderer/Renderer3D.cpp": [
+      "Engine/src/Himii/Renderer/Renderer3D.h"
+    ],
+    "Engine/src/Himii/Renderer/Renderer3D.h": [],
+    "Engine/src/Himii/Renderer/RendererAPI.cpp": [],
+    "Engine/src/Himii/Renderer/RendererAPI.h": [],
+    "Engine/src/Himii/Renderer/Shader.cpp": [
+      "Engine/src/Himii/Renderer/Renderer.h",
+      "Engine/src/Himii/Renderer/Shader.h"
+    ],
+    "Engine/src/Himii/Renderer/Shader.h": [],
+    "Engine/src/Himii/Renderer/Texture.cpp": [],
+    "Engine/src/Himii/Renderer/Texture.h": [],
+    "Engine/src/Himii/Renderer/UniformBuffer.cpp": [],
+    "Engine/src/Himii/Renderer/UniformBuffer.h": [],
+    "Engine/src/Himii/Renderer/VertexArray.cpp": [],
+    "Engine/src/Himii/Renderer/VertexArray.h": [],
+    "Engine/src/Himii/Scene/Components.h": [
+      "Engine/src/Himii/Scene/SceneCamera.h"
+    ],
+    "Engine/src/Himii/Scene/Entity.cpp": [],
+    "Engine/src/Himii/Scene/Entity.h": [
+      "Engine/src/Himii/Scene/Scene.h"
+    ],
+    "Engine/src/Himii/Scene/ParticleEmitterAsset.h": [],
+    "Engine/src/Himii/Scene/Scene.cpp": [
+      "Engine/src/Himii/Scene/Components.h",
+      "Engine/src/Himii/Scene/Entity.h",
+      "Engine/src/Himii/Scene/Scene.h",
+      "Engine/src/Himii/Scene/ScriptableEntity.h"
+    ],
+    "Engine/src/Himii/Scene/Scene.h": [],
+    "Engine/src/Himii/Scene/SceneCamera.cpp": [
+      "Engine/src/Himii/Scene/SceneCamera.h"
+    ],
+    "Engine/src/Himii/Scene/SceneCamera.h": [],
+    "Engine/src/Himii/Scene/SceneSerializer.cpp": [],
+    "Engine/src/Himii/Scene/SceneSerializer.h": [],
+    "Engine/src/Himii/Scene/ScriptableEntity.h": [],
+    "Engine/src/Himii/Scene/SpriteAnimation.h": [],
+    "Engine/src/Himii/Scene/SpriteAnimationUtility.cpp": [],
+    "Engine/src/Himii/Scene/SpriteAnimationUtility.h": [],
+    "Engine/src/Himii/Scene/SpriteRendererUtility.cpp": [],
+    "Engine/src/Himii/Scene/SpriteRendererUtility.h": [],
+    "Engine/src/Himii/Scene/TileMapChunk.h": [],
+    "Engine/src/Himii/Scene/TilemapColliderBuilder.cpp": [],
+    "Engine/src/Himii/Scene/TilemapColliderBuilder.h": [],
+    "Engine/src/Himii/Scene/TileMapCoordinateUtility.cpp": [],
+    "Engine/src/Himii/Scene/TileMapCoordinateUtility.h": [],
+    "Engine/src/Himii/Scene/TileMapData.cpp": [],
+    "Engine/src/Himii/Scene/TileMapData.h": [],
+    "Engine/src/Himii/Scene/TileSet.h": [],
+    "Engine/src/Himii/Scripting/ScriptCompiler.cpp": [
+      "Engine/src/Himii/Scripting/ScriptCompiler.h"
+    ],
+    "Engine/src/Himii/Scripting/ScriptCompiler.h": [],
+    "Engine/src/Himii/Scripting/ScriptEngine.cpp": [
+      "Engine/src/Himii/Scripting/ScriptCompiler.h",
+      "Engine/src/Himii/Scripting/ScriptEngine.h",
+      "Engine/src/Himii/Scripting/ScriptGlue.h"
+    ],
+    "Engine/src/Himii/Scripting/ScriptEngine.h": [],
+    "Engine/src/Himii/Scripting/ScriptGlue.cpp": [
+      "Engine/src/Himii/Scripting/ScriptEngine.h",
+      "Engine/src/Himii/Scripting/ScriptGlue.h"
+    ],
+    "Engine/src/Himii/Scripting/ScriptGlue.h": [],
+    "Engine/src/Himii/Scripting/ScriptIDE.cpp": [
+      "Engine/src/Himii/Scripting/ScriptIDE.h"
+    ],
+    "Engine/src/Himii/Scripting/ScriptIDE.h": [],
+    "Engine/src/Himii/Scripting/ScriptIDELauncher.cpp": [
+      "Engine/src/Himii/Scripting/ScriptIDELauncher.h"
+    ],
+    "Engine/src/Himii/Scripting/ScriptIDELauncher.h": [],
+    "Engine/src/Himii/Utils/PlatformUtils.h": [],
+    "Engine/src/Platform/Linux/LinuxPlatformUtils.cpp": [],
+    "Engine/src/Platform/OpenGL/OpenGLBuffer.cpp": [
+      "Engine/src/Platform/OpenGL/OpenGLBuffer.h"
+    ],
+    "Engine/src/Platform/OpenGL/OpenGLBuffer.h": [],
+    "Engine/src/Platform/OpenGL/OpenGLContext.cpp": [
+      "Engine/src/Platform/OpenGL/OpenGLContext.h"
+    ],
+    "Engine/src/Platform/OpenGL/OpenGLContext.h": [],
+    "Engine/src/Platform/OpenGL/OpenGLFramebuffer.cpp": [],
+    "Engine/src/Platform/OpenGL/OpenGLFramebuffer.h": [],
+    "Engine/src/Platform/OpenGL/OpenGLRendererAPI.cpp": [],
+    "Engine/src/Platform/OpenGL/OpenGLRendererAPI.h": [],
+    "Engine/src/Platform/OpenGL/OpenGLShader.cpp": [],
+    "Engine/src/Platform/OpenGL/OpenGLShader.h": [],
+    "Engine/src/Platform/OpenGL/OpenGLTexture.cpp": [],
+    "Engine/src/Platform/OpenGL/OpenGLTexture.h": [],
+    "Engine/src/Platform/OpenGL/OpenGLTextureCube.cpp": [
+      "Engine/src/Platform/OpenGL/OpenGLTextureCube.h"
+    ],
+    "Engine/src/Platform/OpenGL/OpenGLTextureCube.h": [],
+    "Engine/src/Platform/OpenGL/OpenGLUniformBuffer.cpp": [
+      "Engine/src/Platform/OpenGL/OpenGLUniformBuffer.h"
+    ],
+    "Engine/src/Platform/OpenGL/OpenGLUniformBuffer.h": [],
+    "Engine/src/Platform/OpenGL/OpenGLVertexArray.cpp": [],
+    "Engine/src/Platform/OpenGL/OpenGLVertexArray.h": [],
+    "Engine/src/Platform/Windows/WindowsInput.cpp": [],
+    "Engine/src/Platform/Windows/WindowsPlatformUtils.cpp": [],
+    "Engine/src/Platform/Windows/WindowsWindow.cpp": [
+      "Engine/src/Platform/Windows/WindowsWindow.h"
+    ],
+    "Engine/src/Platform/Windows/WindowsWindow.h": [],
+    "HimiiEditor/AppIcon.rc": [],
+    "HimiiEditor/assets/fonts/msyh.ttc": [],
+    "HimiiEditor/assets/shaders/FlatColor.glsl": [],
+    "HimiiEditor/assets/shaders/Grid.glsl": [],
+    "HimiiEditor/assets/shaders/Renderer2D_Circle.glsl": [],
+    "HimiiEditor/assets/shaders/Renderer2D_Line.glsl": [],
+    "HimiiEditor/assets/shaders/Renderer2D_Quad.glsl": [],
+    "HimiiEditor/assets/shaders/Renderer2D_Text.glsl": [],
+    "HimiiEditor/assets/shaders/Renderer3D_Cube.glsl": [],
+    "HimiiEditor/assets/shaders/Skybox.glsl": [],
+    "HimiiEditor/CMakeLists.txt": [],
+    "HimiiEditor/resources/skybox/back.bmp": [],
+    "HimiiEditor/resources/skybox/bottom.bmp": [],
+    "HimiiEditor/resources/skybox/front.bmp": [],
+    "HimiiEditor/resources/skybox/left.bmp": [],
+    "HimiiEditor/resources/skybox/right.bmp": [],
+    "HimiiEditor/resources/skybox/top.bmp": [],
+    "HimiiEditor/src/CamerController.h": [],
+    "HimiiEditor/src/commands/EditorCommandHistory.cpp": [
+      "HimiiEditor/src/commands/EditorCommandHistory.h"
+    ],
+    "HimiiEditor/src/commands/EditorCommandHistory.h": [
+      "HimiiEditor/src/commands/IEditorCommand.h"
+    ],
+    "HimiiEditor/src/commands/EditorCommands.cpp": [
+      "HimiiEditor/src/commands/EditorCommands.h"
+    ],
+    "HimiiEditor/src/commands/EditorCommands.h": [
+      "HimiiEditor/src/commands/EntitySnapshot.h",
+      "HimiiEditor/src/commands/IEditorCommand.h"
+    ],
+    "HimiiEditor/src/commands/EntitySnapshot.cpp": [
+      "HimiiEditor/src/commands/EntitySnapshot.h"
+    ],
+    "HimiiEditor/src/commands/EntitySnapshot.h": [],
+    "HimiiEditor/src/commands/IEditorCommand.h": [],
+    "HimiiEditor/src/EditorExternalFileDrop.cpp": [
+      "HimiiEditor/src/EditorExternalFileDrop.h"
+    ],
+    "HimiiEditor/src/EditorExternalFileDrop.h": [],
+    "HimiiEditor/src/EditorLayer.cpp": [
+      "HimiiEditor/src/CamerController.h",
+      "HimiiEditor/src/commands/EditorCommands.h",
+      "HimiiEditor/src/EditorExternalFileDrop.h",
+      "HimiiEditor/src/EditorLayer.h",
+      "HimiiEditor/src/EditorLayoutDefaults.h",
+      "HimiiEditor/src/TilemapEditorUtility.h"
+    ],
+    "HimiiEditor/src/EditorLayer.h": [
+      "HimiiEditor/src/commands/EditorCommandHistory.h",
+      "HimiiEditor/src/panel/AnimationEditorPanel.h",
+      "HimiiEditor/src/panel/ConsolePanel.h",
+      "HimiiEditor/src/panel/ContentBrowserPanel.h",
+      "HimiiEditor/src/panel/EditorPreferencesPanel.h",
+      "HimiiEditor/src/panel/ParticleEmitterEditorPanel.h",
+      "HimiiEditor/src/panel/ProjectSettingsPanel.h",
+      "HimiiEditor/src/panel/SceneHierarchyPanel.h",
+      "HimiiEditor/src/panel/ScriptConsolePanel.h",
+      "HimiiEditor/src/panel/TextureInspectorPanel.h",
+      "HimiiEditor/src/panel/TileMapEditorPanel.h"
+    ],
+    "HimiiEditor/src/EditorLayoutDefaults.cpp": [
+      "HimiiEditor/src/EditorLayoutDefaults.h"
+    ],
+    "HimiiEditor/src/EditorLayoutDefaults.h": [],
+    "HimiiEditor/src/HimiiApp.cpp": [
+      "HimiiEditor/src/EditorLayer.h"
+    ],
+    "HimiiEditor/src/InspectorControls.cpp": [
+      "HimiiEditor/src/InspectorControls.h"
+    ],
+    "HimiiEditor/src/InspectorControls.h": [],
+    "HimiiEditor/src/panel/AnimationEditorPanel.cpp": [
+      "HimiiEditor/src/panel/AnimationEditorPanel.h"
+    ],
+    "HimiiEditor/src/panel/AnimationEditorPanel.h": [],
+    "HimiiEditor/src/panel/ConsolePanel.cpp": [
+      "HimiiEditor/src/panel/ConsolePanel.h"
+    ],
+    "HimiiEditor/src/panel/ConsolePanel.h": [],
+    "HimiiEditor/src/panel/ContentBrowserPanel.cpp": [
+      "HimiiEditor/src/panel/ContentBrowserPanel.h"
+    ],
+    "HimiiEditor/src/panel/ContentBrowserPanel.h": [],
+    "HimiiEditor/src/panel/EditorPreferencesPanel.cpp": [
+      "HimiiEditor/src/panel/EditorPreferencesPanel.h"
+    ],
+    "HimiiEditor/src/panel/EditorPreferencesPanel.h": [],
+    "HimiiEditor/src/panel/ParticleEmitterEditorPanel.cpp": [
+      "HimiiEditor/src/panel/ParticleEmitterEditorPanel.h"
+    ],
+    "HimiiEditor/src/panel/ParticleEmitterEditorPanel.h": [],
+    "HimiiEditor/src/panel/ProjectSettingsPanel.cpp": [
+      "HimiiEditor/src/panel/ProjectSettingsPanel.h"
+    ],
+    "HimiiEditor/src/panel/ProjectSettingsPanel.h": [],
+    "HimiiEditor/src/panel/SceneHierarchyPanel.cpp": [
+      "HimiiEditor/src/panel/SceneHierarchyPanel.h"
+    ],
+    "HimiiEditor/src/panel/SceneHierarchyPanel.h": [],
+    "HimiiEditor/src/panel/ScriptConsolePanel.cpp": [
+      "HimiiEditor/src/panel/ScriptConsolePanel.h"
+    ],
+    "HimiiEditor/src/panel/ScriptConsolePanel.h": [],
+    "HimiiEditor/src/panel/TextureInspectorPanel.cpp": [
+      "HimiiEditor/src/panel/TextureInspectorPanel.h"
+    ],
+    "HimiiEditor/src/panel/TextureInspectorPanel.h": [],
+    "HimiiEditor/src/panel/TileMapEditorPanel.cpp": [
+      "HimiiEditor/src/panel/TileMapEditorPanel.h"
+    ],
+    "HimiiEditor/src/panel/TileMapEditorPanel.h": [],
+    "HimiiEditor/src/TilemapEditorUtility.cpp": [
+      "HimiiEditor/src/TilemapEditorUtility.h"
+    ],
+    "HimiiEditor/src/TilemapEditorUtility.h": [],
+    "HimiiRuntime/assets/fonts/msyh.ttc": [],
+    "HimiiRuntime/assets/scripts/Player.cs": [],
+    "HimiiRuntime/assets/shaders/FlatColor.glsl": [],
+    "HimiiRuntime/assets/shaders/Renderer2D_Circle.glsl": [],
+    "HimiiRuntime/assets/shaders/Renderer2D_Line.glsl": [],
+    "HimiiRuntime/assets/shaders/Renderer2D_Quad.glsl": [],
+    "HimiiRuntime/CMakeLists.txt": [],
+    "HimiiRuntime/src/RuntimeApp.cpp": [],
+    "Packaging/ScriptingApi/Himii/SerializeField.cs": [],
+    "Packaging/Templates/BlankProject/assets/scripts/SampleScript.cs": [],
+    "Packaging/Templates/BlankProject/GameAssembly.csproj": [],
+    "README.md": [],
+    "ScriptCore/CMakeLists.txt": [],
+    "ScriptCore/ScriptCore.csproj": [],
+    "ScriptCore/Source/HashUtils.cs": [],
+    "ScriptCore/Source/Input.cs": [],
+    "ScriptCore/Source/InternalCalls.cs": [],
+    "ScriptCore/Source/KeyCode.cs": [],
+    "ScriptCore/Source/Log.cs": [],
+    "ScriptCore/Source/NativeStrcuts.cs": [],
+    "ScriptCore/Source/Physics2D.cs": [],
+    "ScriptCore/Source/ReflectionBridge.cs": [],
+    "ScriptCore/Source/Scene/Collision2DInfo.cs": [],
+    "ScriptCore/Source/Scene/Component.cs": [],
+    "ScriptCore/Source/Scene/Entity.cs": [],
+    "ScriptCore/Source/Scene/SceneManager.cs": [],
+    "ScriptCore/Source/Scene/Tilemap.cs": [],
+    "ScriptCore/Source/ScriptManager.cs": [],
+    "ScriptCore/Source/SerializeField.cs": [],
+    "ScriptCore/Source/Time.cs": [],
+    "ScriptCore/Source/Vector2.cs": [],
+    "ScriptCore/Source/Vector3.cs": [],
+    "ScriptCore/Source/Vector4.cs": [],
+    "Tools/ResourcePacker/CMakeLists.txt": [],
+    "Tools/ResourcePacker/main.cpp": [],
+    "vcpkg.json": []
+  }
+}

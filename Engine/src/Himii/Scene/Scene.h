@@ -48,6 +48,7 @@ namespace Himii
 
         void OnRuntimeStart();
         void OnSimulationStart();
+        void RunScriptFixedUpdate(Timestep ts);
         void OnRuntimeStop();
         void OnSimulationStop();
 
@@ -79,7 +80,10 @@ namespace Himii
 
         Entity GetPrimaryCameraEntity();
 
-        template<typename... Components> 
+        /// 将 Transform 写入 Box2D 刚体（Play/Simulate 期间脚本改 Position/Rotation 时调用）。
+        void SyncEntityTransformToPhysics(Entity entity);
+
+        template<typename... Components>
         auto GetAllEntitiesWith()
         {
             return m_Registry.view<Components...>();

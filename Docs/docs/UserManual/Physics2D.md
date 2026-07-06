@@ -19,6 +19,7 @@ HimiiEngine 内置 **Box2D v3** 作为 2D 物理引擎。
 | **Kinematic** | 主要由脚本/编辑器驱动，模拟行为与 Dynamic 不同 |
 
 - **Fixed Rotation**：勾选后锁定 Z 轴旋转。
+- **Body Type**、**Fixed Rotation** 可在运行时通过脚本读写（见 [脚本 API - Rigidbody2D](ScriptingAPI.md#rigidbody2d)）。
 
 ### Box Collider 2D
 
@@ -26,13 +27,15 @@ HimiiEngine 内置 **Box2D v3** 作为 2D 物理引擎。
 
 - **Offset** / **Size**：相对 Transform 的偏移与尺寸。
 - **Density**、**Friction**、**Restitution**、**Restitution Threshold**：密度、摩擦、弹性及弹性阈值。
+- **Is Trigger**：勾选后为传感器，不产生物理碰撞响应，触发 `OnTriggerEnter2D` / `OnTriggerExit2D`。
+- **Layer**：物理层（0–7），决定与哪些层发生碰撞。
 
 ### Circle Collider 2D
 
 圆形碰撞形状。
 
 - **Offset**、**Radius**：圆心与半径。
-- 材料参数同 Box Collider。
+- 材料参数、**Is Trigger**、**Layer** 同 Box Collider。
 
 **Box / Circle Collider** 可单独挂在实体上（无需 Rigidbody2D）：进入 **Play** 时引擎会为其自动创建 **Static** 刚体，适合地面、墙等静止碰撞体。
 
@@ -68,6 +71,8 @@ HimiiEngine 内置 **Box2D v3** 作为 2D 物理引擎。
 var rb = GetComponent<Rigidbody2D>();
 if (rb != null)
 {
+    rb.BodyType = Rigidbody2DBodyType.Dynamic;
+    rb.FixedRotation = true;
     rb.Velocity = new Vector2(3.0f, 0.0f);
     rb.ApplyImpulse(new Vector2(0.0f, 5.0f), wake: true);
 }
@@ -90,6 +95,35 @@ public override void OnCollisionExit2D(Collision2DInfo collision)
     Log.Info($"Exit: {collision.OtherEntityID}");
 }
 ```
+
+### 触发器事件（脚本）
+
+至少一方碰撞体勾选 **Is Trigger** 时，接触/分离会调用：
+
+```csharp
+public override void OnTriggerEnter2D(Collision2DInfo collision)
+{
+    Log.Info($"Trigger enter: {collision.OtherEntityID}");
+}
+
+public override void OnTriggerExit2D(Collision2DInfo collision)
+{
+    Log.Info($"Trigger exit: {collision.OtherEntityID}");
+}
+```
+
+触发器不产生物理推力，适合拾取区、伤害区、关卡出口等。
+
+## 物理层 (Physics 2D Layers)
+
+项目支持 **8 个物理层**（索引 0–7）。在 **Project Settings → Physics 2D Layers** 中：
+
+- 编辑每层显示名称（Inspector 中 Collider **Layer** 下拉使用）。
+- 配置 **Collision Matrix**：勾选表示两层之间会发生碰撞/触发检测。
+
+Collider 的 **Layer** 字段决定该形状所属层；未勾选的层组合将完全忽略彼此（碰撞与触发均不会触发）。
+
+保存项目（**File → Save Project**）后层配置写入 `.himii` 项目文件。
 
 注意：
 

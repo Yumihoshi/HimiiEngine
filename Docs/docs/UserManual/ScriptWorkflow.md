@@ -29,11 +29,32 @@
 
 ## 运行与热重载策略
 
-- **Play**：复制场景、加载 `GameAssembly`、为带 `ScriptComponent` 的实体调用 `OnCreate`，每帧 `OnUpdate`。
+- **Play**：复制场景、加载 `GameAssembly`、为带 `ScriptComponent` 的实体调用 `OnCreate`；每帧先 `OnUpdate`，再 Box2D 步进与碰撞事件，最后 **`OnFixedUpdate`**（物理之后，见下节）。
 - **Stop** 后回到编辑场景；修改脚本后需再次 **Play** 才会加载新 DLL（**不在 Play 中热替换程序集**）。
 - 编译成功且曾中断 Play 时，可能提示重新按 Play。
 
 运行时日志使用 `Log.Info` / `Warning` / `Error`，在 **Window → Console** 查看（见 [脚本 API](ScriptingAPI.md)）。
+
+## 物理时序与平台跳跃（重要）
+
+Play 模式下，单帧脚本与物理顺序为：
+
+1. **`OnUpdate`**：读输入、UI、相机等（此时尚未执行本帧物理步进）
+2. **Box2D `World.Step`** + 同步 `Rigidbody2D` 位置
+3. **`OnCollisionEnter2D` / `OnCollisionExit2D`**（若本帧有接触变化）
+4. **`OnFixedUpdate`**：适合移动、跳跃、**着地检测**（此时速度与本帧碰撞已更新）
+
+### 平台角色着地建议
+
+| 做法 | 说明 |
+|------|------|
+| **推荐** | 在 `OnFixedUpdate` 中用 **`Physics2D.Raycast`** 从脚底向下短射线判定着地；用 `hit.Normal.Y` 过滤墙面 |
+| **可用** | `OnCollisionEnter2D` 中若 `collision.Normal.Y` 足够大，表示脚下有支撑（法线指向本实体） |
+| **不推荐** | 单独依赖 `OnCollisionEnter` 维护 `_isGrounded`：出生时可能与地面重叠而无 begin 事件；起跳后盒体仍贴地时也不会再次 Enter |
+
+起跳后可在数帧内忽略射线着地（避免贴地误触），详见 Test 项目 `PlayerController.cs`。
+
+修改 **ScriptCore**（新增 `OnFixedUpdate`、扩展 `Collision2DInfo`）后，需 **重新编译 ScriptCore 并重启 HimiiEditor**，再 **Compile and Reload** 游戏程序集。
 
 ## IDE 配置
 
@@ -60,8 +81,8 @@
 | 现象 | 处理 |
 |------|------|
 | Play 后脚本不执行 | 检查类名是否与 `ScriptComponent` 中一致（含命名空间）；Script Console 是否编译成功 |
-| Inspector 无字段 | 字段须为 **public 实例** 或 **private + `[SerializeField]`**（`HimiiEngine` 命名空间）；脚本类名与组件一致；**重新编译 ScriptCore 并重启编辑器** 后重选实体 |
-| `[SerializeField]` 无智能提示 | 用 IDE 打开 **`.sln`**；确认 `assets/scripts/Himii/SerializeField.cs` 存在；`using HimiiEngine;`；重载 C# 语言服务 |
+| Inspector 无字段 | 字段须为 **public 实例** 或 **private + `[SerializeField]`**；脚本类名与组件一致；**重新编译 ScriptCore 并重启编辑器** 后重选实体 |
+| `[SerializeField]` 无智能提示 | 用 IDE 打开 **`.sln`**；`GameAssembly` 引用 **ScriptCore.dll**；脚本顶部 `using HimiiEngine;`；重载 C# 语言服务 |
 | Ctrl+S 弹出保存 Animation | 仅在 Animation Editor 内对**未 Save As 的新动画**点 Save 会弹窗；全局 Ctrl+S 已忽略未落盘动画 |
 | Log 无输出 | 使用 `Himii.Log`，非 `Console.WriteLine`；确认 Console 面板已打开 |
 | IDE 打不开 | Preferences / Project Settings 中检查 IDE 路径；VS Code 需 `code` 在 PATH |

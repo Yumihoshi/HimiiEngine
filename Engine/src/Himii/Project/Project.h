@@ -5,6 +5,8 @@
 #include "Himii/Asset/AssetManager.h"
 #include "Himii/Core/Log.h"
 #include "Himii/Scripting/ScriptIDE.h"
+#include "Himii/Scene/Physics2DLayerSettings.h"
+#include "Himii/Scene/SortingLayerSettings.h"
 
 namespace Himii
 {
@@ -19,6 +21,9 @@ namespace Himii
         ScriptIDEType ScriptIDEOverride = ScriptIDEType::Inherit;
         std::string CustomScriptIDEPath;
         std::string CustomScriptIDEArguments;
+
+        Physics2DLayerSettings Physics2DLayers;
+        SortingLayerSettings SortingLayers;
 	};
 
 	class Project {

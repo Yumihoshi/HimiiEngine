@@ -1,0 +1,187 @@
+{
+  "projectRoot": "D:/Himii-Engine",
+  "batchIndex": 11,
+  "totalBatches": 14,
+  "files": [
+    {
+      "path": "Engine/src/Himii/Particle/ParticleSystem.cpp",
+      "language": "cpp",
+      "sizeLines": 85,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Particle/ParticleSystem.h",
+      "language": "c",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/EditorCamera.cpp",
+      "language": "cpp",
+      "sizeLines": 281,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/EditorCamera.h",
+      "language": "c",
+      "sizeLines": 112,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Framebuffer.cpp",
+      "language": "cpp",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/OrthographicCamera.cpp",
+      "language": "cpp",
+      "sizeLines": 37,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/OrthographicCameraController.cpp",
+      "language": "cpp",
+      "sizeLines": 108,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/RenderCommand.cpp",
+      "language": "cpp",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Renderer2D.cpp",
+      "language": "cpp",
+      "sizeLines": 1012,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Renderer3D.cpp",
+      "language": "cpp",
+      "sizeLines": 660,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Renderer3D.h",
+      "language": "c",
+      "sizeLines": 64,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/RendererAPI.cpp",
+      "language": "cpp",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/Texture.cpp",
+      "language": "cpp",
+      "sizeLines": 74,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/UniformBuffer.cpp",
+      "language": "cpp",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/UniformBuffer.h",
+      "language": "c",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Renderer/VertexArray.cpp",
+      "language": "cpp",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/Entity.cpp",
+      "language": "cpp",
+      "sizeLines": 9,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/ParticleEmitterAsset.h",
+      "language": "c",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/SceneSerializer.cpp",
+      "language": "cpp",
+      "sizeLines": 800,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/SpriteAnimation.h",
+      "language": "c",
+      "sizeLines": 314,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/SpriteAnimationUtility.cpp",
+      "language": "cpp",
+      "sizeLines": 115,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/SpriteAnimationUtility.h",
+      "language": "c",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/SpriteRendererUtility.cpp",
+      "language": "cpp",
+      "sizeLines": 128,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/SpriteRendererUtility.h",
+      "language": "c",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "Engine/src/Himii/Scene/TileMapChunk.h",
+      "language": "c",
+      "sizeLines": 71,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "Engine/src/Himii/Particle/ParticleSystem.cpp": [],
+    "Engine/src/Himii/Particle/ParticleSystem.h": [],
+    "Engine/src/Himii/Renderer/EditorCamera.cpp": [],
+    "Engine/src/Himii/Renderer/EditorCamera.h": [],
+    "Engine/src/Himii/Renderer/Framebuffer.cpp": [],
+    "Engine/src/Himii/Renderer/OrthographicCamera.cpp": [],
+    "Engine/src/Himii/Renderer/OrthographicCameraController.cpp": [],
+    "Engine/src/Himii/Renderer/RenderCommand.cpp": [],
+    "Engine/src/Himii/Renderer/Renderer2D.cpp": [],
+    "Engine/src/Himii/Renderer/Renderer3D.cpp": [
+      "Engine/src/Himii/Renderer/Renderer3D.h"
+    ],
+    "Engine/src/Himii/Renderer/Renderer3D.h": [],
+    "Engine/src/Himii/Renderer/RendererAPI.cpp": [],
+    "Engine/src/Himii/Renderer/Texture.cpp": [],
+    "Engine/src/Himii/Renderer/UniformBuffer.cpp": [],
+    "Engine/src/Himii/Renderer/UniformBuffer.h": [],
+    "Engine/src/Himii/Renderer/VertexArray.cpp": [],
+    "Engine/src/Himii/Scene/Entity.cpp": [],
+    "Engine/src/Himii/Scene/ParticleEmitterAsset.h": [],
+    "Engine/src/Himii/Scene/SceneSerializer.cpp": [],
+    "Engine/src/Himii/Scene/SpriteAnimation.h": [],
+    "Engine/src/Himii/Scene/SpriteAnimationUtility.cpp": [],
+    "Engine/src/Himii/Scene/SpriteAnimationUtility.h": [],
+    "Engine/src/Himii/Scene/SpriteRendererUtility.cpp": [],
+    "Engine/src/Himii/Scene/SpriteRendererUtility.h": [],
+    "Engine/src/Himii/Scene/TileMapChunk.h": []
+  },
+  "neighborMap": {}
+}

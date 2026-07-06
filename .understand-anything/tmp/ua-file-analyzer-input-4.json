@@ -1,0 +1,30 @@
+{
+  "projectRoot": "D:/Himii-Engine",
+  "batchFiles": [
+    {"path": "Engine/src/Hepch.h", "language": "c", "sizeLines": 44, "fileCategory": "code"},
+    {"path": "Engine/src/Himii/Core/ConsoleLog.cpp", "language": "cpp", "sizeLines": 40, "fileCategory": "code"},
+    {"path": "Engine/src/Himii/Core/ConsoleLog.h", "language": "c", "sizeLines": 32, "fileCategory": "code"},
+    {"path": "Engine/src/Himii/Core/Core.h", "language": "c", "sizeLines": 27, "fileCategory": "code"},
+    {"path": "Engine/src/Himii/Core/Log.cpp", "language": "cpp", "sizeLines": 127, "fileCategory": "code"},
+    {"path": "Engine/src/Himii/Core/Log.h", "language": "c", "sizeLines": 77, "fileCategory": "code"},
+    {"path": "Engine/src/Himii/Instrument/Instrumentor.h", "language": "c", "sizeLines": 155, "fileCategory": "code"}
+  ],
+  "batchImportData": {
+    "Engine/src/Hepch.h": [
+      "Engine/src/Himii/Core/Core.h",
+      "Engine/src/Himii/Core/Log.h",
+      "Engine/src/Himii/Instrument/Instrumentor.h"
+    ],
+    "Engine/src/Himii/Core/ConsoleLog.cpp": [
+      "Engine/src/Himii/Core/ConsoleLog.h"
+    ],
+    "Engine/src/Himii/Core/ConsoleLog.h": [],
+    "Engine/src/Himii/Core/Core.h": [],
+    "Engine/src/Himii/Core/Log.cpp": [
+      "Engine/src/Himii/Core/ConsoleLog.h",
+      "Engine/src/Himii/Core/Log.h"
+    ],
+    "Engine/src/Himii/Core/Log.h": [],
+    "Engine/src/Himii/Instrument/Instrumentor.h": []
+  }
+}

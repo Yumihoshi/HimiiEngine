@@ -6,10 +6,13 @@
 #include "Himii/Project/Project.h"
 
 #include <imgui.h>
+#include <imgui_internal.h>
 #include <glm/gtc/type_ptr.hpp>
 
 #include <algorithm>
 #include <cfloat>
+#include <cstdio>
+#include <cstring>
 #include <filesystem>
 
 namespace Himii
@@ -53,6 +56,19 @@ namespace Himii
         });
     }
 
+    void DrawIntControl(const char* label, int& value, float speed, int minimum, int maximum)
+    {
+        DrawPropertyRow(label, [&]()
+        {
+            ImGui::PushItemWidth(-1.0f);
+            if (minimum != 0 || maximum != 0)
+                ImGui::DragInt("##Value", &value, speed, minimum, maximum);
+            else
+                ImGui::DragInt("##Value", &value, speed);
+            ImGui::PopItemWidth();
+        });
+    }
+
     void DrawColorControl(const std::string& label, glm::vec4& value)
     {
         DrawPropertyRow(label.c_str(), [&]()
@@ -60,6 +76,112 @@ namespace Himii
             ImGui::PushItemWidth(-1.0f);
             ImGui::ColorEdit4("##Value", glm::value_ptr(value));
             ImGui::PopItemWidth();
+        });
+    }
+
+    void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue,
+                         const std::function<void()>& onEditBegin,
+                         const std::function<void()>& onEditEnd)
+    {
+        ImGuiIO& inputOutput = ImGui::GetIO();
+        ImFont* boldFont = inputOutput.Fonts->Fonts[0];
+
+        ImGui::PushID(label.c_str());
+        if (ImGui::BeginTable("##Vec3Control", 2,
+                              ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
+        {
+            ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, InspectorLabelColumnWidth);
+            ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(label.c_str());
+            ImGui::TableNextColumn();
+
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
+
+            const float lineHeight = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+            const ImVec2 buttonSize = {lineHeight + 3.0f, lineHeight};
+            const float widthEach = (ImGui::GetContentRegionAvail().x - 3.0f * buttonSize.x) / 3.0f;
+
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.8f, 0.23f, 0.12f, 1.0f});
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.9f, 0.2f, 0.2f, 1.0f});
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
+            ImGui::PushFont(boldFont);
+            if (ImGui::Button("X", buttonSize))
+                values.x = resetValue;
+            ImGui::PopFont();
+            ImGui::PopStyleColor(3);
+
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(widthEach);
+            ImGui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f");
+            if (ImGui::IsItemActivated() && onEditBegin)
+                onEditBegin();
+            if (ImGui::IsItemDeactivatedAfterEdit() && onEditEnd)
+                onEditEnd();
+            ImGui::SameLine();
+
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.12f, 0.7f, 0.2f, 1.0f});
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.3f, 0.8f, 0.3f, 1.0f});
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{0.2f, 0.7f, 0.2f, 1.0f});
+            ImGui::PushFont(boldFont);
+            if (ImGui::Button("Y", buttonSize))
+                values.y = resetValue;
+            ImGui::PopFont();
+            ImGui::PopStyleColor(3);
+
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(widthEach);
+            ImGui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f");
+            if (ImGui::IsItemActivated() && onEditBegin)
+                onEditBegin();
+            if (ImGui::IsItemDeactivatedAfterEdit() && onEditEnd)
+                onEditEnd();
+            ImGui::SameLine();
+
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.13f, 0.4f, 0.8f, 1.0f});
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.2f, 0.35f, 0.9f, 1.0f});
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{0.1f, 0.25f, 0.8f, 1.0f});
+            ImGui::PushFont(boldFont);
+            if (ImGui::Button("Z", buttonSize))
+                values.z = resetValue;
+            ImGui::PopFont();
+            ImGui::PopStyleColor(3);
+
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(widthEach);
+            ImGui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f");
+            if (ImGui::IsItemActivated() && onEditBegin)
+                onEditBegin();
+            if (ImGui::IsItemDeactivatedAfterEdit() && onEditEnd)
+                onEditEnd();
+
+            ImGui::PopStyleVar();
+            ImGui::EndTable();
+        }
+        ImGui::PopID();
+    }
+
+    void DrawStdStringControl(const char* label, std::string& value,
+                              const std::function<void()>& onEdited)
+    {
+        DrawPropertyRow(label, [&]()
+        {
+            char buffer[256];
+            std::memset(buffer, 0, sizeof(buffer));
+            std::snprintf(buffer, sizeof(buffer), "%s", value.c_str());
+
+            ImGui::PushItemWidth(-1.0f);
+            ImGui::InputText("##Value", buffer, sizeof(buffer));
+            ImGui::PopItemWidth();
+            if (onEdited && ImGui::IsItemDeactivatedAfterEdit())
+            {
+                value = buffer;
+                onEdited();
+            }
+            else if (ImGui::IsItemDeactivatedAfterEdit())
+            {
+                value = buffer;
+            }
         });
     }
 
@@ -129,7 +251,10 @@ namespace Himii
         DrawPropertyRow(label, [&]()
         {
             ImGui::PushItemWidth(-1.0f);
-            ImGui::DragFloat2("##Value", &value.x, speed, minimum, maximum);
+            if (minimum != 0.0f || maximum != 0.0f)
+                ImGui::DragFloat2("##Value", &value.x, speed, minimum, maximum);
+            else
+                ImGui::DragFloat2("##Value", &value.x, speed);
             ImGui::PopItemWidth();
             if (onEdited && ImGui::IsItemDeactivatedAfterEdit())
                 onEdited();

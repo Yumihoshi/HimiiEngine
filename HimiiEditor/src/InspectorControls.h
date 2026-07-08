@@ -27,7 +27,17 @@ namespace Himii
     void DrawFloatControl(const std::string& label, float& value, float speed = 0.1f,
                           float minimum = 0.0f, float maximum = 0.0f);
 
+    void DrawIntControl(const char* label, int& value, float speed = 1.0f,
+                        int minimum = 0, int maximum = 0);
+
     void DrawColorControl(const std::string& label, glm::vec4& value);
+
+    void DrawVec3Control(const std::string& label, glm::vec3& values, float resetValue = 0.0f,
+                         const std::function<void()>& onEditBegin = nullptr,
+                         const std::function<void()>& onEditEnd = nullptr);
+
+    void DrawStdStringControl(const char* label, std::string& value,
+                              const std::function<void()>& onEdited = nullptr);
 
     void DrawCheckboxControl(const std::string& label, bool& value);
 
@@ -47,7 +57,7 @@ namespace Himii
                               const std::function<void()>& onEdited = nullptr);
 
     void DrawVec2Control(const char* label, glm::vec2& value, float speed = 0.01f,
-                         float minimum = 0.0f, float maximum = 1.0f,
+                         float minimum = 0.0f, float maximum = 0.0f,
                          const std::function<void()>& onEdited = nullptr);
 
     void DrawReadOnlyTextControl(const char* label, const char* text,

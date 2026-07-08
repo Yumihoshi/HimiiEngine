@@ -12,8 +12,6 @@
 #include "Himii/Scene/ParticleEmitterAsset.h"
 #include "Himii/Scene/SpriteAnimation.h"
 #include "Himii/Scene/SpriteAnimationUtility.h"
-#include "Himii/Scene/Physics2DLayerSettings.h"
-#include "Himii/Scene/SortingLayerSettings.h"
 #include "Himii/Scene/PrefabSerializer.h"
 #include "Himii/Utils/PlatformUtils.h"
 #include "Himii/Asset/AssetSerializer.h"
@@ -36,52 +34,6 @@
 namespace Himii
 {
     extern const std::filesystem::path s_AssetsPath;
-
-    static void DrawPhysicsLayerControl(int& layer)
-    {
-        layer = std::clamp(layer, 0, Physics2DLayerCount - 1);
-
-        Physics2DLayerSettings layerSettings;
-        if (Project::GetActive())
-            layerSettings = Project::GetConfig().Physics2DLayers;
-
-        const std::string& currentLabel = layerSettings.LayerNames[layer];
-        if (ImGui::BeginCombo("##PhysicsLayer", currentLabel.c_str()))
-        {
-            for (int layerIndex = 0; layerIndex < Physics2DLayerCount; ++layerIndex)
-            {
-                const bool isSelected = layerIndex == layer;
-                if (ImGui::Selectable(layerSettings.LayerNames[layerIndex].c_str(), isSelected))
-                    layer = layerIndex;
-                if (isSelected)
-                    ImGui::SetItemDefaultFocus();
-            }
-            ImGui::EndCombo();
-        }
-    }
-
-    static void DrawSortingLayerControl(int& sortingLayer)
-    {
-        sortingLayer = std::clamp(sortingLayer, 0, SortingLayerCount - 1);
-
-        SortingLayerSettings layerSettings;
-        if (Project::GetActive())
-            layerSettings = Project::GetConfig().SortingLayers;
-
-        const std::string& currentLabel = layerSettings.LayerNames[sortingLayer];
-        if (ImGui::BeginCombo("##SortingLayer", currentLabel.c_str()))
-        {
-            for (int layerIndex = 0; layerIndex < SortingLayerCount; ++layerIndex)
-            {
-                const bool isSelected = layerIndex == sortingLayer;
-                if (ImGui::Selectable(layerSettings.LayerNames[layerIndex].c_str(), isSelected))
-                    sortingLayer = layerIndex;
-                if (isSelected)
-                    ImGui::SetItemDefaultFocus();
-            }
-            ImGui::EndCombo();
-        }
-    }
 
     SceneHierarchyPanel::SceneHierarchyPanel()
     {
@@ -306,98 +258,6 @@ namespace Himii
         }
     }
 
-    static void DrawVec3Control(const std::string &label, glm::vec3 &values, float resetValue = 0.0f,
-                                float columnWidth = 100.0f,
-                                const std::function<void()>& onEditBegin = nullptr,
-                                const std::function<void()>& onEditEnd = nullptr)
-    {
-        ImGuiIO &io = ImGui::GetIO();
-        auto boldFont = io.Fonts->Fonts[0];
-
-        ImGui::PushID(label.c_str());
-        
-        // Use true for border to create the separator
-        if (ImGui::BeginTable(label.c_str(), 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
-        {
-             ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
-             ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
-             // ImGui::TableHeadersRow();
-
-             ImGui::TableNextColumn();
-             ImGui::Text("%s", label.c_str());
-             ImGui::TableNextColumn();
-
-
-             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0, 0});
-
-             float lineHeight = GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
-             ImVec2 buttonSize = {lineHeight + 3.0f, lineHeight};
-             float widthEach = (ImGui::GetContentRegionAvail().x - 3 * buttonSize.x) / 3.0f;
-
-             // X
-             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.8f, 0.23f, 0.12f, 1.0f});
-             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.9f, 0.2f, 0.2f, 1.0f});
-             ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
-             ImGui::PushFont(boldFont);
-             if (ImGui::Button("X", buttonSize))
-                 values.x = resetValue;
-             ImGui::PopFont();
-             ImGui::PopStyleColor(3);
-
-             ImGui::SameLine();
-             ImGui::SetNextItemWidth(widthEach);
-             ImGui::DragFloat("##X", &values.x, 0.1f, 0.0f, 0.0f, "%.2f");
-             if (ImGui::IsItemActivated() && onEditBegin)
-                 onEditBegin();
-             if (ImGui::IsItemDeactivatedAfterEdit() && onEditEnd)
-                 onEditEnd();
-             ImGui::SameLine();
-
-             // Y
-             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.12f, 0.7f, 0.2f, 1.0f});
-             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.3f, 0.8f, 0.3f, 1.0f});
-             ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{0.2f, 0.7f, 0.2f, 1.0f});
-             ImGui::PushFont(boldFont);
-             if (ImGui::Button("Y", buttonSize))
-                 values.y = resetValue;
-             ImGui::PopFont();
-             ImGui::PopStyleColor(3);
-
-             ImGui::SameLine();
-             ImGui::SetNextItemWidth(widthEach);
-             ImGui::DragFloat("##Y", &values.y, 0.1f, 0.0f, 0.0f, "%.2f");
-             if (ImGui::IsItemActivated() && onEditBegin)
-                 onEditBegin();
-             if (ImGui::IsItemDeactivatedAfterEdit() && onEditEnd)
-                 onEditEnd();
-             ImGui::SameLine();
-
-             // Z
-             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4{0.13f, 0.4f, 0.8f, 1.0f});
-             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4{0.2f, 0.35f, 0.9f, 1.0f});
-             ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4{0.1f, 0.25f, 0.8f, 1.0f});
-             ImGui::PushFont(boldFont);
-             if (ImGui::Button("Z", buttonSize))
-                 values.z = resetValue;
-             ImGui::PopFont();
-             ImGui::PopStyleColor(3);
-
-             ImGui::SameLine();
-             ImGui::SetNextItemWidth(widthEach);
-             ImGui::DragFloat("##Z", &values.z, 0.1f, 0.0f, 0.0f, "%.2f");
-             if (ImGui::IsItemActivated() && onEditBegin)
-                 onEditBegin();
-             if (ImGui::IsItemDeactivatedAfterEdit() && onEditEnd)
-                 onEditEnd();
-
-             ImGui::PopStyleVar();
-
-             ImGui::EndTable();
-        }
-
-        ImGui::PopID();
-    }
-
     static bool IsImageFileExtension(const std::filesystem::path& filePath)
     {
         std::string extension = filePath.extension().string();
@@ -618,13 +478,13 @@ namespace Himii
                                                   transformEditCaptured = false;
                                               };
 
-                                              DrawVec3Control("Position", component.Position, 0.0f, 100.0f,
+                                              DrawVec3Control("Position", component.Position, 0.0f,
                                                               beginTransformEdit, endTransformEdit);
                                               glm::vec3 rotation = glm::degrees(component.Rotation);
-                                              DrawVec3Control("Rotation", rotation, 0.0f, 100.0f,
+                                              DrawVec3Control("Rotation", rotation, 0.0f,
                                                               beginTransformEdit, endTransformEdit);
                                               component.Rotation = glm::radians(rotation);
-                                              DrawVec3Control("Scale", component.Scale, 1.0f, 100.0f,
+                                              DrawVec3Control("Scale", component.Scale, 1.0f,
                                                               beginTransformEdit, endTransformEdit);
                                           });
 
@@ -634,46 +494,22 @@ namespace Himii
                                            auto &camera = component.Camera;
                                            
                                            glm::vec4 backgroundColor = camera.GetBackgroundColor();
-                                           if (ImGui::ColorEdit4("Background Color", glm::value_ptr(backgroundColor)))
-                                           {
+                                           const glm::vec4 previousBackgroundColor = backgroundColor;
+                                           DrawColorControl("Background Color", backgroundColor);
+                                           if (backgroundColor != previousBackgroundColor)
                                                camera.SetBackgroundColor(backgroundColor);
-                                           }
 
                                            DrawCheckboxControl("Primary", component.Primary);
 
-                                           const char *projectionTypeStrings[] = {"Perspective", "Orthographic"};
-                                           const char *currentProjectionTypeString =
-                                                   projectionTypeStrings[(int)camera.GetProjectionType()];
-                                           
-                                           ImGui::PushID("Projection");
-                                           if(ImGui::BeginTable("##Projection", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingFixedFit))
-                                           {
-                                                ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
-                                                ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
-                                                ImGui::TableNextColumn();
-                                                ImGui::Text("Projection");
-                                                ImGui::TableNextColumn();
-                                                ImGui::PushItemWidth(-1);
-                                                if (ImGui::BeginCombo("##Projection", currentProjectionTypeString))
-                                                {
-                                                    for (int i = 0; i < 2; i++)
-                                                    {
-                                                        bool isSelected =
-                                                                currentProjectionTypeString == projectionTypeStrings[i];
-                                                        if (ImGui::Selectable(projectionTypeStrings[i], isSelected))
-                                                        {
-                                                            currentProjectionTypeString = projectionTypeStrings[i];
-                                                            camera.SetProjectionType((SceneCamera::ProjectionType)i);
-                                                        }
-                                                        if (isSelected)
-                                                            ImGui::SetItemDefaultFocus();
-                                                    }
-                                                    ImGui::EndCombo();
-                                                }
-                                                ImGui::PopItemWidth();
-                                                ImGui::EndTable();
-                                           }
-                                           ImGui::PopID();
+                                           const char* projectionTypeStrings[] = {"Perspective", "Orthographic"};
+                                           int projectionTypeIndex = static_cast<int>(camera.GetProjectionType());
+                                           DrawEnumComboControl(
+                                               "Projection", projectionTypeIndex, projectionTypeStrings, 2,
+                                               [&](int newIndex)
+                                               {
+                                                   camera.SetProjectionType(
+                                                       static_cast<SceneCamera::ProjectionType>(newIndex));
+                                               });
 
                                            if (camera.GetProjectionType() == SceneCamera::ProjectionType::Perspective)
                                            {
@@ -714,70 +550,64 @@ namespace Himii
                 {
                     //bool scriptClassExists = ScriptEngine::EntityClassExists(component.ClassName);
 
-                    ImGui::Text("Class Name");
-                    ImGui::SameLine();
-
-                    char buffer[256];
-                    memset(buffer, 0, sizeof(buffer));
-                    snprintf(buffer, sizeof(buffer), "%s", component.ClassName.c_str());
-
-                    ImGui::InputText("##ClassName", buffer, sizeof(buffer));
-                    if (ImGui::IsItemDeactivatedAfterEdit())
-                        component.ClassName = buffer;
-
-                    bool scriptClassExists = false;
-                    if (!component.ClassName.empty())
+                    DrawPropertyRow("Class Name", [&]()
                     {
-                        scriptClassExists = ScriptEngine::EntityClassExists(component.ClassName);
-                    }
+                        char classNameBuffer[256];
+                        std::memset(classNameBuffer, 0, sizeof(classNameBuffer));
+                        std::snprintf(classNameBuffer, sizeof(classNameBuffer), "%s", component.ClassName.c_str());
 
-                    // 4. 根据查询结果绘制 UI
-                    if (!scriptClassExists && !component.ClassName.empty())
-                    {
-                        // 只有当不是正在输入时，才显示红色警告（可选优化）
-                        if (!ImGui::IsItemActive())
-                            ImGui::TextColored(ImVec4(0.9f, 0.2f, 0.2f, 1.0f), "Invalid Script Class!");
-                    }
-                    else if (scriptClassExists)
-                    {
-                        // --- Edit Button ---
-                        ImGui::SameLine();
-                        if (ImGui::Button("Edit"))
+                        const bool scriptClassExistsForButton =
+                            !component.ClassName.empty() && ScriptEngine::EntityClassExists(component.ClassName);
+                        const float editButtonWidth =
+                            ImGui::CalcTextSize("Edit").x + ImGui::GetStyle().FramePadding.x * 2.0f;
+                        const float reservedWidth = scriptClassExistsForButton
+                            ? editButtonWidth + ImGui::GetStyle().ItemSpacing.x
+                            : 0.0f;
+
+                        ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - reservedWidth);
+                        ImGui::InputText("##ClassName", classNameBuffer, sizeof(classNameBuffer));
+                        if (ImGui::IsItemDeactivatedAfterEdit())
+                            component.ClassName = classNameBuffer;
+
+                        if (scriptClassExistsForButton)
                         {
-                            if (auto project = Project::GetActive())
+                            ImGui::SameLine();
+                            if (ImGui::Button("Edit", ImVec2(editButtonWidth, 0.0f)))
                             {
-                                auto projectDir = Project::GetProjectDirectory();
-                                std::filesystem::path scriptPath =
+                                if (auto project = Project::GetActive())
+                                {
+                                    auto projectDir = Project::GetProjectDirectory();
+                                    std::filesystem::path scriptPath =
                                         projectDir / "assets" / "scripts" / (component.ClassName + ".cs");
 
-                                if (std::filesystem::exists(scriptPath))
-                                {
-                                    ScriptIDELauncher::OpenScript(
-                                        projectDir,
-                                        project->GetConfig().Name,
-                                        scriptPath);
+                                    if (std::filesystem::exists(scriptPath))
+                                    {
+                                        ScriptIDELauncher::OpenScript(
+                                            projectDir,
+                                            project->GetConfig().Name,
+                                            scriptPath);
+                                    }
                                 }
                             }
                         }
+                    });
 
+                    bool scriptClassExists = false;
+                    if (!component.ClassName.empty())
+                        scriptClassExists = ScriptEngine::EntityClassExists(component.ClassName);
+
+                    if (!scriptClassExists && !component.ClassName.empty())
+                        ImGui::TextColored(ImVec4(0.9f, 0.2f, 0.2f, 1.0f), "Invalid Script Class!");
+                    else if (scriptClassExists)
+                    {
                         {
-                             // Get fields from ScriptEngine (Populates ScriptComponent::Fields)
                              auto& fields = ScriptEngine::GetScriptFieldMap(entity);
                              
                              for (auto& [name, field] : fields)
                              {
-                                 // Float
                                  if (field.Type == ScriptFieldType::Float)
                                  {
                                      float data = field.GetValue<float>();
-                                     // Use DrawFloatControl for consistency
-                                     // Note: DrawFloatControl takes float&, so we pass local var and update field on change
-                                     // But DrawFloatControl already does ImGui internally.
-                                     // We need to know IF it changed. DrawFloatControl doesn't return bool (void).
-                                     // Let's modify DrawFloatControl or just check change manually?
-                                     // Looking at DrawFloatControl: it takes float& value. It modifies it inside.
-                                     // So we pass data, then check if data != field.GetValue().
-                                     
                                      float oldData = data;
                                      DrawFloatControl(name, data);
                                      if (data != oldData)
@@ -786,32 +616,17 @@ namespace Himii
                                          ScriptEngine::SetFloat(ScriptEngine::GetEntityScriptInstance(entity.GetUUID()), name, data);
                                      }
                                  }
-                                 // Int
                                  else if (field.Type == ScriptFieldType::Int)
                                  {
                                      int data = field.GetValue<int>();
-                                     // No DrawIntControl, use generic ImGui or custom? 
-                                     // Let's us ImGui::DragInt matching style of DrawFloatControl as much as possible
-                                     ImGui::PushID(name.c_str());
-                                     if(ImGui::BeginTable("##IntControl", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
+                                     int oldData = data;
+                                     DrawIntControl(name.c_str(), data);
+                                     if (data != oldData)
                                      {
-                                         ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
-                                         ImGui::TableSetupColumn("Value");
-                                         ImGui::TableNextColumn();
-                                         ImGui::Text("%s", name.c_str());
-                                         ImGui::TableNextColumn();
-                                         ImGui::PushItemWidth(-1);
-                                         if (ImGui::DragInt("##Value", &data))
-                                         {
-                                             field.SetValue(data);
-                                             ScriptEngine::SetInt(ScriptEngine::GetEntityScriptInstance(entity.GetUUID()), name, data);
-                                         }
-                                         ImGui::PopItemWidth();
-                                         ImGui::EndTable();
+                                         field.SetValue(data);
+                                         ScriptEngine::SetInt(ScriptEngine::GetEntityScriptInstance(entity.GetUUID()), name, data);
                                      }
-                                     ImGui::PopID();
                                  }
-                                 // Bool
                                  else if (field.Type == ScriptFieldType::Bool)
                                  {
                                      bool data = field.GetValue<bool>();
@@ -823,33 +638,17 @@ namespace Himii
                                          ScriptEngine::SetBool(ScriptEngine::GetEntityScriptInstance(entity.GetUUID()), name, data);
                                      }
                                  }
-                                 // Vector2
                                  else if (field.Type == ScriptFieldType::Vector2)
                                  {
                                      glm::vec2 data = field.GetValue<glm::vec2>();
                                      glm::vec2 oldData = data;
-                                     // No DrawVec2Control? We can use DrawVec3Control and ignore Z or implement simplified
-                                     // Or just ImGui::DragFloat2
-                                     ImGui::PushID(name.c_str());
-                                     if(ImGui::BeginTable("##Vec2Control", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
+                                     DrawVec2Control(name.c_str(), data);
+                                     if (data != oldData)
                                      {
-                                         ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
-                                         ImGui::TableSetupColumn("Value");
-                                         ImGui::TableNextColumn();
-                                         ImGui::Text("%s", name.c_str());
-                                         ImGui::TableNextColumn();
-                                         ImGui::PushItemWidth(-1);
-                                         if (ImGui::DragFloat2("##Value", glm::value_ptr(data), 0.1f))
-                                         {
-                                             field.SetValue(data);
-                                             ScriptEngine::SetVector2(ScriptEngine::GetEntityScriptInstance(entity.GetUUID()), name, data);
-                                         }
-                                         ImGui::PopItemWidth();
-                                         ImGui::EndTable();
+                                         field.SetValue(data);
+                                         ScriptEngine::SetVector2(ScriptEngine::GetEntityScriptInstance(entity.GetUUID()), name, data);
                                      }
-                                     ImGui::PopID();
                                  }
-                                 // Vector3
                                  else if (field.Type == ScriptFieldType::Vector3)
                                  {
                                      glm::vec3 data = field.GetValue<glm::vec3>();
@@ -861,134 +660,76 @@ namespace Himii
                                          ScriptEngine::SetVector3(ScriptEngine::GetEntityScriptInstance(entity.GetUUID()), name, data);
                                      }
                                  }
-                                 // Vector4
                                  else if (field.Type == ScriptFieldType::Vector4)
                                  {
                                      glm::vec4 data = field.GetValue<glm::vec4>();
                                      glm::vec4 oldData = data;
-                                     DrawColorControl(name, data); // Assuming Vec4 is Color mostly? Or just numbers?
-                                     // If it's a color, DrawColorControl is good. If generic vector, maybe DragFloat4.
-                                     // Let's assume generic vector for now since Color is specific?
-                                     // But DrawColorControl is generic enough.
-                                     // Let's check matching.
+                                     DrawColorControl(name, data);
                                      if (data != oldData)
                                      {
                                          field.SetValue(data);
                                          ScriptEngine::SetVector4(ScriptEngine::GetEntityScriptInstance(entity.GetUUID()), name, data);
                                      }
                                  }
-                                // String
                                 else if (field.Type == ScriptFieldType::String)
                                 {
                                     std::string data = field.GetValue<std::string>();
                                     std::string oldData = data;
-
-                                    ImGui::PushID(name.c_str());
-                                    if (ImGui::BeginTable("##StringControl", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
-                                    {
-                                        ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
-                                        ImGui::TableSetupColumn("Value");
-                                        ImGui::TableNextColumn();
-                                        ImGui::Text("%s", name.c_str());
-                                        ImGui::TableNextColumn();
-                                        ImGui::PushItemWidth(-1);
-
-                                        char buffer[256];
-                                        memset(buffer, 0, sizeof(buffer));
-                                        snprintf(buffer, sizeof(buffer), "%s", data.c_str());
-
-                                        if (ImGui::InputText("##Value", buffer, sizeof(buffer)))
-                                        {
-                                            data = std::string(buffer);
-                                        }
-
-                                        ImGui::PopItemWidth();
-                                        ImGui::EndTable();
-                                    }
-                                    ImGui::PopID();
-
+                                    DrawStdStringControl(name.c_str(), data);
                                     if (data != oldData)
                                     {
                                         field.SetValue(data);
                                         ScriptEngine::SetString(ScriptEngine::GetEntityScriptInstance(entity.GetUUID()), name, data);
                                     }
                                 }
-                                // KeyCode (以 int 形式保存，在 UI 中用下拉列表编辑常用按键)
                                 else if (field.Type == ScriptFieldType::KeyCode)
                                 {
                                     int data = field.GetValue<int>();
 
-                                    ImGui::PushID(name.c_str());
-                                    if (ImGui::BeginTable("##KeyCodeControl", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
+                                    struct KeyCodeOption { int Code; const char* Label; };
+                                    static const KeyCodeOption keyCodeOptions[] = {
+                                        { 32,  "Space" },
+                                        { 65,  "A" },
+                                        { 68,  "D" },
+                                        { 83,  "S" },
+                                        { 87,  "W" },
+                                        { 262, "Right" },
+                                        { 263, "Left" },
+                                        { 264, "Down" },
+                                        { 265, "Up" },
+                                        { 257, "Enter" }
+                                    };
+
+                                    const char* keyCodeLabels[std::size(keyCodeOptions)] = {};
+                                    for (size_t optionIndex = 0; optionIndex < std::size(keyCodeOptions); ++optionIndex)
+                                        keyCodeLabels[optionIndex] = keyCodeOptions[optionIndex].Label;
+
+                                    int selectedOptionIndex = 0;
+                                    for (size_t optionIndex = 0; optionIndex < std::size(keyCodeOptions); ++optionIndex)
                                     {
-                                        ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
-                                        ImGui::TableSetupColumn("Value");
-                                        ImGui::TableNextColumn();
-                                        ImGui::Text("%s", name.c_str());
-                                        ImGui::TableNextColumn();
-                                        ImGui::PushItemWidth(-1);
-
-                                        struct KeyCodeOption { int Code; const char* Label; };
-                                        static KeyCodeOption options[] = {
-                                            { 32,  "Space" },
-                                            { 65,  "A" },
-                                            { 68,  "D" },
-                                            { 83,  "S" },
-                                            { 87,  "W" },
-                                            { 262, "Right" },
-                                            { 263, "Left" },
-                                            { 264, "Down" },
-                                            { 265, "Up" },
-                                            { 257, "Enter" }
-                                        };
-
-                                        const char* currentLabel = "Unknown";
-                                        int currentIndex = -1;
-                                        for (int i = 0; i < (int)std::size(options); ++i)
+                                        if (keyCodeOptions[optionIndex].Code == data)
                                         {
-                                            if (options[i].Code == data)
-                                            {
-                                                currentLabel = options[i].Label;
-                                                currentIndex = i;
-                                                break;
-                                            }
+                                            selectedOptionIndex = static_cast<int>(optionIndex);
+                                            break;
                                         }
-
-                                        if (ImGui::BeginCombo("##Value", currentLabel))
-                                        {
-                                            for (int i = 0; i < (int)std::size(options); ++i)
-                                            {
-                                                bool isSelected = (i == currentIndex);
-                                                if (ImGui::Selectable(options[i].Label, isSelected))
-                                                {
-                                                    data = options[i].Code;
-                                                    field.SetValue(data);
-                                                    ScriptEngine::SetInt(ScriptEngine::GetEntityScriptInstance(entity.GetUUID()), name, data);
-                                                }
-                                                if (isSelected)
-                                                    ImGui::SetItemDefaultFocus();
-                                            }
-                                            ImGui::EndCombo();
-                                        }
-
-                                        ImGui::PopItemWidth();
-                                        ImGui::EndTable();
                                     }
-                                    ImGui::PopID();
+
+                                    DrawEnumComboControl(
+                                        name.c_str(), selectedOptionIndex, keyCodeLabels,
+                                        static_cast<int>(std::size(keyCodeOptions)),
+                                        [&](int newIndex)
+                                        {
+                                            data = keyCodeOptions[newIndex].Code;
+                                            field.SetValue(data);
+                                            ScriptEngine::SetInt(
+                                                ScriptEngine::GetEntityScriptInstance(entity.GetUUID()), name, data);
+                                        });
                                 }
                                 else if (field.Type == ScriptFieldType::Entity)
                                 {
                                     UUID data = field.GetValue<UUID>();
-                                    ImGui::PushID(name.c_str());
-                                    if (ImGui::BeginTable("##EntityControl", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
+                                    DrawPropertyRow(name.c_str(), [&]()
                                     {
-                                        ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
-                                        ImGui::TableSetupColumn("Value");
-                                        ImGui::TableNextColumn();
-                                        ImGui::Text("%s", name.c_str());
-                                        ImGui::TableNextColumn();
-                                        ImGui::PushItemWidth(-1);
-
                                         std::string preview = "None";
                                         if (data)
                                         {
@@ -999,7 +740,8 @@ namespace Himii
                                                 preview = "Missing";
                                         }
 
-                                        if (ImGui::BeginCombo("##Value", preview.c_str()))
+                                        ImGui::PushItemWidth(-1.0f);
+                                        if (ImGui::BeginCombo("##EntityReference", preview.c_str()))
                                         {
                                             if (ImGui::Selectable("None", data == UUID{}))
                                             {
@@ -1011,7 +753,7 @@ namespace Himii
 
                                             if (scene)
                                             {
-                                                const auto &view = scene->m_Registry.view<TagComponent>();
+                                                const auto& view = scene->m_Registry.view<TagComponent>();
                                                 for (auto sceneHandle : view)
                                                 {
                                                     Entity sceneEntity{sceneHandle, scene.get()};
@@ -1019,13 +761,14 @@ namespace Himii
                                                         continue;
 
                                                     UUID sceneUUID = sceneEntity.GetUUID();
-                                                    bool isSelected = (sceneUUID == data);
+                                                    const bool isSelected = sceneUUID == data;
                                                     if (ImGui::Selectable(sceneEntity.GetName().c_str(), isSelected))
                                                     {
                                                         data = sceneUUID;
                                                         field.SetValue(data);
                                                         ScriptEngine::SetEntityField(
-                                                            ScriptEngine::GetEntityScriptInstance(entity.GetUUID()), name, data);
+                                                            ScriptEngine::GetEntityScriptInstance(entity.GetUUID()),
+                                                            name, data);
                                                     }
                                                     if (isSelected)
                                                         ImGui::SetItemDefaultFocus();
@@ -1033,11 +776,8 @@ namespace Himii
                                             }
                                             ImGui::EndCombo();
                                         }
-
                                         ImGui::PopItemWidth();
-                                        ImGui::EndTable();
-                                    }
-                                    ImGui::PopID();
+                                    });
                                 }
                              }
                         }
@@ -1127,12 +867,30 @@ namespace Himii
 
                     DrawFloatControl("Tiling Factor", component.TilingFactor, 0.1f, 0.0f, 100.0f);
                     DrawCheckboxControl("Flip Horizontal", component.FlipHorizontal);
-                    ImGui::Text("Sorting Layer");
-                    ImGui::SameLine();
-                    DrawSortingLayerControl(component.SortingLayer);
-                    ImGui::Text("Sorting Order");
-                    ImGui::SameLine();
-                    ImGui::DragInt("##SortingOrder", &component.SortingOrder);
+
+                    component.SortingLayer =
+                        std::clamp(component.SortingLayer, 0, SortingLayerCount - 1);
+                    int sortingLayerIndex = component.SortingLayer;
+
+                    SortingLayerSettings sortingLayerSettings;
+                    if (Project::GetActive())
+                        sortingLayerSettings = Project::GetConfig().SortingLayers;
+
+                    std::vector<const char*> sortingLayerLabels;
+                    sortingLayerLabels.reserve(SortingLayerCount);
+                    for (int layerIndex = 0; layerIndex < SortingLayerCount; ++layerIndex)
+                        sortingLayerLabels.push_back(
+                            sortingLayerSettings.LayerNames[layerIndex].c_str());
+
+                    DrawEnumComboControl(
+                        "Sorting Layer", sortingLayerIndex, sortingLayerLabels.data(),
+                        SortingLayerCount,
+                        [&](int newIndex)
+                        {
+                            component.SortingLayer = newIndex;
+                        });
+
+                    DrawIntControl("Sorting Order", component.SortingOrder);
                 });
 
         DrawComponent<MeshComponent>(
@@ -1140,23 +898,13 @@ namespace Himii
                  [](auto &component)
                  {
                      const char* meshTypeStrings[] = { "Cube", "Plane", "Sphere", "Capsule" };
-                     const char* currentMeshTypeString = meshTypeStrings[(int)component.Type];
-                     
-                     if (ImGui::BeginCombo("Mesh Type", currentMeshTypeString))
-                     {
-                         for (int i = 0; i < 4; i++)
+                     int meshTypeIndex = static_cast<int>(component.Type);
+                     DrawEnumComboControl(
+                         "Mesh Type", meshTypeIndex, meshTypeStrings, 4,
+                         [&](int newIndex)
                          {
-                             bool isSelected = (currentMeshTypeString == meshTypeStrings[i]);
-                             if (ImGui::Selectable(meshTypeStrings[i], isSelected))
-                             {
-                                 currentMeshTypeString = meshTypeStrings[i];
-                                 component.Type = (MeshComponent::MeshType)i;
-                             }
-                             if (isSelected)
-                                 ImGui::SetItemDefaultFocus();
-                         }
-                         ImGui::EndCombo();
-                     }
+                             component.Type = static_cast<MeshComponent::MeshType>(newIndex);
+                         });
 
                      DrawColorControl("Color", component.Color);
                  });
@@ -1172,36 +920,15 @@ namespace Himii
         DrawComponent<Rigidbody2DComponent>("Rigidbody2D", entity, m_ComponentIcons["Rigidbody2D"],
                                             [](auto &component)
                                             {
-                                                ImGui::PushID("Body Type");
-                                                if(ImGui::BeginTable("##BodyType", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingFixedFit))
-                                                {
-                                                    ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
-                                                    ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
-                                                    ImGui::TableNextColumn();
-
-                                                    ImGui::Text("Body Type");
-                                                    ImGui::TableNextColumn();
-                                                    ImGui::PushItemWidth(-1);
-                                                    const char *bodyTypeStrings[] = {"Static", "Dynamic", "Kinematic"};
-                                                    const char *currentBodyTypeString = bodyTypeStrings[(int)component.Type];
-                                                    if (ImGui::BeginCombo("##Body Type", currentBodyTypeString))
+                                                const char* bodyTypeStrings[] = {"Static", "Dynamic", "Kinematic"};
+                                                int bodyTypeIndex = static_cast<int>(component.Type);
+                                                DrawEnumComboControl(
+                                                    "Body Type", bodyTypeIndex, bodyTypeStrings, 3,
+                                                    [&](int newIndex)
                                                     {
-                                                        for (int i = 0; i < 3; i++)
-                                                        {
-                                                            bool isSelected = currentBodyTypeString == bodyTypeStrings[i];
-                                                            if (ImGui::Selectable(bodyTypeStrings[i], isSelected))
-                                                            {
-                                                                currentBodyTypeString = bodyTypeStrings[i];
-                                                                component.Type = (Rigidbody2DComponent::BodyType)i;
-                                                            }
-                                                            if (isSelected) ImGui::SetItemDefaultFocus();
-                                                        }
-                                                        ImGui::EndCombo();
-                                                    }
-                                                    ImGui::PopItemWidth();
-                                                    ImGui::EndTable();
-                                                }
-                                                ImGui::PopID();
+                                                        component.Type =
+                                                            static_cast<Rigidbody2DComponent::BodyType>(newIndex);
+                                                    });
 
                                                 DrawCheckboxControl("Fixed Rotation", component.FixedRotation);
                                             });
@@ -1210,75 +937,65 @@ namespace Himii
                 "Box Collider2D", entity, m_ComponentIcons["Box Collider2D"],
                 [](auto &component)
                 {
-                    // For vec2, we can just use DrawFloatControl twice or keep usage? 
-                    // Let's implement vec2 logic or simpler:
-                    ImGui::PushID("Offset");
-                    if(ImGui::BeginTable("##Offset", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
-                    {
-                        ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
-                        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
-                        ImGui::TableNextColumn();
-                        ImGui::Text("Offset");
-                        ImGui::TableNextColumn();
-                        ImGui::PushItemWidth(-1);
-                        ImGui::DragFloat2("##Offset", glm::value_ptr(component.Offset), 0.1f);
-                        ImGui::PopItemWidth();
-                        ImGui::EndTable();
-                    }
-                    ImGui::PopID();
-                    
-                    ImGui::PushID("Size");
-                    if(ImGui::BeginTable("##Size", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
-                    {
-                        ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
-                        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
-                        ImGui::TableNextColumn();
-                        ImGui::Text("Size");
-                        ImGui::TableNextColumn();
-                        ImGui::PushItemWidth(-1);
-                        ImGui::DragFloat2("##Size", glm::value_ptr(component.Size), 0.1f);
-                        ImGui::PopItemWidth();
-                        ImGui::EndTable();
-                    }
-                    ImGui::PopID();
-                    
+                    DrawVec2Control("Offset", component.Offset, 0.1f);
+                    DrawVec2Control("Size", component.Size, 0.1f);
                     DrawFloatControl("Density", component.Density, 0.1f);
                     DrawFloatControl("Friction", component.Friction, 0.01f, 0.0f, 1.0f);
                     DrawFloatControl("Restitution", component.Restitution, 0.01f, 0.0f, 1.0f);
                     DrawFloatControl("Restitution Threshold", component.RestitutionThreshold, 0.1f);
                     DrawCheckboxControl("Is Trigger", component.IsTrigger);
-                    ImGui::Text("Layer");
-                    ImGui::SameLine();
-                    DrawPhysicsLayerControl(component.Layer);
+                    component.Layer = std::clamp(component.Layer, 0, Physics2DLayerCount - 1);
+
+                    int physicsLayerIndex = component.Layer;
+                    Physics2DLayerSettings physicsLayerSettings;
+                    if (Project::GetActive())
+                        physicsLayerSettings = Project::GetConfig().Physics2DLayers;
+
+                    std::vector<const char*> physicsLayerLabels;
+                    physicsLayerLabels.reserve(Physics2DLayerCount);
+                    for (int layerIndex = 0; layerIndex < Physics2DLayerCount; ++layerIndex)
+                        physicsLayerLabels.push_back(
+                            physicsLayerSettings.LayerNames[layerIndex].c_str());
+
+                    DrawEnumComboControl(
+                        "Layer", physicsLayerIndex, physicsLayerLabels.data(),
+                        Physics2DLayerCount,
+                        [&](int newIndex)
+                        {
+                            component.Layer = newIndex;
+                        });
                 });
         DrawComponent<CircleCollider2DComponent>(
                 "Circle Collider2D", entity, m_ComponentIcons["Circle Collider2D"],
                 [](auto &component)
                 {
-                    ImGui::PushID("Offset");
-                    if(ImGui::BeginTable("##Offset", 2, ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
-                    {
-                        ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 140.0f);
-                        ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
-                        ImGui::TableNextColumn();
-                        ImGui::Text("Offset");
-                        ImGui::TableNextColumn();
-                        ImGui::PushItemWidth(-1);
-                        ImGui::DragFloat2("##Offset", glm::value_ptr(component.Offset), 0.1f);
-                        ImGui::PopItemWidth();
-                        ImGui::EndTable();
-                    }
-                    ImGui::PopID();
-                    
+                    DrawVec2Control("Offset", component.Offset, 0.1f);
                     DrawFloatControl("Radius", component.Radius, 0.1f);
                     DrawFloatControl("Density", component.Density, 0.1f);
                     DrawFloatControl("Friction", component.Friction, 0.01f, 0.0f, 1.0f);
                     DrawFloatControl("Restitution", component.Restitution, 0.01f, 0.0f, 1.0f);
                     DrawFloatControl("Restitution Threshold", component.RestitutionThreshold, 0.1f);
                     DrawCheckboxControl("Is Trigger", component.IsTrigger);
-                    ImGui::Text("Layer");
-                    ImGui::SameLine();
-                    DrawPhysicsLayerControl(component.Layer);
+                    component.Layer = std::clamp(component.Layer, 0, Physics2DLayerCount - 1);
+
+                    int physicsLayerIndex = component.Layer;
+                    Physics2DLayerSettings physicsLayerSettings;
+                    if (Project::GetActive())
+                        physicsLayerSettings = Project::GetConfig().Physics2DLayers;
+
+                    std::vector<const char*> physicsLayerLabels;
+                    physicsLayerLabels.reserve(Physics2DLayerCount);
+                    for (int layerIndex = 0; layerIndex < Physics2DLayerCount; ++layerIndex)
+                        physicsLayerLabels.push_back(
+                            physicsLayerSettings.LayerNames[layerIndex].c_str());
+
+                    DrawEnumComboControl(
+                        "Layer", physicsLayerIndex, physicsLayerLabels.data(),
+                        Physics2DLayerCount,
+                        [&](int newIndex)
+                        {
+                            component.Layer = newIndex;
+                        });
                 });
         DrawComponent<SpriteAnimationComponent>(
                 "Sprite Animation", entity, m_ComponentIcons["Sprite Animation"],
@@ -1707,14 +1424,14 @@ namespace Himii
                     transformEditCaptured = false;
                 };
 
-                DrawVec3Control("Rect Position", component.Position, 0.0f, 100.0f,
+                DrawVec3Control("Rect Position", component.Position, 0.0f,
                                 beginTransformEdit, endTransformEdit);
                 glm::vec3 rotation = glm::degrees(component.Rotation);
-                DrawVec3Control("Rotation", rotation, 0.0f, 100.0f,
+                DrawVec3Control("Rotation", rotation, 0.0f,
                                 beginTransformEdit, endTransformEdit);
                 component.Rotation = glm::radians(rotation);
                 glm::vec3 sizeVector = glm::vec3(component.Size, 1.0f);
-                DrawVec3Control("Size", sizeVector, 100.0f, 100.0f,
+                DrawVec3Control("Size", sizeVector, 100.0f,
                                 beginTransformEdit, endTransformEdit);
                 component.Size = glm::vec2(sizeVector.x, sizeVector.y);
             });

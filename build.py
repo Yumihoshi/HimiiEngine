@@ -46,9 +46,26 @@ class BuildScript:
             print(f"错误: 不支持的操作系统: {self.system}")
             sys.exit(1)
 
+    def check_cmake_presets_file(self):
+        """检查本地 CMake 预设文件是否存在"""
+        cmake_presets_path = self.script_dir / "CMakePresets.json"
+        if cmake_presets_path.exists():
+            return True
+
+        print("✗ 错误: 未找到 CMakePresets.json")
+        if self.is_windows:
+            print("请先执行: copy CMakePresets.json.example CMakePresets.json")
+        else:
+            print("请先执行: cp CMakePresets.json.example CMakePresets.json")
+        print("详见: Docs/docs/DevManual/BuildingFromSource.md")
+        return False
+
     def check_dependencies(self):
         """检查必要的依赖"""
         print("正在检查构建依赖...")
+
+        if not self.check_cmake_presets_file():
+            return False
 
         # 检查CMake
         try:

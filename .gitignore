@@ -37,6 +37,7 @@
 *.gcov
 
 # CMake files
+CMakePresets.json
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake

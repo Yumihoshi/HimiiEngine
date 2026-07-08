@@ -1,7 +1,5 @@
 # HimiiEngine
 
-[![猫猫访问计数器](https://starry-trace-sky-moe-counter.vercel.app/get/@HimiiEngine?theme=rule34)](#)
-
 [![编程语言](https://img.shields.io/badge/编程语言-C++_17-blue.svg?style=for-the-badge)](#)
 [![构建工具](https://img.shields.io/badge/构建工具-Cmake_>=3.8-green.svg?style=for-the-badge)](#)
 
@@ -33,6 +31,20 @@ It is a modern game engine designed to build high-performance rendering, multi-t
 - 安装 autoconf automake libtool libltdl-dev libgl1-mesa-dev libglu1-mesa-dev
 
 ## 使用方法
+
+### 首次准备
+
+克隆仓库后，先从模板生成本地 CMake 预设（只需一次）：
+
+```powershell
+# Windows
+copy CMakePresets.json.example CMakePresets.json
+
+# Linux
+cp CMakePresets.json.example CMakePresets.json
+```
+
+本地 `CMakePresets.json` 不会提交到 Git。若需固定生成器，可在该文件中自行添加 `"generator": "Visual Studio 17 2022"` 或 `"generator": "Ninja"`。详见 [源码构建文档](Docs/docs/DevManual/BuildingFromSource.md)。
 
 ### 基本构建命令
 
@@ -70,7 +82,7 @@ python build.py debug --clean-only
 
 ## 构建输出
 
-构建目录（由 `CMakePresets.json` 与 `himii_set_output_dirs` 决定）：
+构建目录（由本地 `CMakePresets.json` 与 `himii_set_output_dirs` 决定）：
 
 - Windows Debug: `build/x64-debug/`
 - Windows Release: `build/x64-release/`
@@ -111,6 +123,8 @@ python build.py debug --clean-only
 
 #### Windows
 ```bash
+# 首次：copy CMakePresets.json.example CMakePresets.json
+
 # 配置
 cmake --preset x64-debug
 
@@ -120,6 +134,8 @@ cmake --build --preset build-x64-debug-win
 
 #### Linux
 ```bash
+# 首次：cp CMakePresets.json.example CMakePresets.json
+
 # 配置
 cmake --preset linux-debug
 

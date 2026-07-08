@@ -9,6 +9,36 @@
 * **.NET 8 SDK**: 编译 `ScriptCore` 与游戏脚本
 * **Git**: 克隆时建议 `--recursive`（含 vcpkg 等子模块）
 
+## 首次准备：生成本地 CMake 预设
+
+仓库内提交的是跨平台模板 `CMakePresets.json.example`，**不包含**本机生成器（Visual Studio、Ninja 等）。每位开发者需复制为本地文件后再构建；`CMakePresets.json` 已加入 `.gitignore`，不会提交到 Git。
+
+**Windows:**
+
+```powershell
+copy CMakePresets.json.example CMakePresets.json
+```
+
+**Linux:**
+
+```bash
+cp CMakePresets.json.example CMakePresets.json
+```
+
+若本机 CMake 默认生成器不符合预期，可在本地 `CMakePresets.json` 的 `windows-base`（或对应 preset）中自行添加，例如：
+
+```json
+"generator": "Visual Studio 17 2022"
+```
+
+或：
+
+```json
+"generator": "Ninja"
+```
+
+Linux 开发者通常复制后无需修改，直接使用 `linux-debug` / `linux-release` 即可。
+
 ## 构建步骤（推荐）
 
 ### 方式一：CMake Preset
@@ -17,15 +47,17 @@
 git clone --recursive <repository-url>
 cd Himii-Engine
 
+copy CMakePresets.json.example CMakePresets.json
+
 cmake --preset x64-debug
-cmake --build build/x64-debug --target HimiiEditor -j 8
+cmake --build --preset build-x64-debug-win -j 8
 ```
 
 Release 构建示例：
 
 ```powershell
 cmake --preset x64-release
-cmake --build --preset build-x64-release-win --config Release
+cmake --build --preset build-x64-release-win -j 8
 ```
 
 ### 方式二：Python 脚本
@@ -81,8 +113,8 @@ HimiiEngine/
 安装 Release 包：
 
 ```powershell
-cmake --build --preset build-x64-release-win --config Release
-cmake --install build/x64-release --config Release --prefix install/x64-release
+cmake --build --preset build-x64-release-win
+cmake --install build/x64-release --prefix install/x64-release
 ```
 
 ## 运行 HimiiRuntime（本地构建）
@@ -101,5 +133,5 @@ build/x64-debug/bin/HimiiRuntime/Debug/HimiiRuntime.exe --project "D:\path\to\Yo
 ## 故障排除
 
 * **找不到 ScriptCore.dll**：先完整构建 HimiiEditor，或单独 `dotnet build ScriptCore`。
-* **vcpkg 依赖失败**：确认仓库内 `vcpkg` 子模块存在，并重跑 `cmake --preset x64-debug`。
+* **vcpkg 依赖失败**：确认仓库内 `vcpkg` 子模块存在，并确认已从 `CMakePresets.json.example` 复制出本地 `CMakePresets.json`，然后重跑 `cmake --preset x64-debug`。
 * 更多平台说明见仓库 [README](https://github.com/HimiiFish/Himii-Engine/blob/main/README.md)（含 Linux 与 `build.py` 用法）。

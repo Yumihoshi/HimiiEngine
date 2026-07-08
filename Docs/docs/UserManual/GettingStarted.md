@@ -17,8 +17,10 @@
 构建编辑器（Debug 示例）：
 
 ```powershell
+copy CMakePresets.json.example CMakePresets.json
+
 cmake --preset x64-debug
-cmake --build build/x64-debug --target HimiiEditor -j 8
+cmake --build --preset build-x64-debug-win -j 8
 ```
 
 也可使用 `python build.py debug` 或 `build_py.bat`。

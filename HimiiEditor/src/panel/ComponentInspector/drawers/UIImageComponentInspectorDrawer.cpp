@@ -1,0 +1,41 @@
+#include "panel/ComponentInspector/ComponentInspectorDrawContext.h"
+#include "panel/ComponentInspector/ComponentInspectorHeader.h"
+#include "panel/ComponentInspector/ComponentInspectorRegistry.h"
+#include "panel/ComponentInspector/ComponentInspectorUtils.h"
+#include "InspectorControls.h"
+
+#include "Himii/Scene/Components.h"
+
+#include <imgui.h>
+
+namespace Himii
+{
+    static void DrawUIImageComponentInspectorUI(ComponentInspectorDrawContext& drawContext)
+    {
+        if (!drawContext.entity.HasComponent<UIImageComponent>())
+            return;
+
+        auto& component = drawContext.entity.GetComponent<UIImageComponent>();
+        Ref<Texture2D> icon = drawContext.getComponentIcon ? drawContext.getComponentIcon("Image") : nullptr;
+
+        DrawComponentInspectorHeaderUI(
+            drawContext, "UIImageComponent", "Image", icon,
+            [&]()
+            {
+                DrawColorControl("Color", component.Color);
+                DrawTextureAssignControl("Texture", component.Texture, component.TextureHandle);
+            },
+            [&]() { drawContext.entity.RemoveComponent<UIImageComponent>(); });
+    }
+
+    struct UIImageComponentInspectorRegistrar
+    {
+        UIImageComponentInspectorRegistrar()
+        {
+            ComponentInspectorRegistry::Get().RegisterComponentInspector<UIImageComponent>(
+                "UIImageComponent", "Image", "Image", 210, &DrawUIImageComponentInspectorUI);
+        }
+    };
+
+    static UIImageComponentInspectorRegistrar s_UIImageComponentInspectorRegistrar;
+}

@@ -37,56 +37,29 @@ namespace Himii
                 HIMII_CORE_WARNING("Failed to copy {0}: {1}", sourcePath.string(), errorCode.message());
         }
 
-        std::filesystem::path ResolveScriptingApiSourceDirectory()
+        void RemoveLegacyScriptingApiStubFromProject(const std::filesystem::path &projectDir)
         {
-            const std::filesystem::path engineDirectory = Application::GetEngineDir();
-            const std::filesystem::path relativeApiPath = "Packaging/ScriptingApi/Himii";
+            const std::filesystem::path scriptingApiStubDirectory = projectDir / "assets" / "scripts" / "Himii";
+            const std::filesystem::path serializeFieldStubPath = scriptingApiStubDirectory / "SerializeField.cs";
 
-            std::filesystem::path candidate = engineDirectory / relativeApiPath;
-            if (std::filesystem::exists(candidate))
-                return candidate;
-
-            std::filesystem::path searchDirectory = Application::Get().GetExecutableDir();
-            for (int depth = 0; depth < 10; ++depth)
-            {
-                candidate = searchDirectory / relativeApiPath;
-                if (std::filesystem::exists(candidate))
-                    return candidate;
-
-                if (!searchDirectory.has_parent_path())
-                    break;
-
-                searchDirectory = searchDirectory.parent_path();
-            }
-
-            return {};
-        }
-
-        void CopyScriptingApiSourcesToProject(const std::filesystem::path &projectDir)
-        {
-            const std::filesystem::path apiSourceDirectory = ResolveScriptingApiSourceDirectory();
-            if (apiSourceDirectory.empty() || !std::filesystem::exists(apiSourceDirectory))
-            {
-                HIMII_CORE_WARNING("Scripting API sources not found (expected Packaging/ScriptingApi/Himii)");
-                return;
-            }
-
-            const std::filesystem::path destinationDirectory = projectDir / "assets" / "scripts" / "Himii";
             std::error_code errorCode;
-            std::filesystem::create_directories(destinationDirectory, errorCode);
-            if (errorCode)
+            if (std::filesystem::exists(serializeFieldStubPath))
             {
-                HIMII_CORE_WARNING("Failed to create {0}: {1}", destinationDirectory.string(), errorCode.message());
+                std::filesystem::remove(serializeFieldStubPath, errorCode);
+                if (errorCode)
+                {
+                    HIMII_CORE_WARNING("Failed to remove legacy stub {0}: {1}",
+                                       serializeFieldStubPath.string(), errorCode.message());
+                }
+            }
+
+            if (!std::filesystem::exists(scriptingApiStubDirectory))
                 return;
-            }
 
-            for (const auto &entry : std::filesystem::directory_iterator(apiSourceDirectory))
-            {
-                if (!entry.is_regular_file() || entry.path().extension() != ".cs")
-                    continue;
-
-                CopyIfExists(entry.path(), destinationDirectory / entry.path().filename());
-            }
+            const bool directoryIsEmpty =
+                std::filesystem::is_empty(scriptingApiStubDirectory, errorCode);
+            if (!errorCode && directoryIsEmpty)
+                std::filesystem::remove(scriptingApiStubDirectory, errorCode);
         }
     }
 
@@ -109,7 +82,7 @@ namespace Himii
         documentationPath.replace_extension(".xml");
         CopyIfExists(documentationPath, projectDir / "ScriptCore.xml");
 
-        CopyScriptingApiSourcesToProject(projectDir);
+        RemoveLegacyScriptingApiStubFromProject(projectDir);
     }
 
     Ref<Project> Project::New()

@@ -45,6 +45,12 @@ namespace Himii
         }
 
         template<typename T>
+        const T &GetComponent() const
+        {
+            return m_Scene->Registry().get<T>(m_EntityHandle);
+        }
+
+        template<typename T>
         void RemoveComponent()
         {
             m_Scene->Registry().remove<T>(m_EntityHandle);
@@ -70,7 +76,17 @@ namespace Himii
             return GetComponent<IDComponent>().ID;
         }
 
+        UUID GetUUID() const
+        {
+            return GetComponent<IDComponent>().ID;
+        }
+
         const std::string &GetName()
+        {
+            return GetComponent<TagComponent>().Tag;
+        }
+
+        const std::string &GetName() const
         {
             return GetComponent<TagComponent>().Tag;
         }

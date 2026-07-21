@@ -98,12 +98,12 @@
 ### 核心模块：编辑器交互 (Editor UX)
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |
 | :--- | :--- | :--- |
-| [ ] | **Undo/Redo** | 命令模式实现操作撤销重做 |
+| [x] | **Undo/Redo** | 命令模式；Transform、Hierarchy 等操作已接入 |
 | [ ] | **Asset Importer** | 统一的资源导入设置面板 |
 | [ ] | **Console 增强** | 日志过滤/搜索/复制；默认展示引擎日志；`Console.WriteLine` 重定向等 |
 
 ### 核心模块：发布 (Distribution)
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |
 | :--- | :--- | :--- |
-| [ ] | **Project Packager** | 自动打包脚本与资源到发布的目录 |
-| [ ] | **Build Pipeline** | 确保 GameAssembly、ScriptCore、资源、`.hproj` 一并输出 |
+| [x] | **Project Packager（基础）** | 编辑器 **File → Build Project**：复制 Runtime、依赖 DLL、项目资源与 `GameAssembly` |
+| [ ] | **Build Pipeline** | 完善发布流程：统一配置、`engine.hpck`、资源校验与一键输出目录 |

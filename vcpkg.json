@@ -15,8 +15,6 @@
     "spirv-tools",
     "box2d",
     "nethost",
-    "libnoise",
-    "marchingcubecpp",
     "freetype"
   ]
 }

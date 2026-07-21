@@ -122,13 +122,12 @@ cmake --install build/x64-release --prefix install/x64-release
 在完整构建 HimiiRuntime 目标后，可从输出目录启动：
 
 ```text
-build/x64-debug/bin/HimiiRuntime/Debug/HimiiRuntime.exe --project "D:\path\to\YourProject\YourProject.hproj"
+build/x64-debug/bin/HimiiRuntime/Debug/HimiiRuntime.exe
 ```
 
-- 使用 `--project` 指定 `.hproj` 文件路径。
-- 未指定 `--project` 时，在 **HimiiRuntime 可执行文件所在目录** 查找 `.hproj` 文件。
+在 **HimiiRuntime 可执行文件所在目录**（或将其设为当前工作目录）放置 `.hproj` 文件；启动后会加载该目录下找到的第一个 `.hproj`。
 
-运行前请确认该目录下已有 `ScriptCore.dll`、`ScriptCore.runtimeconfig.json` 以及项目所需的 `assets`（与编辑器 Post-build 拷贝规则相同）。
+运行前请确认同目录下已有 `ScriptCore.dll`、`ScriptCore.runtimeconfig.json`，以及项目所需的 `assets`（Debug 构建由 Post-build 从 `HimiiEditor` 拷贝；Release 使用 `HimiiEngine/engine.hpck`）。
 
 ## 故障排除
 

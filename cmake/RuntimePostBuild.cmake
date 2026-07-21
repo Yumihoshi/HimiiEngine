@@ -17,7 +17,11 @@ if(CONFIG STREQUAL "Release" OR CONFIG STREQUAL "RelWithDebInfo" OR CONFIG STREQ
         endif()
     endforeach()
 else()
-    file(COPY "${HIMII_RUNTIME_DIR}/assets/." DESTINATION "${TARGET_DIR}/assets")
+    file(MAKE_DIRECTORY "${TARGET_DIR}/assets")
+    file(MAKE_DIRECTORY "${TARGET_DIR}/resources")
+
+    file(COPY "${HIMII_EDITOR_DIR}/assets/." DESTINATION "${TARGET_DIR}/assets")
+    file(COPY "${HIMII_EDITOR_DIR}/resources/." DESTINATION "${TARGET_DIR}/resources")
 
     foreach(script_core_file ScriptCore.dll ScriptCore.pdb ScriptCore.runtimeconfig.json)
         set(source_file "${SCRIPT_CORE_DIR}/${script_core_file}")

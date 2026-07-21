@@ -24,7 +24,7 @@ add_dependencies(HimiiRuntime PackEngineResources)
 add_custom_command(TARGET HimiiRuntime POST_BUILD
     COMMAND ${CMAKE_COMMAND}
         -DTARGET_DIR=$<TARGET_FILE_DIR:HimiiRuntime>
-        -DHIMII_RUNTIME_DIR=${CMAKE_CURRENT_SOURCE_DIR}
+        -DHIMII_EDITOR_DIR=${CMAKE_SOURCE_DIR}/HimiiEditor
         -DENGINE_HPCK=${HIMII_ENGINE_HPCK}
         -DSCRIPT_CORE_DIR=${CMAKE_SOURCE_DIR}/ScriptCore/bin/$<IF:$<CONFIG:Debug>,Debug,Release>/net8.0
         -DCONFIG=$<CONFIG>

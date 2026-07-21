@@ -16,7 +16,6 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-#include "CamerController.h"
 #include "Himii/Utils/PlatformUtils.h"
 #include "ImGuizmo.h"
 #include "yaml-cpp/yaml.h"

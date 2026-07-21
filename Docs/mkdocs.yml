@@ -8,17 +8,20 @@ theme:
   language: zh
   palette:
     - scheme: default
-      primary: indigo
-      accent: indigo
+      primary: custom
+      accent: custom
       toggle:
         icon: material/brightness-7
         name: 切换到深色模式
     - scheme: slate
-      primary: indigo
-      accent: indigo
+      primary: custom
+      accent: custom
       toggle:
         icon: material/brightness-4
         name: 切换到浅色模式
+  font:
+    text: Microsoft YaHei
+    code: JetBrains Mono
   features:
     - navigation.tabs
     - navigation.sections
@@ -32,6 +35,15 @@ theme:
 plugins:
   - search
   - tags
+
+extra:
+  css:
+    - stylesheets/extra.css
+  alternate:
+    - name: Himii Fish 个人站
+      link: https://himiifish.com
+      lang: zh
+  generator: false
 
 nav:
   - 关于:

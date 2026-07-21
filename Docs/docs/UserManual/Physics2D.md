@@ -123,7 +123,9 @@ public override void OnTriggerExit2D(Collision2DInfo collision)
 
 Collider 的 **Layer** 字段决定该形状所属层；未勾选的层组合将完全忽略彼此（碰撞与触发均不会触发）。
 
-保存项目（**File → Save Project**）后层配置写入 `.himii` 项目文件。
+> **【配图占位】** `images/physics2d-layers-matrix.png` — Project Settings → Physics 2D Layers 与碰撞矩阵
+
+保存项目（**File → Save Project**）后层配置写入 **`.hproj`** 项目文件。
 
 注意：
 

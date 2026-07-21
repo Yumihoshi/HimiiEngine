@@ -4,6 +4,8 @@ HimiiEditor 采用 DockSpace 停靠布局，提供场景编辑、资源管理与
 
 各功能模块（动画、物理、脚本等）的总览见 **[编辑器与功能](EditorFeatures.md)**。建议新手按 **[2D 平台跳跃教程](Tutorial2DPlatformer.md)** 边做边熟悉本页面板。
 
+> **【配图占位】** `images/editor-dock-layout.png` — 默认停靠布局（Viewport、Hierarchy、Properties、Content Browser）
+
 ## 主要面板
 
 ### 1. 视口 (Viewport)
@@ -13,6 +15,8 @@ HimiiEditor 采用 DockSpace 停靠布局，提供场景编辑、资源管理与
 - **右键 + WASD**：漫游（编辑模式下的场景相机）。
 - **滚轮**：缩放。
 - **Play** 模式下显示运行时画面；**Edit** 模式下可用 **ImGuizmo** 变换选中物体（移动 / 旋转 / 缩放）。
+
+> **【配图占位】** `images/imguizmo-transform.png` — Edit 模式下视口 ImGuizmo
 
 ### 2. 场景层级 (Scene Hierarchy)
 
@@ -37,6 +41,8 @@ HimiiEditor 采用 DockSpace 停靠布局，提供场景编辑、资源管理与
 - 拖拽资源到视口或属性面板使用。
 - 可创建 C# 脚本、打开场景文件（`.himii`）等。
 
+> **【配图占位】** `images/content-browser-assets.png` — Content Browser 展示典型 `assets/` 结构
+
 ## 日志与调试面板
 
 ### Console（Window → Console）
@@ -55,6 +61,8 @@ HimiiEditor 采用 DockSpace 停靠布局，提供场景编辑、资源管理与
 - 编译中 / 成功 / 失败状态提示。
 - 点击带 `文件.cs(行,列): error` 格式的行，可在配置的 IDE 中打开对应脚本（见 [脚本工作流](ScriptWorkflow.md)）。
 
+> **【配图占位】** `images/console-panels.png` — Console 与 Script Console 面板
+
 ## 工具栏与运行模式
 
 视口上方工具栏：
@@ -63,11 +71,14 @@ HimiiEditor 采用 DockSpace 停靠布局，提供场景编辑、资源管理与
 - **Simulate**：仅物理模拟（不运行脚本生命周期）。
 - **Stop**：结束 Play / Simulate，恢复编辑场景。
 
+> **【配图占位】** `images/viewport-play-toolbar.png` — 视口上方 Play / Simulate / Stop 工具栏
+
 ## 菜单要点
 
 | 菜单 | 项 | 说明 |
 |------|-----|------|
 | **File** | New / Open / Save Project | 项目管理 |
+| **File** | Build Project... | 导出可分发游戏目录（见 [编辑器与功能 · 构建项目](EditorFeatures.md#build-project)） |
 | **File** | Open C# Project | 用配置的 IDE 打开解决方案 |
 | **File** | Project Settings | 项目级脚本 IDE 覆盖（`.hproj`） |
 | **Edit** | Preferences | 全局默认脚本 IDE（`editor_settings.yaml`） |

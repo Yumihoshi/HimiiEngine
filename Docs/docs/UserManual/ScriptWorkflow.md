@@ -27,6 +27,8 @@
   - 成功 / 失败状态
   - 点击 `path\file.cs(line,col): error` 行，在配置的 IDE 中打开对应位置
 
+> **【配图占位】** `images/script-console-compile.png` — Script Console 编译输出
+
 ## 运行与热重载策略
 
 - **Play**：复制场景、加载 `GameAssembly`、为带 `ScriptComponent` 的实体调用 `OnCreate`；每帧先 `OnUpdate`，再 Box2D 步进与碰撞事件，最后 **`OnFixedUpdate`**（物理之后，见下节）。
@@ -68,6 +70,8 @@ Play 模式下，单帧脚本与物理顺序为：
 - **Use Editor Default**：继承全局设置。
 - 或为本项目单独指定 IDE / Custom 路径。
 - 写入 `.hproj`，随项目一并分享。
+
+> **【配图占位】** `images/project-settings-ide.png` — Project Settings 脚本 IDE 配置
 
 ### 打开项目 / 脚本
 

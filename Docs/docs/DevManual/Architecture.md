@@ -184,6 +184,4 @@ flowchart LR
 
 ---
 
-## 附录：TemplateProject 历史说明
-
-仓库中若仍存在 **TemplateProject** 或 **CubeLayer** 相关代码，其为早期 3D 地形/离屏渲染演示，**不是**当前默认编辑器流程。新功能开发以 `HimiiEditor` + `Engine` + `ScriptCore` 为准。
+> **历史说明**：仓库早期曾含 TemplateProject / CubeLayer 等 3D 地形演示，已移除。当前默认流程以 `HimiiEditor` + `Engine` + `ScriptCore` 为准。

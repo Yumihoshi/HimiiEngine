@@ -3,8 +3,8 @@
 Himii 的 2D 逐帧动画以 **`.anim` 资产** 组织：一个文件绑定一张图集（`AssetType: SpriteFrames`），内部包含 **多条命名动画**（如 `Idle`、`Run`）。运行时通过 **Sprite Animation** 组件选择当前动画名，由 **Sprite Renderer** 负责绘制。
 
 适合 **已按格子切好的角色图集**：单文件管理站立、跑步、跳跃等多段序列，无需为每个动作单独建资产文件。
- 
-> 整窗截图：左栏 Animations 列表、Playback、Atlas Frames；右侧 Atlas Picker 与 Timeline。
+
+> **【配图占位】** `images/animation-editor-overview.png` — Animation Editor 整窗：左栏 Animations / Playback，右侧 Atlas Picker 与 Timeline。
 
 ---
 

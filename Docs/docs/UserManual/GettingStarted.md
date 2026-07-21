@@ -33,16 +33,22 @@ cmake --build --preset build-x64-debug-win -j 8
 
 也可在 Visual Studio 中将 **HimiiEditor** 设为启动项目并调试运行。
 
+> **【配图占位】** `UserManual/images/editor-hub.png` — 启动后 Hub（New Project / Open Project / Recent）
+
 说明：编辑器界面与菜单中的名称为 **HimiiEditor**；Release 配置下生成的可执行文件名为 `HimiiEngine.exe`，路径为 `build/x64-release/bin/HimiiEditor/Release/HimiiEngine.exe`。
 
 首次运行前需成功构建 **ScriptCore**（构建 HimiiEditor 时通常会通过 `ScriptCore_Build` 目标自动完成）。
 
 ## 3. 创建新项目
 
-1. 启动 HimiiEditor。
-2. 在窗口上方菜单选择 **File → New Project**。
-3. 输入项目名称与保存路径。
-4. 确认保存。
+1. 启动 HimiiEditor，在 Hub 点击 **Create New Project**（或菜单 **File → New Project**）。
+2. 输入 **项目名称** 与 **保存路径**。
+3. 选择项目模板：**2D Project**（正交相机）或 **3D Project**（透视相机）。
+4. 点击 **Create** 确认。
+
+> **【配图占位】** `UserManual/images/new-project-dialog.png` — New Project 弹窗（含 2D / 3D 单选）
+
+创建成功后会自动生成 `assets/` 目录结构、`GameAssembly.csproj`、默认场景与 `.hproj` 项目文件。
 
 ## 4. 在编辑器中运行场景
 

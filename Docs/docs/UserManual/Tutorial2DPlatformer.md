@@ -35,8 +35,7 @@
 │   └── scenes/         # 主场景 .himii
 ```
 
-> **![Project-folders](./images/tutorial-project-folders.png "project-floder")**   
-> 内容浏览器中 `assets` 下 textures、animation、scripts、scenes 文件夹。
+内容浏览器中应包含 `textures`、`animation`、`scripts`、`scenes` 等子文件夹（可在 Content Browser 中右键创建）。
 
 ---
 
@@ -49,8 +48,7 @@
    - **Sprite Renderer**（可选）：拖入地面纹理，仅用于可视化。
    - **Box Collider 2D**：**Size** 与地面对齐；无需 **Rigidbody 2D**（静止碰撞体在 Play 时会作为 Static 参与物理）。
 
-> **![ground-entity](./images/tutorial-ground-entity.png "ground-entity")** 
-> Hierarchy 中 Ground 实体，Inspector 显示 Box Collider 2D。
+在 Hierarchy 选中 `Ground`，于 Properties 中确认 **Box Collider 2D** 的 Size 与 Transform 一致。
 
 ---
 

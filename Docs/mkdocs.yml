@@ -1,24 +1,24 @@
 site_name: HimiiEngine 引擎文档
-site_description: I Love HimiiFish
+site_description: HimiiEngine 官方文档——用户手册、教程、脚本 API 与开发者指南
 repo_url: https://github.com/HimiiFish/Himii-Engine
 repo_name: Himii-Engine
 
 theme:
   name: material
-  language: en
+  language: zh
   palette:
     - scheme: default
       primary: indigo
       accent: indigo
       toggle:
         icon: material/brightness-7
-        name: Switch to dark mode
+        name: 切换到深色模式
     - scheme: slate
       primary: indigo
       accent: indigo
       toggle:
         icon: material/brightness-4
-        name: Switch to light mode
+        name: 切换到浅色模式
   features:
     - navigation.tabs
     - navigation.sections
@@ -32,6 +32,32 @@ theme:
 plugins:
   - search
   - tags
+
+nav:
+  - 关于:
+      - 文档首页: index.md
+      - 开发路线图: Roadmap.md
+  - 快速开始:
+      - 快速开始: UserManual/GettingStarted.md
+  - 用户手册:
+      - 用户手册总览: UserManual/README.md
+      - 编辑器与功能: UserManual/EditorFeatures.md
+      - 编辑器界面: UserManual/EditorInterface.md
+      - 2D 逐帧动画: UserManual/SpriteAnimation.md
+      - 2D 物理: UserManual/Physics2D.md
+      - 脚本工作流: UserManual/ScriptWorkflow.md
+      - 2D 角色工作流（索引）: UserManual/Character2D.md
+  - 教程:
+      - 2D 平台跳跃: UserManual/Tutorial2DPlatformer.md
+  - 脚本 API 参考:
+      - 脚本 API: UserManual/ScriptingAPI.md
+  - 开发手册:
+      - 开发者手册总览: DevManual/README.md
+      - 源码构建: DevManual/BuildingFromSource.md
+      - 架构概览: DevManual/Architecture.md
+      - 场景序列化: DevManual/CoreSystems/Serialization.md
+  - 发布说明:
+      - v1.0.0 Alpha: releases/v1.0.0-alpha.md
 
 markdown_extensions:
   - pymdownx.highlight:

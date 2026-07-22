@@ -76,13 +76,48 @@ namespace HimiiEngine
             {
                 if (_transform == null)
                 {
-                    // 这里我们手动创建 Transform 而不调用 GetComponent<Transform>
-                    // 因为每个 Entity 必定有 Transform，且 GetComponent 通常会创建一个新对象
                     _transform = new Transform();
                     _transform.Entity = this;
                 }
                 return _transform;
             }
+        }
+
+        public Entity Parent
+        {
+            get
+            {
+                if (InternalCalls.Entity_GetParent == null)
+                    return null;
+                ulong parentIdentifier = InternalCalls.Entity_GetParent(ID);
+                return parentIdentifier == 0 ? null : new Entity(parentIdentifier);
+            }
+            set => SetParent(value, true);
+        }
+
+        public void SetParent(Entity parent, bool keepWorldPosition = true)
+        {
+            if (InternalCalls.Entity_SetParent == null)
+                return;
+
+            ulong parentIdentifier = parent != null ? parent.ID : 0;
+            InternalCalls.Entity_SetParent(ID, parentIdentifier, keepWorldPosition ? (byte)1 : (byte)0);
+        }
+
+        public Entity[] GetChildren()
+        {
+            if (InternalCalls.Entity_GetChildCount == null || InternalCalls.Entity_GetChildAt == null)
+                return Array.Empty<Entity>();
+
+            int childCount = InternalCalls.Entity_GetChildCount(ID);
+            Entity[] children = new Entity[childCount];
+            for (int childIndex = 0; childIndex < childCount; ++childIndex)
+            {
+                ulong childIdentifier = InternalCalls.Entity_GetChildAt(ID, childIndex);
+                children[childIndex] = childIdentifier == 0 ? null : new Entity(childIdentifier);
+            }
+
+            return children;
         }
 
 

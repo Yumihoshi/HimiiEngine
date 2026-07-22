@@ -41,10 +41,21 @@ namespace Himii
                     }
                 };
 
+                auto notifyTransformPreview = [&]()
+                {
+                    if (drawContext.scene)
+                        drawContext.scene->MarkEntityTransformDirty(drawContext.entity);
+                };
+
                 auto endPositionScaleEdit = [&]()
                 {
+                    notifyTransformPreview();
+
                     if (!transformEditCaptured || drawContext.commandHistory == nullptr)
+                    {
+                        transformEditCaptured = false;
                         return;
+                    }
 
                     TransformComponent transformAfterEdit = component;
                     if (transformBeforeEdit.Position != transformAfterEdit.Position
@@ -64,10 +75,15 @@ namespace Himii
                 glm::vec3 rotationDegrees = glm::degrees(component.Rotation);
                 auto endRotationEdit = [&]()
                 {
-                    if (!transformEditCaptured || drawContext.commandHistory == nullptr)
-                        return;
-
                     component.Rotation = glm::radians(rotationDegrees);
+                    notifyTransformPreview();
+
+                    if (!transformEditCaptured || drawContext.commandHistory == nullptr)
+                    {
+                        transformEditCaptured = false;
+                        return;
+                    }
+
                     TransformComponent transformAfterEdit = component;
                     if (transformBeforeEdit.Position != transformAfterEdit.Position
                         || transformBeforeEdit.Rotation != transformAfterEdit.Rotation
@@ -102,6 +118,9 @@ namespace Himii
                                 1.0f,
                                 beginTransformEdit,
                                 endPositionScaleEdit);
+
+                if (transformEditCaptured)
+                    notifyTransformPreview();
             },
             [&]()
             {

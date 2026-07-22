@@ -38,10 +38,21 @@ namespace Himii
                     }
                 };
 
+                auto notifyTransformPreview = [&]()
+                {
+                    if (drawContext.scene)
+                        drawContext.scene->MarkEntityTransformDirty(drawContext.entity);
+                };
+
                 auto endTransformEdit = [&]()
                 {
+                    notifyTransformPreview();
+
                     if (!transformEditCaptured || drawContext.commandHistory == nullptr)
+                    {
+                        transformEditCaptured = false;
                         return;
+                    }
 
                     UITransformComponent transformAfterEdit = component;
                     if (transformBeforeEdit.Position != transformAfterEdit.Position
@@ -66,6 +77,9 @@ namespace Himii
                 glm::vec3 sizeVector = glm::vec3(component.Size, 1.0f);
                 DrawVec3Control("Size", sizeVector, 100.0f, beginTransformEdit, endTransformEdit);
                 component.Size = glm::vec2(sizeVector.x, sizeVector.y);
+
+                if (transformEditCaptured)
+                    notifyTransformPreview();
             },
             [&]() { drawContext.entity.RemoveComponent<UITransformComponent>(); });
     }

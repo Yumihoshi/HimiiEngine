@@ -582,20 +582,15 @@ namespace Himii
 
                     if (isUI)
                     {
-                        // --- UI 专属矩阵 ---
                         cameraProjection = glm::ortho(0.0f, m_ViewportSize.x, 0.0f, m_ViewportSize.y, -1.0f, 1.0f);
                         cameraView = glm::mat4(1.0f);
-
-                        auto &uiTransformComponent = selectEntity.GetComponent<UITransformComponent>();
-                        // 注意：这里暂时忽略了旋转，如果你的 UI 有旋转请加上 glm::rotate
-                        transform = uiTransformComponent.GetTransform();
+                        transform = m_EditorScene->GetEntityWorldTransformMatrix(selectEntity);
                     }
                     else
                     {
-                        // --- 3D/2D 游戏物体矩阵 ---
                         cameraProjection = m_EditorCamera.GetProjection();
                         cameraView = m_EditorCamera.GetViewMatrix();
-                        transform = selectEntity.GetComponent<TransformComponent>().GetTransform();
+                        transform = m_EditorScene->GetEntityWorldTransformMatrix(selectEntity);
                     }
 
                     const bool isSpriteRendererEntity =
@@ -643,7 +638,7 @@ namespace Himii
                             m_GizmoStartTransform = selectEntity.GetComponent<TransformComponent>();
                     }
 
-                    // 绘制 Gizmo
+                    // 绘制 Gizmo（Local 空间；矩阵使用世界变换以正确显示层级位置）
                     ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
                                          currentGizmoOperation, ImGuizmo::LOCAL, glm::value_ptr(transform), nullptr,
                                          snap ? snapValues : nullptr);
@@ -651,41 +646,15 @@ namespace Himii
                     // 写回数据
                     if (ImGuizmo::IsUsing())
                     {
-                        glm::vec3 translation, rotation, scale;
-                        Math::DecomposeTransform(transform, translation, rotation, scale);
-
                         if (isUI)
                         {
-                            auto &uiTc = selectEntity.GetComponent<UITransformComponent>();
-                            // UI 只需要 XY 坐标和缩放
-                            uiTc.Position = translation;
-                            glm::vec3 deltaRotation = rotation - uiTc.Rotation;
-                            uiTc.Rotation += deltaRotation; 
-                            uiTc.Size = glm::vec2(scale.x, scale.y);
+                            m_EditorScene->ApplyWorldMatrixAsLocalTransform(selectEntity, transform);
+                            m_EditorScene->NotifyEntityLocalTransformChanged(selectEntity);
                         }
                         else
                         {
-                            auto &tc = selectEntity.GetComponent<TransformComponent>();
-                            if (isSpriteRendererEntity)
-                            {
-                                tc.Position = translation;
-                                if (m_GizmoType == ImGuizmo::ROTATE)
-                                {
-                                    glm::vec3 deltaRotation = rotation - tc.Rotation;
-                                    tc.Rotation += deltaRotation;
-                                }
-                                else if (m_GizmoType == ImGuizmo::SCALE)
-                                {
-                                    tc.Scale = scale;
-                                }
-                            }
-                            else
-                            {
-                                glm::vec3 deltaRotation = rotation - tc.Rotation;
-                                tc.Position = translation;
-                                tc.Rotation += deltaRotation;
-                                tc.Scale = scale;
-                            }
+                            m_EditorScene->ApplyWorldMatrixAsLocalTransform(selectEntity, transform);
+                            m_EditorScene->NotifyEntityLocalTransformChanged(selectEntity);
                         }
                     }
                     else if (m_GizmoTransformCaptureActive)
@@ -908,10 +877,12 @@ namespace Himii
                                    Input::GetMouseY() - m_ViewportBounds[0].y};
         viewportMouse.y = viewportSize.y - viewportMouse.y;
 
+        const glm::vec3 worldTranslation = m_EditorScene->GetEntityWorldTranslation(selectedEntity);
         const glm::vec3 worldPosition = TilemapEditorUtility::ViewportMouseToWorldOnPlane(
-                viewportMouse, viewportSize, m_EditorCamera.GetViewProjection(), transformComponent->Position.z);
+                viewportMouse, viewportSize, m_EditorCamera.GetViewProjection(), worldTranslation.z);
 
-        const glm::mat4 inverseEntityTransform = glm::inverse(transformComponent->GetTransform());
+        const glm::mat4 inverseEntityTransform =
+                glm::inverse(m_EditorScene->GetEntityWorldTransformMatrix(selectedEntity));
         const glm::vec3 localPosition = inverseEntityTransform * glm::vec4(worldPosition, 1.0f);
 
         m_TilemapHoveredTile =
@@ -931,7 +902,7 @@ namespace Himii
                 return;
 
             Renderer2D::BeginScene(camera.GetComponent<CameraComponent>().Camera,
-                                   camera.GetComponent<TransformComponent>().GetTransform());
+                                   m_ActiveScene->GetEntityWorldTransformMatrix(camera));
         }
         else
         {
@@ -1022,7 +993,10 @@ namespace Himii
                     if (cellSize <= 0.0f)
                         return;
 
-                    const glm::mat4 entityTransform = transformComponent.GetTransform();
+                    Entity sceneEntity = {entityHandle, m_ActiveScene.get()};
+                    const glm::mat4 entityTransform =
+                            m_ActiveScene->GetEntityWorldTransformMatrix(sceneEntity);
+                    const glm::vec3 worldScale = m_ActiveScene->GetEntityWorldScale(sceneEntity);
                     const glm::vec4 colliderColor = {0.0f, 1.0f, 0.0f, 1.0f};
 
                     mapData->ForEachTile([&](int32_t tileX, int32_t tileY, uint16_t tileIdentifier)
@@ -1036,8 +1010,8 @@ namespace Himii
                         glm::mat4 colliderTransform = entityTransform
                                 * glm::translate(glm::mat4(1.0f), glm::vec3(tileCenter.x, tileCenter.y, 0.001f))
                                 * glm::scale(glm::mat4(1.0f),
-                                             glm::vec3(cellSize * transformComponent.Scale.x,
-                                                       cellSize * transformComponent.Scale.y, 1.0f));
+                                             glm::vec3(cellSize * worldScale.x,
+                                                       cellSize * worldScale.y, 1.0f));
                         Renderer2D::DrawRect(colliderTransform, colliderColor);
                     });
                 });
@@ -1050,8 +1024,8 @@ namespace Himii
             {
                 if (selectedEntity.HasComponent<TransformComponent>())
                 {
-                    const TransformComponent &transform = selectedEntity.GetComponent<TransformComponent>();
-                    glm::mat4 outlineTransform = transform.GetTransform();
+                    glm::mat4 outlineTransform =
+                            m_EditorScene->GetEntityWorldTransformMatrix(selectedEntity);
 
                     if (selectedEntity.HasComponent<SpriteRendererComponent>())
                     {
@@ -1062,7 +1036,7 @@ namespace Himii
                             const SpriteResolved resolved = ResolveSpriteRendererDrawable(
                                 selectedEntity, spriteRenderer, assetManager.get());
                             outlineTransform =
-                                GetSpriteRendererVisualTransform(transform, resolved);
+                                GetSpriteRendererVisualTransform(outlineTransform, resolved);
                         }
                     }
 
@@ -1088,7 +1062,8 @@ namespace Himii
                 const UITransformComponent &uiTransform = selectedEntity.GetComponent<UITransformComponent>();
 
                 // 绘制高亮框
-                Renderer2D::DrawRect(uiTransform.GetTransform(), glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
+                Renderer2D::DrawRect(m_EditorScene->GetEntityWorldTransformMatrix(selectedEntity),
+                                     glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
 
                 Renderer2D::EndScene();
             }
@@ -2186,11 +2161,12 @@ namespace Himii
                                    ImGui::GetMousePos().y - m_ViewportBounds[0].y};
         viewportMouse.y = viewportSize.y - viewportMouse.y;
 
-        const float paintPlaneZ = transformComponent->Position.z;
+        const float paintPlaneZ = m_EditorScene->GetEntityWorldTranslation(selectedEntity).z;
         const glm::vec3 worldPosition = TilemapEditorUtility::ViewportMouseToWorldOnPlane(
                 viewportMouse, viewportSize, m_EditorCamera.GetViewProjection(), paintPlaneZ);
 
-        const glm::mat4 inverseEntityTransform = glm::inverse(transformComponent->GetTransform());
+        const glm::mat4 inverseEntityTransform =
+                glm::inverse(m_EditorScene->GetEntityWorldTransformMatrix(selectedEntity));
         const glm::vec3 localPosition = inverseEntityTransform * glm::vec4(worldPosition, 1.0f);
 
         const glm::ivec2 tileCoordinates =
@@ -2264,9 +2240,11 @@ namespace Himii
                                     TileMapCoordinateUtility::InvalidTileCoordinate};
     }
 
-    void EditorLayer::DrawTilemapBoxSelectionOverlay(const TransformComponent& transformComponent,
-                                                     float cellSize)
+    void EditorLayer::DrawTilemapBoxSelectionOverlay(Entity selectedEntity, float cellSize)
     {
+        if (!selectedEntity || !m_EditorScene)
+            return;
+
         if (!m_TilemapBoxSelecting)
             return;
 
@@ -2284,7 +2262,7 @@ namespace Himii
         if (minTileY > maxTileY)
             std::swap(minTileY, maxTileY);
 
-        const glm::mat4 entityTransform = transformComponent.GetTransform();
+        const glm::mat4 entityTransform = m_EditorScene->GetEntityWorldTransformMatrix(selectedEntity);
         const glm::vec2 selectionBottomLeft =
                 TileMapCoordinateUtility::TileLocalBottomLeft(minTileX, minTileY, cellSize);
         const glm::vec2 selectionTopRight = TileMapCoordinateUtility::TileLocalBottomLeft(
@@ -2373,7 +2351,7 @@ namespace Himii
         const glm::vec2 tileBottomLeft = TileMapCoordinateUtility::TileLocalBottomLeft(
                 m_TilemapHoveredTile.x, m_TilemapHoveredTile.y, cellSize);
 
-        const glm::mat4 entityTransform = transformComponent->GetTransform();
+        const glm::mat4 entityTransform = m_EditorScene->GetEntityWorldTransformMatrix(selectedEntity);
         const glm::vec3 worldBottomLeft =
                 entityTransform * glm::vec4(tileBottomLeft.x, tileBottomLeft.y, 0.06f, 1.0f);
         const glm::vec3 worldBottomRight =
@@ -2435,8 +2413,7 @@ namespace Himii
         if (!mapData)
             return;
 
-        const TransformComponent &transformComponent = selectedEntity.GetComponent<TransformComponent>();
-        const glm::mat4 entityTransform = transformComponent.GetTransform();
+        const glm::mat4 entityTransform = m_EditorScene->GetEntityWorldTransformMatrix(selectedEntity);
 
         const float cellSize = mapData->GetCellSize();
         const TileMapEditorGridBounds gridBounds =
@@ -2480,7 +2457,7 @@ namespace Himii
         Renderer2D::DrawLine(cornerTopRight, cornerTopLeft, borderColor);
         Renderer2D::DrawLine(cornerTopLeft, cornerBottomLeft, borderColor);
 
-        DrawTilemapBoxSelectionOverlay(transformComponent, cellSize);
+        DrawTilemapBoxSelectionOverlay(selectedEntity, cellSize);
 
         if (TileMapCoordinateUtility::IsValidTileCoordinate(m_TilemapHoveredTile)
             && !m_TilemapBoxSelecting && !m_TileMapEditorPanel.IsBoxToolActive())

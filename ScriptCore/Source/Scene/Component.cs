@@ -38,6 +38,25 @@ namespace HimiiEngine
             }
             set => InternalCalls.Transform_SetScale(Entity.ID, ref value);
         }
+
+        public Vector3 WorldPosition
+        {
+            get
+            {
+                InternalCalls.Transform_GetWorldTranslation(Entity.ID, out Vector3 result);
+                return result;
+            }
+            set => InternalCalls.Transform_SetWorldTranslation(Entity.ID, ref value);
+        }
+
+        public Vector3 WorldRotation
+        {
+            get
+            {
+                InternalCalls.Transform_GetWorldRotation(Entity.ID, out Vector3 result);
+                return result;
+            }
+        }
     }
 
     public class SpriteRenderer : Component

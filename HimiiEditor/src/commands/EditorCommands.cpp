@@ -38,7 +38,7 @@ namespace Himii
         , m_EntityIdentifier(entity.GetUUID())
         , m_OnEntityRestored(std::move(onEntityRestored))
     {
-        m_EntitySnapshotYaml = EntitySnapshot::Serialize(entity);
+        m_EntitySnapshotYaml = EntitySnapshot::SerializeSubtree(m_Scene, entity);
     }
 
     void DeleteEntityCommand::Execute()
@@ -50,7 +50,8 @@ namespace Himii
 
     void DeleteEntityCommand::Undo()
     {
-        Entity restoredEntity = EntitySnapshot::Restore(m_Scene, m_EntitySnapshotYaml);
+        EntitySnapshot::RestoreSubtree(m_Scene, m_EntitySnapshotYaml);
+        Entity restoredEntity = m_Scene->GetEntityByUUID(m_EntityIdentifier);
         if (restoredEntity && m_OnEntityRestored)
             m_OnEntityRestored(restoredEntity);
     }
@@ -69,7 +70,11 @@ namespace Himii
     {
         Entity entity = m_Scene->GetEntityByUUID(m_EntityIdentifier);
         if (entity && entity.HasComponent<TransformComponent>())
+        {
             entity.GetComponent<TransformComponent>() = transform;
+            entity.GetComponent<TransformComponent>().WorldTransformDirty = true;
+            m_Scene->NotifyEntityLocalTransformChanged(entity);
+        }
     }
 
     void ModifyTransformCommand::Execute()
@@ -106,7 +111,11 @@ namespace Himii
     {
         Entity entity = m_Scene->GetEntityByUUID(m_EntityIdentifier);
         if (entity && entity.HasComponent<UITransformComponent>())
+        {
             entity.GetComponent<UITransformComponent>() = transform;
+            entity.GetComponent<UITransformComponent>().WorldTransformDirty = true;
+            m_Scene->NotifyEntityLocalTransformChanged(entity);
+        }
     }
 
     void ModifyUITransformCommand::Execute()
@@ -153,5 +162,64 @@ namespace Himii
     void ModifyEntityTagCommand::Undo()
     {
         ApplyTag(m_BeforeTag);
+    }
+
+    ReparentEntityCommand::ReparentEntityCommand(const Ref<Scene>& scene, Entity child, Entity newParent,
+                                                 bool keepWorldPosition)
+        : m_Scene(scene)
+        , m_ChildIdentifier(child.GetUUID())
+        , m_ParentAfterIdentifier(newParent ? newParent.GetUUID() : 0)
+        , m_KeepWorldPosition(keepWorldPosition)
+    {
+        m_IsUserInterface = child.HasComponent<UITransformComponent>();
+        Entity parentBefore = scene->GetParentEntity(child);
+        m_ParentBeforeIdentifier = parentBefore ? parentBefore.GetUUID() : 0;
+
+        if (m_IsUserInterface)
+            m_UserInterfaceTransformBefore = child.GetComponent<UITransformComponent>();
+        else
+            m_LocalTransformBefore = child.GetComponent<TransformComponent>();
+    }
+
+    void ReparentEntityCommand::ApplyParent(UUID parentIdentifier,
+                                            const TransformComponent& localTransform,
+                                            const UITransformComponent& userInterfaceTransform,
+                                            bool isUserInterface)
+    {
+        Entity childEntity = m_Scene->GetEntityByUUID(m_ChildIdentifier);
+        if (!childEntity)
+            return;
+
+        Entity parentEntity = parentIdentifier != 0 ? m_Scene->GetEntityByUUID(parentIdentifier) : Entity{};
+        if (isUserInterface)
+            childEntity.GetComponent<UITransformComponent>() = userInterfaceTransform;
+        else
+            childEntity.GetComponent<TransformComponent>() = localTransform;
+
+        m_Scene->SetEntityParent(childEntity, parentEntity, false);
+    }
+
+    void ReparentEntityCommand::Execute()
+    {
+        Entity childEntity = m_Scene->GetEntityByUUID(m_ChildIdentifier);
+        Entity parentEntity =
+                m_ParentAfterIdentifier != 0 ? m_Scene->GetEntityByUUID(m_ParentAfterIdentifier) : Entity{};
+        if (!childEntity)
+            return;
+
+        m_Scene->SetEntityParent(childEntity, parentEntity, m_KeepWorldPosition);
+
+        if (m_IsUserInterface)
+            m_UserInterfaceTransformAfter = childEntity.GetComponent<UITransformComponent>();
+        else
+            m_LocalTransformAfter = childEntity.GetComponent<TransformComponent>();
+    }
+
+    void ReparentEntityCommand::Undo()
+    {
+        if (m_IsUserInterface)
+            ApplyParent(m_ParentBeforeIdentifier, {}, m_UserInterfaceTransformBefore, true);
+        else
+            ApplyParent(m_ParentBeforeIdentifier, m_LocalTransformBefore, {}, false);
     }
 }

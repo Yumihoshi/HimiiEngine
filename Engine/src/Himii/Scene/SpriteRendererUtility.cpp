@@ -115,14 +115,14 @@ namespace Himii
         return {};
     }
 
-    glm::mat4 GetSpriteRendererVisualTransform(const TransformComponent& transform,
+    glm::mat4 GetSpriteRendererVisualTransform(const glm::mat4& worldTransform,
                                                const SpriteResolved& resolved)
     {
         if (!resolved.IsValid)
-            return transform.GetTransform();
+            return worldTransform;
 
         return SpriteSheetUtility::BuildSpriteRenderTransform(
-                transform.GetTransform(), resolved.PixelSize, resolved.PixelsPerUnit, resolved.Pivot);
+                worldTransform, resolved.PixelSize, resolved.PixelsPerUnit, resolved.Pivot);
     }
 
 } // namespace Himii

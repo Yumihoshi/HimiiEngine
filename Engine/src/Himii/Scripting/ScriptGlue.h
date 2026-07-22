@@ -126,6 +126,14 @@ namespace Himii
 
         void *SceneManager_GetActiveScenePath;
         void *Scene_InstantiatePrefab;
+
+        void *Entity_GetParent;
+        void *Entity_SetParent;
+        void *Entity_GetChildCount;
+        void *Entity_GetChildAt;
+        void *Transform_GetWorldTranslation;
+        void *Transform_SetWorldTranslation;
+        void *Transform_GetWorldRotation;
     };
 
     class ScriptGlue {

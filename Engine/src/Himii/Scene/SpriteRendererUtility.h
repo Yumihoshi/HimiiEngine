@@ -13,7 +13,7 @@ namespace Himii
                                                  const SpriteRendererComponent& spriteRenderer,
                                                  AssetManager* assetManager);
 
-    glm::mat4 GetSpriteRendererVisualTransform(const TransformComponent& transform,
+    glm::mat4 GetSpriteRendererVisualTransform(const glm::mat4& worldTransform,
                                                const SpriteResolved& resolved);
 
 } // namespace Himii

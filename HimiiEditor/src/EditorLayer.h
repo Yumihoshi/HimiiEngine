@@ -39,7 +39,7 @@ namespace Himii
         void UpdateTilemapPaintSession();
         void DrawTilemapEditOverlay();
         void DrawTilemapGhostPreviewInViewport();
-        void DrawTilemapBoxSelectionOverlay(const TransformComponent& transformComponent, float cellSize);
+        void DrawTilemapBoxSelectionOverlay(Entity selectedEntity, float cellSize);
         void ResetTilemapBoxSelection();
         void UpdateTilemapHoverFromInput();
         bool TryGetTilemapPaintContext(Entity &outEntity, Ref<TileMapData> &outMapData,

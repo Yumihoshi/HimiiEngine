@@ -125,6 +125,14 @@ namespace HimiiEngine
 
         public IntPtr SceneManager_GetActiveScenePath;
         public IntPtr Scene_InstantiatePrefab;
+
+        public IntPtr Entity_GetParent;
+        public IntPtr Entity_SetParent;
+        public IntPtr Entity_GetChildCount;
+        public IntPtr Entity_GetChildAt;
+        public IntPtr Transform_GetWorldTranslation;
+        public IntPtr Transform_SetWorldTranslation;
+        public IntPtr Transform_GetWorldRotation;
     }
 
     [StructLayout(LayoutKind.Sequential)]

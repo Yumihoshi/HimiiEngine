@@ -57,6 +57,11 @@ namespace HimiiEngine
         internal delegate IntPtr SceneManagerGetActiveScenePathDelegate();
         internal delegate ulong SceneInstantiatePrefabDelegate(IntPtr prefabPath);
 
+        internal delegate ulong EntityGetParentDelegate(ulong entityID);
+        internal delegate void EntitySetParentDelegate(ulong childEntityID, ulong parentEntityID, byte keepWorldPosition);
+        internal delegate int EntityGetChildCountDelegate(ulong entityID);
+        internal delegate ulong EntityGetChildAtDelegate(ulong entityID, int childIndex);
+
         internal delegate void SpriteRendererGetColorDelegate(ulong entityID, out Vector4 color);
         internal delegate void SpriteRendererSetColorDelegate(ulong entityID, ref Vector4 color);
         internal delegate ulong SpriteRendererGetHandleDelegate(ulong entityID);
@@ -142,6 +147,14 @@ namespace HimiiEngine
         internal static SceneManagerLoadSceneDelegate SceneManager_LoadScene;
         internal static SceneManagerGetActiveScenePathDelegate SceneManager_GetActiveScenePath;
         internal static SceneInstantiatePrefabDelegate Scene_InstantiatePrefab;
+
+        internal static EntityGetParentDelegate Entity_GetParent;
+        internal static EntitySetParentDelegate Entity_SetParent;
+        internal static EntityGetChildCountDelegate Entity_GetChildCount;
+        internal static EntityGetChildAtDelegate Entity_GetChildAt;
+        internal static TransformPosDelegate Transform_GetWorldTranslation;
+        internal static TransformSetPosDelegate Transform_SetWorldTranslation;
+        internal static TransformPosDelegate Transform_GetWorldRotation;
 
         internal static SpriteRendererGetColorDelegate SpriteRenderer_GetColor;
         internal static SpriteRendererSetColorDelegate SpriteRenderer_SetColor;
@@ -259,6 +272,21 @@ namespace HimiiEngine
                     funcs.SceneManager_GetActiveScenePath);
             Scene_InstantiatePrefab =
                 Marshal.GetDelegateForFunctionPointer<SceneInstantiatePrefabDelegate>(funcs.Scene_InstantiatePrefab);
+
+            Entity_GetParent =
+                Marshal.GetDelegateForFunctionPointer<EntityGetParentDelegate>(funcs.Entity_GetParent);
+            Entity_SetParent =
+                Marshal.GetDelegateForFunctionPointer<EntitySetParentDelegate>(funcs.Entity_SetParent);
+            Entity_GetChildCount =
+                Marshal.GetDelegateForFunctionPointer<EntityGetChildCountDelegate>(funcs.Entity_GetChildCount);
+            Entity_GetChildAt =
+                Marshal.GetDelegateForFunctionPointer<EntityGetChildAtDelegate>(funcs.Entity_GetChildAt);
+            Transform_GetWorldTranslation =
+                Marshal.GetDelegateForFunctionPointer<TransformPosDelegate>(funcs.Transform_GetWorldTranslation);
+            Transform_SetWorldTranslation =
+                Marshal.GetDelegateForFunctionPointer<TransformSetPosDelegate>(funcs.Transform_SetWorldTranslation);
+            Transform_GetWorldRotation =
+                Marshal.GetDelegateForFunctionPointer<TransformPosDelegate>(funcs.Transform_GetWorldRotation);
 
             SpriteRenderer_GetColor =
                 Marshal.GetDelegateForFunctionPointer<SpriteRendererGetColorDelegate>(funcs.SpriteRenderer_GetColor);

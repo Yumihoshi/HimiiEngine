@@ -3,6 +3,7 @@
 #include <glm/glm.hpp>
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include "Himii/Core/Timestep.h"
 #include "Himii/Core/UUID.h"
 #include "Himii/Renderer/EditorCamera.h"
@@ -80,6 +81,25 @@ namespace Himii
 
         Entity GetPrimaryCameraEntity();
 
+        Entity GetParentEntity(Entity entity) const;
+        const std::vector<UUID>& GetEntityChildren(Entity entity) const;
+        std::vector<Entity> GetRootEntities(bool userInterfaceEntities) const;
+        bool EntitiesShareTransformDomain(Entity left, Entity right) const;
+
+        bool SetEntityParent(Entity child, Entity parent, bool keepWorldPosition = true);
+        void UnparentEntity(Entity child, bool keepWorldPosition = true);
+        bool IsEntityDescendantOf(Entity potentialDescendant, Entity potentialAncestor) const;
+
+        glm::mat4 GetEntityWorldTransformMatrix(Entity entity) const;
+        glm::vec3 GetEntityWorldTranslation(Entity entity) const;
+        glm::vec3 GetEntityWorldRotation(Entity entity) const;
+        glm::vec3 GetEntityWorldScale(Entity entity) const;
+        void ApplyWorldMatrixAsLocalTransform(Entity entity, const glm::mat4& worldMatrix);
+        void MarkEntityTransformDirty(Entity entity);
+        void NotifyEntityLocalTransformChanged(Entity entity);
+        void SyncEntityTransformSubtreeToPhysics(Entity entity);
+        void RebuildHierarchyCache();
+
         /// 将 Transform 写入 Box2D 刚体（Play/Simulate 期间脚本改 Position/Rotation 时调用）。
         void SyncEntityTransformToPhysics(Entity entity);
 
@@ -127,5 +147,11 @@ namespace Himii
         b2WorldId m_Box2DWorld;
 
         ParticleSystem m_ParticleSystem{ 50000 };
+
+        std::unordered_map<UUID, std::vector<UUID>> m_ChildrenCache;
+        static inline const std::vector<UUID> s_EmptyChildrenList{};
+
+        void ApplyMatrixAsLocalTransform(Entity entity, const glm::mat4& localMatrix);
+        void SetEntityWorldTransformFromPhysics(Entity entity, const glm::vec2& worldPosition, float worldRotationZ);
     };
 }

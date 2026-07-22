@@ -20,6 +20,7 @@
 #include "Himii/Particle/ParticleSystem.h"
 #include "Himii/Scripting/ScriptEngine.h"
 #include "ScriptableEntity.h"
+#include "Himii/Math/Math.h"
 
 #include <glm/glm.hpp>
 #include <vector>
@@ -65,7 +66,7 @@ namespace Himii
             Entity sceneEntity = {entry.EntityHandle, scene};
             const SpriteResolved resolved =
                 ResolveSpriteRendererDrawable(sceneEntity, *entry.Sprite, assetManager);
-            Renderer2D::DrawSprite(entry.Transform->GetTransform(), *entry.Sprite, resolved,
+            Renderer2D::DrawSprite(scene->GetEntityWorldTransformMatrix(sceneEntity), *entry.Sprite, resolved,
                                    static_cast<int>(entry.EntityHandle));
         }
     }
@@ -105,7 +106,7 @@ namespace Himii
 
     static void AttachBoxColliderToBody(b2BodyId bodyId,
                                         const BoxCollider2DComponent& boxCollider,
-                                        const TransformComponent& transform)
+                                        const glm::vec3& worldScale)
     {
         if (!b2Body_IsValid(bodyId))
             return;
@@ -119,13 +120,13 @@ namespace Himii
         shapeDef.material.restitution = boxCollider.Restitution;
         shapeDef.material.rollingResistance = boxCollider.RestitutionThreshold;
 
-        const float absoluteScaleX = std::abs(transform.Scale.x);
-        const float absoluteScaleY = std::abs(transform.Scale.y);
+        const float absoluteScaleX = std::abs(worldScale.x);
+        const float absoluteScaleY = std::abs(worldScale.y);
         const float halfWidth = boxCollider.Size.x * absoluteScaleX * 0.5f;
         const float halfHeight = boxCollider.Size.y * absoluteScaleY * 0.5f;
         const b2Polygon polygon = b2MakeOffsetBox(
                 halfWidth, halfHeight,
-                {boxCollider.Offset.x * transform.Scale.x, boxCollider.Offset.y * transform.Scale.y},
+                {boxCollider.Offset.x * worldScale.x, boxCollider.Offset.y * worldScale.y},
                 b2MakeRot(0.0f));
 
         b2CreatePolygonShape(bodyId, &shapeDef, &polygon);
@@ -133,7 +134,7 @@ namespace Himii
 
     static void AttachCircleColliderToBody(b2BodyId bodyId,
                                            const CircleCollider2DComponent& circleCollider,
-                                           const TransformComponent& transform)
+                                           const glm::vec3& worldScale)
     {
         if (!b2Body_IsValid(bodyId))
             return;
@@ -149,25 +150,26 @@ namespace Himii
 
         b2Circle circle;
         circle.center = {
-            circleCollider.Offset.x * transform.Scale.x,
-            circleCollider.Offset.y * transform.Scale.y};
-        const float absoluteScaleX = std::abs(transform.Scale.x);
-        const float absoluteScaleY = std::abs(transform.Scale.y);
+            circleCollider.Offset.x * worldScale.x,
+            circleCollider.Offset.y * worldScale.y};
+        const float absoluteScaleX = std::abs(worldScale.x);
+        const float absoluteScaleY = std::abs(worldScale.y);
         const float maxScale = std::max(absoluteScaleX, absoluteScaleY);
         circle.radius = circleCollider.Radius * maxScale;
 
         b2CreateCircleShape(bodyId, &shapeDef, &circle);
     }
 
-    static b2BodyId CreateStaticPhysicsBody(b2WorldId world,
-                                            entt::entity entityHandle,
-                                            const TransformComponent& transform)
+    static b2BodyId CreateStaticPhysicsBody(b2WorldId world, Scene* scene, Entity entity)
     {
+        const glm::vec3 worldTranslation = scene->GetEntityWorldTranslation(entity);
+        const glm::vec3 worldRotation = scene->GetEntityWorldRotation(entity);
+
         b2BodyDef bodyDef = b2DefaultBodyDef();
         bodyDef.type = b2_staticBody;
-        bodyDef.position = {transform.Position.x, transform.Position.y};
-        bodyDef.rotation = b2MakeRot(transform.Rotation.z);
-        bodyDef.userData = (void*)(uintptr_t)(uint32_t)entityHandle;
+        bodyDef.position = {worldTranslation.x, worldTranslation.y};
+        bodyDef.rotation = b2MakeRot(worldRotation.z);
+        bodyDef.userData = (void*)(uintptr_t)(uint32_t)(entt::entity)entity;
         return b2CreateBody(world, &bodyDef);
     }
 
@@ -209,30 +211,40 @@ namespace Himii
         return entity;
     }
 
-    void Scene::DestroyEntity(entt::entity e)
+    void Scene::DestroyEntity(entt::entity entityHandle)
     {
-        if (!m_Registry.valid(e))
+        if (!m_Registry.valid(entityHandle))
             return;
 
-        if (auto *pid = m_Registry.try_get<IDComponent>(e))
+        Entity entity{entityHandle, this};
+        const std::vector<UUID> childIdentifiers = GetEntityChildren(entity);
+        for (UUID childIdentifier : childIdentifiers)
         {
-            auto it = m_EntityMap.find(pid->ID);
-            if (it != m_EntityMap.end())
-                m_EntityMap.erase(it);
+            Entity childEntity = GetEntityByUUID(childIdentifier);
+            if (childEntity)
+                DestroyEntity((entt::entity)childEntity);
+        }
+
+        if (auto *identifierComponent = m_Registry.try_get<IDComponent>(entityHandle))
+        {
+            auto identifierIterator = m_EntityMap.find(identifierComponent->ID);
+            if (identifierIterator != m_EntityMap.end())
+                m_EntityMap.erase(identifierIterator);
         }
         // 脚本析构
-        if (NativeScriptComponent *nsc = m_Registry.try_get<NativeScriptComponent>(e))
+        if (NativeScriptComponent *nativeScriptComponent = m_Registry.try_get<NativeScriptComponent>(entityHandle))
         {
-            if (nsc->Instance)
+            if (nativeScriptComponent->Instance)
             {
-                nsc->Instance->OnDestroy();
+                nativeScriptComponent->Instance->OnDestroy();
             }
-            if (nsc->DestroyScript)
+            if (nativeScriptComponent->DestroyScript)
             {
-                nsc->DestroyScript(nsc);
+                nativeScriptComponent->DestroyScript(nativeScriptComponent);
             }
         }
-        m_Registry.destroy(e);
+        m_Registry.destroy(entityHandle);
+        RebuildHierarchyCache();
     }
 
     void Scene::ClearEntities()
@@ -381,23 +393,20 @@ namespace Himii
             ProcessPhysics2DContacts();
 
             auto view = m_Registry.view<Rigidbody2DComponent>();
-            for (auto e: view)
+            for (auto entityHandle : view)
             {
-                Entity entity = {e, this};
-                auto &transform = entity.GetComponent<TransformComponent>();
-                auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
+                Entity entity = {entityHandle, this};
+                auto &rigidbody2D = entity.GetComponent<Rigidbody2DComponent>();
 
-                if (rb2d.RuntimeBody)
+                if (rigidbody2D.RuntimeBody)
                 {
-                    b2BodyId bodyId = ToBodyId(rb2d.RuntimeBody);
+                    b2BodyId bodyId = ToBodyId(rigidbody2D.RuntimeBody);
                     if (b2Body_IsValid(bodyId))
                     {
                         b2Vec2 position = b2Body_GetPosition(bodyId);
-                        transform.Position.x = position.x;
-                        transform.Position.y = position.y;
-
                         b2Rot rotation = b2Body_GetRotation(bodyId);
-                        transform.Rotation.z = b2Rot_GetAngle(rotation);
+                        SetEntityWorldTransformFromPhysics(
+                                entity, {position.x, position.y}, b2Rot_GetAngle(rotation));
                     }
                 }
             }
@@ -412,9 +421,10 @@ namespace Himii
             if (assetManager)
             {
                 auto view = m_Registry.group<TransformComponent, ParticleEmitterComponent>();
-                for (auto e : view)
+                for (auto entityHandle : view)
                 {
-                    auto [transform, emitter] = view.get<TransformComponent, ParticleEmitterComponent>(e);
+                    Entity particleEntity = {entityHandle, this};
+                    auto& emitter = particleEntity.GetComponent<ParticleEmitterComponent>();
                     if (emitter.EmitterHandle == 0) continue;
 
                     Ref<Asset> assetRef = assetManager->GetAsset(emitter.EmitterHandle);
@@ -429,9 +439,10 @@ namespace Himii
 
                     emitter.EmissionAccumulator -= static_cast<float>(emitCount);
                     ParticleProps props = emitterAsset->TemplateProps;
-                    props.position = glm::vec3(transform.Position.x, transform.Position.y, 0.0f);
+                    const glm::vec3 worldTranslation = GetEntityWorldTranslation(particleEntity);
+                    props.position = worldTranslation;
 
-                    for (int i = 0; i < emitCount; ++i)
+                    for (int index = 0; index < emitCount; ++index)
                         m_ParticleSystem.Emit(props);
                 }
             }
@@ -443,12 +454,12 @@ namespace Himii
         {
             auto view = m_Registry.view<TransformComponent, CameraComponent>();
             view.each(
-                    [&](entt::entity entity, TransformComponent &transform, CameraComponent &camera)
+                    [&](entt::entity entityHandle, TransformComponent&, CameraComponent &camera)
                     {
                         if (camera.Primary)
                         {
                             mainCamera = &camera.Camera;
-                            cameraTransform = transform.GetTransform();
+                            cameraTransform = GetEntityWorldTransformMatrix({entityHandle, this});
                         }
                     });
         }
@@ -465,7 +476,7 @@ namespace Himii
                 {
                     auto assetManager = Project::GetAssetManager();
                     auto view = m_Registry.view<TransformComponent, TilemapComponent>();
-                    view.each([&](entt::entity entity, TransformComponent &transform, TilemapComponent &tilemap)
+                    view.each([&](entt::entity entityHandle, TransformComponent&, TilemapComponent &tilemap)
                     {
                         if (!assetManager || tilemap.TileMapHandle == 0) return;
 
@@ -481,16 +492,18 @@ namespace Himii
                                 tileSet = std::static_pointer_cast<TileSet>(tsAsset);
                         }
 
-                        Himii::Renderer2D::DrawTilemap(transform.GetTransform(), mapData, tileSet, (int)entity);
+                        Himii::Renderer2D::DrawTilemap(GetEntityWorldTransformMatrix({entityHandle, this}), mapData,
+                                                         tileSet, (int)entityHandle);
                     });
                 }
             }
             {
                 auto view = m_Registry.view<TransformComponent, CircleRendererComponent>();
                 view.each(
-                        [&](entt::entity entity, TransformComponent &transform, CircleRendererComponent &circle) {
-                            Himii::Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness,
-                                                          circle.Fade, (int)entity);
+                        [&](entt::entity entityHandle, TransformComponent&, CircleRendererComponent &circle) {
+                            Himii::Renderer2D::DrawCircle(GetEntityWorldTransformMatrix({entityHandle, this}),
+                                                          circle.Color, circle.Thickness, circle.Fade,
+                                                          (int)entityHandle);
                         });
             }
             // 粒子系统 2D 渲染（与 Renderer2D 同批次）
@@ -540,16 +553,17 @@ namespace Himii
                  // Renderer3D::DrawGrid(*mainCamera, cameraTransform, is2D);
 
                  auto view = m_Registry.view<TransformComponent, MeshComponent>();
-                 view.each([&](entt::entity entity, TransformComponent &transform, MeshComponent &mesh)
+                 view.each([&](entt::entity entityHandle, TransformComponent&, MeshComponent &mesh)
                  {
+                     const glm::mat4 worldTransform = GetEntityWorldTransformMatrix({entityHandle, this});
                      if (mesh.Type == MeshComponent::MeshType::Cube)
-                         Renderer3D::DrawCube(transform.GetTransform(), mesh.Color, (int)entity);
+                         Renderer3D::DrawCube(worldTransform, mesh.Color, (int)entityHandle);
                      else if (mesh.Type == MeshComponent::MeshType::Plane)
-                         Renderer3D::DrawPlane(transform.GetTransform(), mesh.Color, (int)entity);
+                         Renderer3D::DrawPlane(worldTransform, mesh.Color, (int)entityHandle);
                      else if (mesh.Type == MeshComponent::MeshType::Sphere)
-                         Renderer3D::DrawSphere(transform.GetTransform(), mesh.Color, (int)entity);
+                         Renderer3D::DrawSphere(worldTransform, mesh.Color, (int)entityHandle);
                      else if (mesh.Type == MeshComponent::MeshType::Capsule)
-                         Renderer3D::DrawCapsule(transform.GetTransform(), mesh.Color, (int)entity);
+                         Renderer3D::DrawCapsule(worldTransform, mesh.Color, (int)entityHandle);
                  });
                  Renderer3D::EndScene();
              }
@@ -614,23 +628,20 @@ namespace Himii
             ProcessPhysics2DContacts();
 
             auto view = m_Registry.view<Rigidbody2DComponent>();
-            for (auto e: view)
+            for (auto entityHandle : view)
             {
-                Entity entity = {e, this};
-                auto &transform = entity.GetComponent<TransformComponent>();
-                auto &rb2d = entity.GetComponent<Rigidbody2DComponent>();
+                Entity entity = {entityHandle, this};
+                auto &rigidbody2D = entity.GetComponent<Rigidbody2DComponent>();
 
-                if (rb2d.RuntimeBody)
+                if (rigidbody2D.RuntimeBody)
                 {
-                    b2BodyId bodyId = ToBodyId(rb2d.RuntimeBody);
+                    b2BodyId bodyId = ToBodyId(rigidbody2D.RuntimeBody);
                     if (b2Body_IsValid(bodyId))
                     {
                         b2Vec2 position = b2Body_GetPosition(bodyId);
-                        transform.Position.x = position.x;
-                        transform.Position.y = position.y;
-
                         b2Rot rotation = b2Body_GetRotation(bodyId);
-                        transform.Rotation.z = b2Rot_GetAngle(rotation);
+                        SetEntityWorldTransformFromPhysics(
+                                entity, {position.x, position.y}, b2Rot_GetAngle(rotation));
                     }
                 }
             }
@@ -698,9 +709,12 @@ namespace Himii
         CopyComponent<TilemapCollider2DComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<ParticleEmitterComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         //UI
+        CopyComponent<RelationshipComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<UITransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<UIImageComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<UITextComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+
+        newScene->RebuildHierarchyCache();
 
         return newScene;
     }
@@ -830,11 +844,12 @@ namespace Himii
         if (!b2Body_IsValid(bodyId))
             return;
 
-        const auto& transform = entity.GetComponent<TransformComponent>();
+        const glm::vec3 worldTranslation = GetEntityWorldTranslation(entity);
+        const glm::vec3 worldRotation = GetEntityWorldRotation(entity);
         b2Body_SetTransform(
                 bodyId,
-                {transform.Position.x, transform.Position.y},
-                b2MakeRot(transform.Rotation.z));
+                {worldTranslation.x, worldTranslation.y},
+                b2MakeRot(worldRotation.z));
     }
 
     void Scene::OnPhysics2DStart()
@@ -844,11 +859,13 @@ namespace Himii
         m_Box2DWorld = b2CreateWorld(&worldDef);
 
         auto view = m_Registry.view<Rigidbody2DComponent>();
-        for (auto e: view)
+        for (auto entityHandle : view)
         {
-            Entity entity = {e, this};
-            auto &transform = entity.GetComponent<TransformComponent>();
+            Entity entity = {entityHandle, this};
             auto &rigidbody2D = entity.GetComponent<Rigidbody2DComponent>();
+            const glm::vec3 worldTranslation = GetEntityWorldTranslation(entity);
+            const glm::vec3 worldRotation = GetEntityWorldRotation(entity);
+            const glm::vec3 worldScale = GetEntityWorldScale(entity);
 
             b2BodyDef bodyDef = b2DefaultBodyDef();
 
@@ -865,19 +882,19 @@ namespace Himii
                     break;
             }
 
-            bodyDef.position = {transform.Position.x, transform.Position.y};
-            bodyDef.rotation = b2MakeRot(transform.Rotation.z);
+            bodyDef.position = {worldTranslation.x, worldTranslation.y};
+            bodyDef.rotation = b2MakeRot(worldRotation.z);
             bodyDef.fixedRotation = rigidbody2D.FixedRotation;
-            bodyDef.userData = (void *)(uintptr_t)(uint32_t)entity; // 存储 Entity ID
+            bodyDef.userData = (void *)(uintptr_t)(uint32_t)entity;
 
             b2BodyId bodyId = b2CreateBody(m_Box2DWorld, &bodyDef);
             rigidbody2D.RuntimeBody = ToPtr(bodyId);
 
             if (entity.HasComponent<BoxCollider2DComponent>())
-                AttachBoxColliderToBody(bodyId, entity.GetComponent<BoxCollider2DComponent>(), transform);
+                AttachBoxColliderToBody(bodyId, entity.GetComponent<BoxCollider2DComponent>(), worldScale);
 
             if (entity.HasComponent<CircleCollider2DComponent>())
-                AttachCircleColliderToBody(bodyId, entity.GetComponent<CircleCollider2DComponent>(), transform);
+                AttachCircleColliderToBody(bodyId, entity.GetComponent<CircleCollider2DComponent>(), worldScale);
         }
 
         {
@@ -894,16 +911,15 @@ namespace Himii
                     continue;
 
                 Entity entity = {entityHandle, this};
-                const TransformComponent& transform = entity.GetComponent<TransformComponent>();
-                const b2BodyId staticBodyId =
-                        CreateStaticPhysicsBody(m_Box2DWorld, entityHandle, transform);
+                const glm::vec3 worldScale = GetEntityWorldScale(entity);
+                const b2BodyId staticBodyId = CreateStaticPhysicsBody(m_Box2DWorld, this, entity);
 
                 if (hasBoxCollider)
                     AttachBoxColliderToBody(
-                            staticBodyId, entity.GetComponent<BoxCollider2DComponent>(), transform);
+                            staticBodyId, entity.GetComponent<BoxCollider2DComponent>(), worldScale);
                 if (hasCircleCollider)
                     AttachCircleColliderToBody(
-                            staticBodyId, entity.GetComponent<CircleCollider2DComponent>(), transform);
+                            staticBodyId, entity.GetComponent<CircleCollider2DComponent>(), worldScale);
             }
         }
 
@@ -1083,7 +1099,7 @@ namespace Himii
             {
                 auto assetManager = Project::GetAssetManager();
                 auto view = m_Registry.view<TransformComponent, TilemapComponent>();
-                view.each([&](entt::entity entity, TransformComponent &transform, TilemapComponent &tilemap)
+                view.each([&](entt::entity entityHandle, TransformComponent&, TilemapComponent &tilemap)
                 {
                     if (!assetManager || tilemap.TileMapHandle == 0) return;
 
@@ -1099,7 +1115,8 @@ namespace Himii
                             tileSet = std::static_pointer_cast<TileSet>(tsAsset);
                     }
 
-                    Himii::Renderer2D::DrawTilemap(transform.GetTransform(), mapData, tileSet, (int)entity);
+                    Himii::Renderer2D::DrawTilemap(GetEntityWorldTransformMatrix({entityHandle, this}), mapData,
+                                                     tileSet, (int)entityHandle);
                 });
             }
         }
@@ -1108,9 +1125,9 @@ namespace Himii
         {
             auto view = m_Registry.view<TransformComponent, CircleRendererComponent>();
             view.each(
-                    [&](entt::entity entity, TransformComponent &transform, CircleRendererComponent &circle) {
-                        Himii::Renderer2D::DrawCircle(transform.GetTransform(), circle.Color, circle.Thickness,
-                                                      circle.Fade, (int)entity);
+                    [&](entt::entity entityHandle, TransformComponent&, CircleRendererComponent &circle) {
+                        Himii::Renderer2D::DrawCircle(GetEntityWorldTransformMatrix({entityHandle, this}),
+                                                      circle.Color, circle.Thickness, circle.Fade, (int)entityHandle);
                     });
         }
 
@@ -1131,16 +1148,17 @@ namespace Himii
             // Renderer3D::DrawGrid(camera, is2D);
 
             auto view = m_Registry.view<TransformComponent, MeshComponent>();
-            view.each([&](entt::entity entity, TransformComponent &transform, MeshComponent &mesh)
+            view.each([&](entt::entity entityHandle, TransformComponent&, MeshComponent &mesh)
             {
+                const glm::mat4 worldTransform = GetEntityWorldTransformMatrix({entityHandle, this});
                 if (mesh.Type == MeshComponent::MeshType::Cube)
-                    Renderer3D::DrawCube(transform.GetTransform(), mesh.Color, (int)entity);
+                    Renderer3D::DrawCube(worldTransform, mesh.Color, (int)entityHandle);
                 else if (mesh.Type == MeshComponent::MeshType::Plane)
-                    Renderer3D::DrawPlane(transform.GetTransform(), mesh.Color, (int)entity);
+                    Renderer3D::DrawPlane(worldTransform, mesh.Color, (int)entityHandle);
                 else if (mesh.Type == MeshComponent::MeshType::Sphere)
-                    Renderer3D::DrawSphere(transform.GetTransform(), mesh.Color, (int)entity);
+                    Renderer3D::DrawSphere(worldTransform, mesh.Color, (int)entityHandle);
                 else if (mesh.Type == MeshComponent::MeshType::Capsule)
-                    Renderer3D::DrawCapsule(transform.GetTransform(), mesh.Color, (int)entity);
+                    Renderer3D::DrawCapsule(worldTransform, mesh.Color, (int)entityHandle);
             });
             Renderer3D::EndScene();
         }
@@ -1162,27 +1180,29 @@ namespace Himii
         // 3. 获取所有 UI 实体
         auto viewGrp = m_Registry.view<UITransformComponent,UIImageComponent>();
         viewGrp.each(
-                [&](auto entity, auto &transform, auto &image)
+                [&](auto entityHandle, auto&, auto &image)
                 {
-                    glm::mat4 transformMat = transform.GetTransform();
+                    const glm::mat4 transformMatrix =
+                            GetEntityWorldTransformMatrix({entityHandle, this});
 
                     if (image.Texture)
                     {
-                        Renderer2D::DrawQuad(transformMat, image.Texture, 1.0f, image.Color, (int)entity);
+                        Renderer2D::DrawQuad(transformMatrix, image.Texture, 1.0f, image.Color, (int)entityHandle);
                     }
                     else
                     {
-                        Renderer2D::DrawQuad(transformMat, image.Color, (int)entity);
+                        Renderer2D::DrawQuad(transformMatrix, image.Color, (int)entityHandle);
                     }
                 });
         auto textView = m_Registry.view<UITransformComponent, UITextComponent>();
         textView.each(
-                [&](auto entity, auto &transform, auto &text)
+                [&](auto entityHandle, auto&, auto &text)
                 {
                     if (text.FontAsset)
                     {
-                        Renderer2D::DrawString(text.TextString, text.FontAsset, transform.GetTransform(), text.Color,
-                                               (int)entity);
+                        Renderer2D::DrawString(text.TextString, text.FontAsset,
+                                               GetEntityWorldTransformMatrix({entityHandle, this}), text.Color,
+                                               (int)entityHandle);
                     }
                 });
 
@@ -1190,6 +1210,316 @@ namespace Himii
 
         // 4. 恢复深度测试
         RenderCommand::SetDepthTest(true);
+    }
+
+    bool Scene::EntitiesShareTransformDomain(Entity left, Entity right) const
+    {
+        if (!left || !right)
+            return false;
+
+        const bool leftIsUserInterface = left.HasComponent<UITransformComponent>();
+        const bool rightIsUserInterface = right.HasComponent<UITransformComponent>();
+        return leftIsUserInterface == rightIsUserInterface;
+    }
+
+    void Scene::RebuildHierarchyCache()
+    {
+        m_ChildrenCache.clear();
+
+        auto relationshipView = m_Registry.view<RelationshipComponent>();
+        for (auto entityHandle : relationshipView)
+        {
+            Entity entity{entityHandle, this};
+            const UUID parentIdentifier = entity.GetComponent<RelationshipComponent>().Parent;
+            if (parentIdentifier == 0)
+                continue;
+
+            m_ChildrenCache[parentIdentifier].push_back(entity.GetUUID());
+        }
+
+        for (auto& [parentIdentifier, children] : m_ChildrenCache)
+        {
+            (void)parentIdentifier;
+            std::sort(children.begin(), children.end());
+        }
+    }
+
+    Entity Scene::GetParentEntity(Entity entity) const
+    {
+        if (!entity || !entity.HasComponent<RelationshipComponent>())
+            return {};
+
+        const UUID parentIdentifier = entity.GetComponent<RelationshipComponent>().Parent;
+        if (parentIdentifier == 0)
+            return {};
+
+        return const_cast<Scene*>(this)->GetEntityByUUID(parentIdentifier);
+    }
+
+    const std::vector<UUID>& Scene::GetEntityChildren(Entity entity) const
+    {
+        if (!entity)
+            return s_EmptyChildrenList;
+
+        const auto iterator = m_ChildrenCache.find(entity.GetUUID());
+        if (iterator == m_ChildrenCache.end())
+            return s_EmptyChildrenList;
+
+        return iterator->second;
+    }
+
+    std::vector<Entity> Scene::GetRootEntities(bool userInterfaceEntities) const
+    {
+        std::vector<Entity> rootEntities;
+        auto tagView = m_Registry.view<TagComponent>();
+        for (auto entityHandle : tagView)
+        {
+            Entity entity{entityHandle, const_cast<Scene*>(this)};
+            const bool isUserInterfaceEntity = entity.HasComponent<UITransformComponent>();
+            if (isUserInterfaceEntity != userInterfaceEntities)
+                continue;
+
+            if (entity.HasComponent<RelationshipComponent>()
+                && entity.GetComponent<RelationshipComponent>().Parent != 0)
+                continue;
+
+            rootEntities.push_back(entity);
+        }
+
+        return rootEntities;
+    }
+
+    bool Scene::IsEntityDescendantOf(Entity potentialDescendant, Entity potentialAncestor) const
+    {
+        if (!potentialDescendant || !potentialAncestor)
+            return false;
+
+        Entity currentEntity = GetParentEntity(potentialDescendant);
+        while (currentEntity)
+        {
+            if (currentEntity == potentialAncestor)
+                return true;
+            currentEntity = GetParentEntity(currentEntity);
+        }
+
+        return false;
+    }
+
+    glm::mat4 Scene::GetEntityWorldTransformMatrix(Entity entity) const
+    {
+        if (!entity)
+            return glm::mat4(1.0f);
+
+        if (entity.HasComponent<TransformComponent>())
+        {
+            auto& transform = entity.GetComponent<TransformComponent>();
+            if (transform.WorldTransformDirty)
+            {
+                Entity parentEntity = GetParentEntity(entity);
+                if (parentEntity)
+                {
+                    transform.CachedWorldTransform =
+                            GetEntityWorldTransformMatrix(parentEntity) * transform.GetLocalTransform();
+                }
+                else
+                {
+                    transform.CachedWorldTransform = transform.GetLocalTransform();
+                }
+                transform.WorldTransformDirty = false;
+            }
+
+            return transform.CachedWorldTransform;
+        }
+
+        if (entity.HasComponent<UITransformComponent>())
+        {
+            auto& userInterfaceTransform = entity.GetComponent<UITransformComponent>();
+            if (userInterfaceTransform.WorldTransformDirty)
+            {
+                Entity parentEntity = GetParentEntity(entity);
+                if (parentEntity)
+                {
+                    userInterfaceTransform.CachedWorldTransform =
+                            GetEntityWorldTransformMatrix(parentEntity) * userInterfaceTransform.GetLocalTransform();
+                }
+                else
+                {
+                    userInterfaceTransform.CachedWorldTransform = userInterfaceTransform.GetLocalTransform();
+                }
+                userInterfaceTransform.WorldTransformDirty = false;
+            }
+
+            return userInterfaceTransform.CachedWorldTransform;
+        }
+
+        return glm::mat4(1.0f);
+    }
+
+    glm::vec3 Scene::GetEntityWorldTranslation(Entity entity) const
+    {
+        glm::vec3 translation{};
+        glm::vec3 rotation{};
+        glm::vec3 scale{};
+        Math::DecomposeTransform(GetEntityWorldTransformMatrix(entity), translation, rotation, scale);
+        return translation;
+    }
+
+    glm::vec3 Scene::GetEntityWorldRotation(Entity entity) const
+    {
+        glm::vec3 translation{};
+        glm::vec3 rotation{};
+        glm::vec3 scale{};
+        Math::DecomposeTransform(GetEntityWorldTransformMatrix(entity), translation, rotation, scale);
+        return rotation;
+    }
+
+    glm::vec3 Scene::GetEntityWorldScale(Entity entity) const
+    {
+        glm::vec3 translation{};
+        glm::vec3 rotation{};
+        glm::vec3 scale{};
+        Math::DecomposeTransform(GetEntityWorldTransformMatrix(entity), translation, rotation, scale);
+        return scale;
+    }
+
+    void Scene::ApplyMatrixAsLocalTransform(Entity entity, const glm::mat4& localMatrix)
+    {
+        glm::vec3 translation{};
+        glm::vec3 rotation{};
+        glm::vec3 scale{};
+        Math::DecomposeTransform(localMatrix, translation, rotation, scale);
+
+        if (entity.HasComponent<TransformComponent>())
+        {
+            auto& transform = entity.GetComponent<TransformComponent>();
+            transform.Position = translation;
+            transform.Rotation = rotation;
+            transform.Scale = scale;
+        }
+        else if (entity.HasComponent<UITransformComponent>())
+        {
+            auto& userInterfaceTransform = entity.GetComponent<UITransformComponent>();
+            userInterfaceTransform.Position = translation;
+            userInterfaceTransform.Rotation = rotation;
+            userInterfaceTransform.Size = glm::vec2(scale.x, scale.y);
+        }
+    }
+
+    void Scene::ApplyWorldMatrixAsLocalTransform(Entity entity, const glm::mat4& worldMatrix)
+    {
+        Entity parentEntity = GetParentEntity(entity);
+        const glm::mat4 parentWorldMatrix =
+                parentEntity ? GetEntityWorldTransformMatrix(parentEntity) : glm::mat4(1.0f);
+        ApplyMatrixAsLocalTransform(entity, glm::inverse(parentWorldMatrix) * worldMatrix);
+    }
+
+    void Scene::MarkEntityTransformDirty(Entity entity)
+    {
+        if (!entity)
+            return;
+
+        if (entity.HasComponent<TransformComponent>())
+            entity.GetComponent<TransformComponent>().WorldTransformDirty = true;
+        if (entity.HasComponent<UITransformComponent>())
+            entity.GetComponent<UITransformComponent>().WorldTransformDirty = true;
+
+        for (UUID childIdentifier : GetEntityChildren(entity))
+        {
+            Entity childEntity = GetEntityByUUID(childIdentifier);
+            MarkEntityTransformDirty(childEntity);
+        }
+    }
+
+    void Scene::NotifyEntityLocalTransformChanged(Entity entity)
+    {
+        MarkEntityTransformDirty(entity);
+        SyncEntityTransformSubtreeToPhysics(entity);
+    }
+
+    void Scene::SyncEntityTransformSubtreeToPhysics(Entity entity)
+    {
+        if (!entity)
+            return;
+
+        if (entity.HasComponent<Rigidbody2DComponent>())
+            SyncEntityTransformToPhysics(entity);
+
+        for (UUID childIdentifier : GetEntityChildren(entity))
+        {
+            Entity childEntity = GetEntityByUUID(childIdentifier);
+            SyncEntityTransformSubtreeToPhysics(childEntity);
+        }
+    }
+
+    void Scene::SetEntityWorldTransformFromPhysics(Entity entity, const glm::vec2& worldPosition,
+                                                   float worldRotationZ)
+    {
+        if (!entity || !entity.HasComponent<TransformComponent>())
+            return;
+
+        Entity parentEntity = GetParentEntity(entity);
+        if (!parentEntity)
+        {
+            auto& transform = entity.GetComponent<TransformComponent>();
+            transform.Position.x = worldPosition.x;
+            transform.Position.y = worldPosition.y;
+            transform.Rotation.z = worldRotationZ;
+        }
+        else
+        {
+            glm::mat4 worldMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(worldPosition.x, worldPosition.y, 0.0f))
+                                      * glm::rotate(glm::mat4(1.0f), worldRotationZ, glm::vec3(0.0f, 0.0f, 1.0f));
+            ApplyWorldMatrixAsLocalTransform(entity, worldMatrix);
+        }
+
+        MarkEntityTransformDirty(entity);
+    }
+
+    bool Scene::SetEntityParent(Entity child, Entity parent, bool keepWorldPosition)
+    {
+        if (!child)
+            return false;
+        if (child == parent)
+            return false;
+        if (parent && IsEntityDescendantOf(parent, child))
+            return false;
+        if (parent && !EntitiesShareTransformDomain(child, parent))
+            return false;
+
+        glm::mat4 worldMatrixBefore = glm::mat4(1.0f);
+        if (keepWorldPosition)
+            worldMatrixBefore = GetEntityWorldTransformMatrix(child);
+
+        if (!parent)
+        {
+            if (child.HasComponent<RelationshipComponent>())
+                child.RemoveComponent<RelationshipComponent>();
+        }
+        else
+        {
+            if (!child.HasComponent<RelationshipComponent>())
+                child.AddComponent<RelationshipComponent>();
+            child.GetComponent<RelationshipComponent>().Parent = parent.GetUUID();
+        }
+
+        RebuildHierarchyCache();
+        MarkEntityTransformDirty(child);
+
+        if (keepWorldPosition)
+        {
+            const glm::mat4 parentWorldMatrix =
+                    parent ? GetEntityWorldTransformMatrix(parent) : glm::mat4(1.0f);
+            ApplyMatrixAsLocalTransform(child, glm::inverse(parentWorldMatrix) * worldMatrixBefore);
+        }
+
+        MarkEntityTransformDirty(child);
+        SyncEntityTransformSubtreeToPhysics(child);
+        return true;
+    }
+
+    void Scene::UnparentEntity(Entity child, bool keepWorldPosition)
+    {
+        SetEntityParent(child, {}, keepWorldPosition);
     }
 
     //
@@ -1293,6 +1623,12 @@ namespace Himii
     template<>
     void Scene::OnComponentAdded<UITextComponent>(Entity entity, UITextComponent &component)
     {
+    }
+    template<>
+    void Scene::OnComponentAdded<RelationshipComponent>(Entity entity, RelationshipComponent &component)
+    {
+        (void)entity;
+        (void)component;
     }
 
 } // namespace Himii

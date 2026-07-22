@@ -16,9 +16,13 @@
 
 namespace Himii
 {
+    namespace
+    {
+        constexpr const char* kEntityDragDropPayloadType = "HIMII_ENTITY_UUID";
+    }
+
     SceneHierarchyPanel::SceneHierarchyPanel()
     {
-        // Load Component Icons
         m_ComponentIcons["Transform"] = Texture2D::Create("resources/icons/Component_Transform.png");
         m_ComponentIcons["Camera"] = Texture2D::Create("resources/icons/Component_Camera.png");
         m_ComponentIcons["Script"] = Texture2D::Create("resources/icons/Component_Script.png");
@@ -28,8 +32,7 @@ namespace Himii
         m_ComponentIcons["Box Collider2D"] = Texture2D::Create("resources/icons/Component_BoxCollider.png");
         m_ComponentIcons["Circle Collider2D"] = Texture2D::Create("resources/icons/Component_CircleCollider.png");
         m_ComponentIcons["Sprite Animation"] = Texture2D::Create("resources/icons/Component_Animator.png");
-        // Using SpriteRenderer icon as placeholder, or generate new one. For now re-use or use nullptr
-        m_ComponentIcons["Mesh Renderer"] = Texture2D::Create("resources/icons/Component_SpriteRenderer.png"); 
+        m_ComponentIcons["Mesh Renderer"] = Texture2D::Create("resources/icons/Component_SpriteRenderer.png");
     }
 
     SceneHierarchyPanel::SceneHierarchyPanel(const Ref<Scene>& context)
@@ -37,27 +40,68 @@ namespace Himii
     {
         SetContext(context);
     }
+
     void SceneHierarchyPanel::SetContext(const Ref<Scene> &context)
     {
         m_Context = context;
+        if (m_Context)
+            m_Context->RebuildHierarchyCache();
     }
 
     void SceneHierarchyPanel::SetCommandHistory(EditorCommandHistory* commandHistory)
     {
         m_CommandHistory = commandHistory;
     }
+
+    void SceneHierarchyPanel::DrawHierarchyRoots(bool userInterfaceEntities)
+    {
+        if (!m_Context)
+            return;
+
+        for (Entity rootEntity : m_Context->GetRootEntities(userInterfaceEntities))
+            DrawEntityNode(rootEntity);
+    }
+
+    void SceneHierarchyPanel::HandleEntityReparent(Entity draggedEntity, Entity newParentEntity)
+    {
+        if (!m_Context || !draggedEntity)
+            return;
+        if (draggedEntity == newParentEntity)
+            return;
+
+        if (newParentEntity && !m_Context->EntitiesShareTransformDomain(draggedEntity, newParentEntity))
+            return;
+
+        if (m_CommandHistory)
+        {
+            m_CommandHistory->Execute(
+                    std::make_unique<ReparentEntityCommand>(m_Context, draggedEntity, newParentEntity, true));
+        }
+        else
+        {
+            m_Context->SetEntityParent(draggedEntity, newParentEntity, true);
+        }
+    }
+
     void SceneHierarchyPanel::OnImGuiRender()
     {
         ImGui::Begin("Scene Hierarchy", nullptr, ImGuiWindowFlags_NoCollapse);
 
         if (m_Context)
         {
-            const auto &view = m_Context->m_Registry.view<TagComponent>();
-            for (auto entity: view)
+            DrawHierarchyRoots(false);
+            DrawHierarchyRoots(true);
+        }
+
+        if (ImGui::BeginDragDropTarget())
+        {
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(kEntityDragDropPayloadType))
             {
-                Entity e{entity, m_Context.get()};
-                DrawEntityNode(e);
+                UUID draggedEntityIdentifier = *static_cast<const UUID*>(payload->Data);
+                Entity draggedEntity = m_Context->GetEntityByUUID(draggedEntityIdentifier);
+                HandleEntityReparent(draggedEntity, {});
             }
+            ImGui::EndDragDropTarget();
         }
 
         if (ImGui::BeginPopupContextWindow(0, 1))
@@ -159,7 +203,7 @@ namespace Himii
                 DisplayAddComponentEntry<CircleRendererComponent>("Circle Renderer");
                 DisplayAddComponentEntry<Rigidbody2DComponent>("Rigidbody2D");
                 DisplayAddComponentEntry<BoxCollider2DComponent>("Box Collider2D");
-                DisplayAddComponentEntry<CircleCollider2DComponent>("Circle Collider2D");
+                DisplayAddComponentEntry<CircleCollider2DComponent>("Circle Collider 2D");
                 DisplayAddComponentEntry<MeshComponent>("Mesh Renderer");
                 DisplayAddComponentEntry<TilemapComponent>("Tilemap");
                 DisplayAddComponentEntry<TilemapCollider2DComponent>("Tilemap Collider 2D");
@@ -175,16 +219,41 @@ namespace Himii
 
     void SceneHierarchyPanel::DrawEntityNode(Entity entity)
     {
+        if (!entity)
+            return;
+
         auto &tag = entity.GetComponent<TagComponent>().Tag;
+        const std::vector<UUID>& children = m_Context->GetEntityChildren(entity);
+        const bool hasChildren = !children.empty();
 
         ImGuiTreeNodeFlags flags =
                 ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
         flags |= ImGuiTreeNodeFlags_SpanAvailWidth;
-        flags |= ImGuiTreeNodeFlags_Leaf; // Fix: Treat as leaf node preventing arrow
-        bool opened = ImGui::TreeNodeEx((void *)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+        if (!hasChildren)
+            flags |= ImGuiTreeNodeFlags_Leaf;
+
+        const UUID entityIdentifier = entity.GetUUID();
+        bool opened = ImGui::TreeNodeEx(reinterpret_cast<void*>(static_cast<uintptr_t>(entityIdentifier)),
+                                        flags, tag.c_str());
         if (ImGui::IsItemClicked())
-        {
             m_SelectionContext = entity;
+
+        if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+        {
+            ImGui::SetDragDropPayload(kEntityDragDropPayloadType, &entityIdentifier, sizeof(UUID));
+            ImGui::TextUnformatted(tag.c_str());
+            ImGui::EndDragDropSource();
+        }
+
+        if (ImGui::BeginDragDropTarget())
+        {
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(kEntityDragDropPayloadType))
+            {
+                UUID draggedEntityIdentifier = *static_cast<const UUID*>(payload->Data);
+                Entity draggedEntity = m_Context->GetEntityByUUID(draggedEntityIdentifier);
+                HandleEntityReparent(draggedEntity, entity);
+            }
+            ImGui::EndDragDropTarget();
         }
 
         bool entityDeleted = false;
@@ -208,15 +277,21 @@ namespace Himii
                 }
             }
 
-            if (ImGui::MenuItem("Delete Entity"))
+            if (ImGui::MenuItem("Unparent"))
             {
-                entityDeleted = true;
+                HandleEntityReparent(entity, {});
             }
+
+            if (ImGui::MenuItem("Delete Entity"))
+                entityDeleted = true;
+
             ImGui::EndPopup();
         }
 
         if (opened)
         {
+            for (UUID childIdentifier : children)
+                DrawEntityNode(m_Context->GetEntityByUUID(childIdentifier));
             ImGui::TreePop();
         }
 
@@ -238,6 +313,7 @@ namespace Himii
                 m_SelectionContext = {};
         }
     }
+
     void SceneHierarchyPanel::DrawComponents(Entity entity)
     {
         if (entity.HasComponent<TagComponent>())
@@ -265,7 +341,6 @@ namespace Himii
             }
         }
         ImGui::SameLine();
-        // ImGui::PushItemWidth(-1);
         if (ImGui::Button("Add Component"))
             ImGui::OpenPopup("AddComponent");
 
@@ -276,15 +351,14 @@ namespace Himii
             DisplayAddComponentEntry<SpriteRendererComponent>("Sprite Renderer");
             DisplayAddComponentEntry<CircleRendererComponent>("Circle Renderer");
             DisplayAddComponentEntry<Rigidbody2DComponent>("Rigidbody2D");
-            DisplayAddComponentEntry<BoxCollider2DComponent>("Box Collider2D");
-            DisplayAddComponentEntry<CircleCollider2DComponent>("Circle Collider2D");
+            DisplayAddComponentEntry<BoxCollider2DComponent>("Box Collider 2D");
+            DisplayAddComponentEntry<CircleCollider2DComponent>("Circle Collider 2D");
             DisplayAddComponentEntry<SpriteAnimationComponent>("Sprite Animation");
             DisplayAddComponentEntry<MeshComponent>("Mesh Renderer");
             DisplayAddComponentEntry<TilemapComponent>("Tilemap");
             DisplayAddComponentEntry<TilemapCollider2DComponent>("Tilemap Collider 2D");
             DisplayAddComponentEntry<ParticleEmitterComponent>("Particle Emitter");
 
-            //UI
             DisplayAddComponentEntry<UITransformComponent>("Rect Transform");
             DisplayAddComponentEntry<UIImageComponent>("Image");
             DisplayAddComponentEntry<UITextComponent>("Text");
@@ -328,6 +402,7 @@ namespace Himii
 
         ComponentInspectorRegistry::Get().DrawAll(componentInspectorDrawContext);
     }
+
     template<typename T>
     void SceneHierarchyPanel::DisplayAddComponentEntry(const std::string &entryName)
     {
@@ -341,4 +416,4 @@ namespace Himii
         }
     }
 
-} // namespace Himii
+}

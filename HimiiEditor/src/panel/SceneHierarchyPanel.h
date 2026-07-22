@@ -63,6 +63,8 @@ namespace Himii
 
         void DrawEntityNode(Entity entity);
         void DrawComponents(Entity entity);
+        void DrawHierarchyRoots(bool userInterfaceEntities);
+        void HandleEntityReparent(Entity draggedEntity, Entity newParentEntity);
 
     private:
         Ref<Scene> m_Context;

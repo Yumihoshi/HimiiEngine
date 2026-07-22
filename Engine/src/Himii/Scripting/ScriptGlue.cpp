@@ -14,6 +14,7 @@
 #include "Himii/Core/Input.h"
 #include "Himii/Core/KeyCodes.h"
 #include "Himii/Core/Log.h"
+#include "Himii/Math/Math.h"
 #include <box2d/box2d.h>
 #include <iostream>
 
@@ -161,7 +162,7 @@ namespace Himii {
             return; // <--- 关键修复
 
         entity.GetComponent<TransformComponent>().Position = *translation;
-        scene->SyncEntityTransformToPhysics(entity);
+        scene->NotifyEntityLocalTransformChanged(entity);
     }
 
     static void Transform_GetRotation(uint64_t entityID, glm::vec3 *outRotation)
@@ -192,7 +193,7 @@ namespace Himii {
             return;
 
         entity.GetComponent<TransformComponent>().Rotation = *rotation;
-        scene->SyncEntityTransformToPhysics(entity);
+        scene->NotifyEntityLocalTransformChanged(entity);
     }
 
     static void Transform_GetScale(uint64_t entityID, glm::vec3 *outScale)
@@ -220,6 +221,124 @@ namespace Himii {
         if (!entity)
             return;
         entity.GetComponent<TransformComponent>().Scale = *scale;
+        scene->NotifyEntityLocalTransformChanged(entity);
+    }
+
+    static void Transform_GetWorldTranslation(uint64_t entityID, glm::vec3* outTranslation)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene || !outTranslation)
+        {
+            if (outTranslation)
+                *outTranslation = glm::vec3(0.0f);
+            return;
+        }
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity)
+        {
+            *outTranslation = glm::vec3(0.0f);
+            return;
+        }
+
+        *outTranslation = scene->GetEntityWorldTranslation(entity);
+    }
+
+    static void Transform_SetWorldTranslation(uint64_t entityID, glm::vec3* translation)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene || !translation)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<TransformComponent>())
+            return;
+
+        glm::vec3 worldRotation = scene->GetEntityWorldRotation(entity);
+        glm::vec3 worldScale = scene->GetEntityWorldScale(entity);
+        glm::mat4 worldMatrix = glm::translate(glm::mat4(1.0f), *translation)
+                                * glm::toMat4(glm::quat(worldRotation))
+                                * glm::scale(glm::mat4(1.0f), worldScale);
+        scene->ApplyWorldMatrixAsLocalTransform(entity, worldMatrix);
+        scene->NotifyEntityLocalTransformChanged(entity);
+    }
+
+    static void Transform_GetWorldRotation(uint64_t entityID, glm::vec3* outRotation)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene || !outRotation)
+        {
+            if (outRotation)
+                *outRotation = glm::vec3(0.0f);
+            return;
+        }
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity)
+        {
+            *outRotation = glm::vec3(0.0f);
+            return;
+        }
+
+        *outRotation = scene->GetEntityWorldRotation(entity);
+    }
+
+    static uint64_t Entity_GetParent(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity)
+            return 0;
+
+        Entity parentEntity = scene->GetParentEntity(entity);
+        return parentEntity ? parentEntity.GetUUID() : 0;
+    }
+
+    static void Entity_SetParent(uint64_t childEntityID, uint64_t parentEntityID, uint8_t keepWorldPosition)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity childEntity = scene->GetEntityByUUID(childEntityID);
+        if (!childEntity)
+            return;
+
+        Entity parentEntity = parentEntityID != 0 ? scene->GetEntityByUUID(parentEntityID) : Entity{};
+        scene->SetEntityParent(childEntity, parentEntity, keepWorldPosition != 0);
+    }
+
+    static int Entity_GetChildCount(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity)
+            return 0;
+
+        return static_cast<int>(scene->GetEntityChildren(entity).size());
+    }
+
+    static uint64_t Entity_GetChildAt(uint64_t entityID, int childIndex)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene || childIndex < 0)
+            return 0;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity)
+            return 0;
+
+        const std::vector<UUID>& children = scene->GetEntityChildren(entity);
+        if (childIndex >= static_cast<int>(children.size()))
+            return 0;
+
+        return children[static_cast<size_t>(childIndex)];
     }
 
     static bool Input_IsKeyDown(int keycode)
@@ -1515,6 +1634,14 @@ namespace Himii {
 
         data.SceneManager_GetActiveScenePath = (void *)&SceneManager_GetActiveScenePath;
         data.Scene_InstantiatePrefab = (void *)&Scene_InstantiatePrefab;
+
+        data.Entity_GetParent = (void *)&Entity_GetParent;
+        data.Entity_SetParent = (void *)&Entity_SetParent;
+        data.Entity_GetChildCount = (void *)&Entity_GetChildCount;
+        data.Entity_GetChildAt = (void *)&Entity_GetChildAt;
+        data.Transform_GetWorldTranslation = (void *)&Transform_GetWorldTranslation;
+        data.Transform_SetWorldTranslation = (void *)&Transform_SetWorldTranslation;
+        data.Transform_GetWorldRotation = (void *)&Transform_GetWorldRotation;
 
         return data;
     }

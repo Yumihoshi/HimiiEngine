@@ -225,6 +225,17 @@ namespace Himii
             out << YAML::EndMap;
 			
         }
+        if (entity.HasComponent<RelationshipComponent>())
+        {
+            const auto& relationship = entity.GetComponent<RelationshipComponent>();
+            if (relationship.Parent != 0)
+            {
+                out << YAML::Key << "RelationshipComponent";
+                out << YAML::BeginMap;
+                out << YAML::Key << "Parent" << YAML::Value << relationship.Parent;
+                out << YAML::EndMap;
+            }
+        }
         if (entity.HasComponent<TransformComponent>())
         {
             out << YAML::Key << "TransformComponent";
@@ -519,6 +530,8 @@ namespace Himii
                 DeserializeEntity(entity, m_Scene);
             }
         }
+
+        m_Scene->RebuildHierarchyCache();
         return true;
     }
 
@@ -539,10 +552,17 @@ namespace Himii
         auto transformComponent = entity["TransformComponent"];
         if (transformComponent&&!isUI)
         {
-            auto &tc = deserializedEntity.GetComponent<TransformComponent>();
-            tc.Position = transformComponent["Position"].as<glm::vec3>();
-            tc.Rotation = transformComponent["Rotation"].as<glm::vec3>();
-            tc.Scale = transformComponent["Scale"].as<glm::vec3>();
+            auto &transform = deserializedEntity.GetComponent<TransformComponent>();
+            transform.Position = transformComponent["Position"].as<glm::vec3>();
+            transform.Rotation = transformComponent["Rotation"].as<glm::vec3>();
+            transform.Scale = transformComponent["Scale"].as<glm::vec3>();
+        }
+
+        auto relationshipComponent = entity["RelationshipComponent"];
+        if (relationshipComponent)
+        {
+            auto& relationship = deserializedEntity.AddComponent<RelationshipComponent>();
+            relationship.Parent = relationshipComponent["Parent"].as<UUID>();
         }
 
         auto cameraComponent = entity["CameraComponent"];

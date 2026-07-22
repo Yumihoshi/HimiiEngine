@@ -97,4 +97,28 @@ namespace Himii
         std::string m_BeforeTag;
         std::string m_AfterTag;
     };
+
+    class ReparentEntityCommand : public IEditorCommand
+    {
+    public:
+        ReparentEntityCommand(const Ref<Scene>& scene, Entity child, Entity newParent, bool keepWorldPosition = true);
+
+        void Execute() override;
+        void Undo() override;
+
+    private:
+        void ApplyParent(UUID parentIdentifier, const TransformComponent& localTransform,
+                         const UITransformComponent& userInterfaceTransform, bool isUserInterface);
+
+        Ref<Scene> m_Scene;
+        UUID m_ChildIdentifier = 0;
+        UUID m_ParentBeforeIdentifier = 0;
+        UUID m_ParentAfterIdentifier = 0;
+        bool m_IsUserInterface = false;
+        bool m_KeepWorldPosition = true;
+        TransformComponent m_LocalTransformBefore{};
+        TransformComponent m_LocalTransformAfter{};
+        UITransformComponent m_UserInterfaceTransformBefore{};
+        UITransformComponent m_UserInterfaceTransformAfter{};
+    };
 }

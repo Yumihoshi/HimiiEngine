@@ -2,6 +2,9 @@
 
 本文档采用 **核心模块 - 最小执行单元** 的结构对应当下的开发进度与未来的规划。
 
+**Phase A 定位（已冻结）**：继续深耕 **纯 2D**；以 **能力清单打勾** 为验收标准（不绑定某款样板游戏）。  
+**实施顺序**：轨 1（场景结构）与轨 2（音频）并行，最后收束发布管线。
+
 ---
 
 ## 📅 已完成特性 (Phase 1: Foundation)
@@ -61,6 +64,15 @@
 | [x] | **Project Settings** | 项目级 IDE 覆盖与 `.hproj` 序列化 |
 | [x] | **Console Panel** | 运行时脚本日志 ImGui 面板（`Window → Console`） |
 
+### 核心模块：游戏性与脚本（Phase 1 已落地部分）
+| 状态 | 最小执行单元 (Minimum Execution Unit) | 说明 |
+| :--- | :--- | :--- |
+| [x] | **Prefab System（基础）** | 单实体 `.hprefab` 保存与实例化（无实例覆盖） |
+| [x] | **Scene Transition（基础）** | `SceneManager.LoadScene` + `ActiveScenePath` |
+| [x] | **[SerializeField]** | ScriptCore 提供特性；private 字段 Inspector 显示与场景序列化 |
+| [x] | **Undo/Redo** | 命令模式；Transform、Hierarchy 等操作已接入 |
+| [x] | **Project Packager（基础）** | 编辑器 **File → Build Project**：复制 Runtime、依赖 DLL、项目资源与 `GameAssembly` |
+
 ### 核心模块：发布 (Distribution)
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 说明 |
 | :--- | :--- | :--- |
@@ -68,42 +80,74 @@
 
 ---
 
-## 🚀 未来开发计划 (Phase 2 & Beyond)
+## 🎯 Phase A：2D 能力闭环（当前冲刺 · 已冻结）
 
-### 核心模块：渲染增强 (Advanced Rendering)
+验收方式：**下列最小执行单元全部勾选即算 Phase A 完成**（不以某款游戏发行为门槛）。
+
+### 实施顺序
+1. **轨 1 — 场景结构**：实体父子层级 → 多实体 Prefab → Canvas（含 Scaler）→ UIButton  
+2. **轨 2 — 音频**（与轨 1 并行）：`AudioEngine` 抽象 + miniaudio 后端 → 非空间化 `AudioSource` + C# API  
+3. **收束 — 发布**：完整 Build Pipeline（在功能稳定后进行）
+
+### 轨 1：场景结构与 UI
+| 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |
+| :--- | :--- | :--- |
+| [ ] | **Entity Parent Hierarchy** | 只存 `Parent` 为唯一真相；Children 运行时重建/缓存；Hierarchy 显示为树 |
+| [ ] | **Local Transform** | `TransformComponent` 的 Position/Rotation/Scale 语义改为 **Local**；世界矩阵由父链计算（可缓存）；字段名暂不强制重命名 |
+| [ ] | **Multi-Entity Prefab** | 利用父子层级序列化一组实体为 `.hprefab`；**不做**实例属性覆盖 / 变体 / Prefab 嵌套覆盖 |
+| [ ] | **Canvas (Screen Space Overlay)** | 引入 Canvas（或等价 UI 根）；至少支持 Screen Space Overlay |
+| [ ] | **Canvas Scaler** | 参考分辨率自适应；无 Scaler 则 Canvas 不算完成 |
+| [ ] | **UIButton（最小）** | 挂在 Canvas 子树下；点击回调（按下/悬停/点击）；不做通用布局系统 |
+
+### 轨 2：音频
+| 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |
+| :--- | :--- | :--- |
+| [ ] | **AudioEngine Abstraction** | 引擎侧音频接口抽象；首期后端为 **miniaudio**；预留更换中间件的可能 |
+| [ ] | **AudioSource（非空间化）** | Play / Stop / Pause、Loop、Volume、Mute、Clip 引用；**不做** 2D 空间衰减 / Listener 定位 |
+| [ ] | **Audio C# API** | ScriptCore 可驱动上述播放控制 |
+
+### 收束：发布管线
+| 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |
+| :--- | :--- | :--- |
+| [ ] | **Build Pipeline** | 编辑器一键输出可运行目录树：统一配置、`engine.hpck`、资源校验、Runtime / 依赖 / `GameAssembly` / 项目资源；缺关键文件则 Build 失败并报错。不要求干净机器冒烟或自动拉起 Runtime |
+
+### Phase A 明确排除（本阶段不做、不算进度）
+| 类别 | 排除项 |
+| :--- | :--- |
+| 渲染 / 物理 | Directional/Point Shadow、Bloom、Post-Processing Stack、3D 物理（Jolt/PhysX 等） |
+| 游戏性 | 玩家存档 Save/Load、Prefab 实例覆盖/变体、音频空间化 |
+| 工具链 | 统一 Asset Importer、Console 增强、粒子系统收尾 |
+| 其他 | 网络、骨骼动画、Job System、Vulkan 后端落地 |
+
+---
+
+## 🚀 Phase B 及以后（未冻结 · 仅占位）
+
+以下条目在 Phase A 完成前 **不计入当前冲刺**；排序与范围将在 Phase A 验收后另行冻结。
+
+### 渲染增强 / 粒子
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |
 | :--- | :--- | :--- |
 | [ ] | **Directional Shadow** | 级联阴影贴图 (CSM) |
 | [ ] | **Point Shadow** | 全向阴影 (CubeMap) |
 | [ ] | **Bloom** | 泛光后处理特效 |
-| [ ] | **Post-Processing Stack** | 包含 ToneMapping, Gamma Correction 的后处理管线 |
-| [ ] | **Particle System** | 基于 GPU 或 CPU 的粒子发射器（编辑器部分已有基础） |
+| [ ] | **Post-Processing Stack** | ToneMapping、Gamma Correction 等 |
+| [ ] | **Particle System** | GPU/CPU 粒子可用化（编辑器已有基础） |
 
-### 核心模块：物理系统升级 (Physics 3D)
+### 物理 3D
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |
 | :--- | :--- | :--- |
 | [ ] | **Physics Engine Integration** | 集成 Jolt Physics 或 PhysX |
-| [ ] | **Sphere Collider** | 球体碰撞组件 |
-| [ ] | **Capsule Collider** | 胶囊体碰撞组件 |
-| [ ] | **Mesh Collider** | 凸包或三角网格碰撞支持 |
+| [ ] | **Sphere / Capsule / Mesh Collider** | 3D 碰撞组件 |
 | [ ] | **Physics Debug Draw** | 线框可视化调试 |
 
-### 核心模块：游戏性与脚本 (Gameplay & Scripting)
+### 编辑器与内容管线
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |
 | :--- | :--- | :--- |
-| [x] | **Prefab System（基础）** | 单实体 `.hprefab` 保存与实例化（无实例覆盖） |
-| [x] | **Scene Transition（基础）** | `SceneManager.LoadScene` + `ActiveScenePath` |
-| [x] | **[SerializeField]** | ScriptCore 提供特性；private 字段 Inspector 显示与场景序列化 |
-
-### 核心模块：编辑器交互 (Editor UX)
-| 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |
-| :--- | :--- | :--- |
-| [x] | **Undo/Redo** | 命令模式；Transform、Hierarchy 等操作已接入 |
 | [ ] | **Asset Importer** | 统一的资源导入设置面板 |
-| [ ] | **Console 增强** | 日志过滤/搜索/复制；默认展示引擎日志；`Console.WriteLine` 重定向等 |
+| [ ] | **Console 增强** | 日志过滤/搜索/复制；默认展示引擎日志等 |
 
-### 核心模块：发布 (Distribution)
-| 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |
-| :--- | :--- | :--- |
-| [x] | **Project Packager（基础）** | 编辑器 **File → Build Project**：复制 Runtime、依赖 DLL、项目资源与 `GameAssembly` |
-| [ ] | **Build Pipeline** | 完善发布流程：统一配置、`engine.hpck`、资源校验与一键输出目录 |
+### 可能的后续方向（仅备忘）
+- Prefab 实例覆盖 / 变体；2D 空间音频；玩家存档 API  
+- 更完整的 UI 布局系统；Job System；Vulkan 后端  
+- 网络、骨骼动画、AI（按产品需求再开）

@@ -41,20 +41,37 @@ namespace Himii
         }
     };
 
+    /// 父子关系：仅子实体存储 Parent UUID（唯一真相源）。
+    struct RelationshipComponent {
+        UUID Parent = 0;
+
+        RelationshipComponent() = default;
+        RelationshipComponent(const RelationshipComponent &) = default;
+    };
+
     struct TransformComponent {
         glm::vec3 Position{0.0f};
-        glm::vec3 Rotation{0.0f}; // Euler angles in radians
+        glm::vec3 Rotation{0.0f}; // Euler angles in radians, local space
         glm::vec3 Scale{1.0f};
+
+        mutable bool WorldTransformDirty = true;
+        mutable glm::mat4 CachedWorldTransform{1.0f};
 
         TransformComponent() = default;
         TransformComponent(const TransformComponent&) = default;
         TransformComponent(const glm::vec3 &position) : Position(position)
         {
         }
-        glm::mat4 GetTransform() const
+
+        glm::mat4 GetLocalTransform() const
         {
             glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
             return glm::translate(glm::mat4(1.0f), Position) * rotation * glm::scale(glm::mat4(1.0f), Scale);
+        }
+
+        glm::mat4 GetTransform() const
+        {
+            return GetLocalTransform();
         }
     };
 
@@ -241,16 +258,25 @@ namespace Himii
         glm::vec2 Size{100.0f};
         glm::vec3 Rotation{0.0f};
 
+        mutable bool WorldTransformDirty = true;
+        mutable glm::mat4 CachedWorldTransform{1.0f};
+
         UITransformComponent() = default;
         UITransformComponent(const glm::vec3 &position, const glm::vec2 &size, const glm::vec3 rotation) :
             Position(position), Size(size), Rotation(rotation)
         {
         }
 
-        glm::mat4 GetTransform() const
+        glm::mat4 GetLocalTransform() const
         {
             glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
-            return glm::translate(glm::mat4(1.0f), Position) * rotation * glm::scale(glm::mat4(1.0f), glm::vec3(Size,1.0f));
+            return glm::translate(glm::mat4(1.0f), Position) * rotation
+                   * glm::scale(glm::mat4(1.0f), glm::vec3(Size, 1.0f));
+        }
+
+        glm::mat4 GetTransform() const
+        {
+            return GetLocalTransform();
         }
     };
 

@@ -133,6 +133,13 @@ namespace HimiiEngine
         public IntPtr Transform_GetWorldTranslation;
         public IntPtr Transform_SetWorldTranslation;
         public IntPtr Transform_GetWorldRotation;
+
+        public IntPtr UIText_GetText;
+        public IntPtr UIText_SetText;
+        public IntPtr UIText_GetColor;
+        public IntPtr UIText_SetColor;
+        public IntPtr UIText_GetFontSize;
+        public IntPtr UIText_SetFontSize;
     }
 
     [StructLayout(LayoutKind.Sequential)]

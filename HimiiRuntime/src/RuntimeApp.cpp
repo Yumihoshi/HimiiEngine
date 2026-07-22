@@ -16,7 +16,6 @@ namespace Himii
             std::filesystem::path projectFile;
             bool foundProject = false;
 
-            // 遍历当前运行目录
             for (auto &entry: std::filesystem::directory_iterator(std::filesystem::current_path()))
             {
                 if (entry.path().extension() == ".hproj")
@@ -52,7 +51,6 @@ namespace Himii
                     m_ActiveScene = newScene;
                     m_ActiveScene->OnRuntimeStart();
 
-                    // 强制调整一次视口，防止黑屏
                     auto &window = Application::Get().GetWindow();
                     m_ActiveScene->OnViewportResize(window.GetWidth(), window.GetHeight());
                 }
@@ -65,8 +63,11 @@ namespace Himii
 
         void OnUpdate(Timestep ts) override
         {
+            if (!m_ActiveScene)
+                return;
 
-            m_ActiveScene->OnViewportResize(1920, 1080);
+            auto& window = Application::Get().GetWindow();
+            m_ActiveScene->OnViewportResize(window.GetWidth(), window.GetHeight());
             RenderCommand::SetClearColor({0.1f, 0.12f, 0.16f, 1.0f});
             RenderCommand::Clear();
             m_ActiveScene->OnUpdateRuntime(ts);
@@ -80,9 +81,6 @@ namespace Himii
     public:
         Runtime(const ApplicationCommandLineArgs &args) : Application("Himii Game Engine", args)
         {
-            // Runtime 不添加 ImGuiLayer (或者只在 Debug 模式添加)
-            // PushOverlay(new ImGuiLayer());
-
             PushLayer(new RuntimeLayer());
         }
 
@@ -91,7 +89,6 @@ namespace Himii
         }
     };
 
-    // 引擎入口点调用此函数创建应用
     Application *CreateApplication(ApplicationCommandLineArgs args)
     {
         return new Runtime(args);

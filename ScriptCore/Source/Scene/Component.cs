@@ -59,6 +59,47 @@ namespace HimiiEngine
         }
     }
 
+    public class UIText : Component
+    {
+        public string Text
+        {
+            get
+            {
+                if (InternalCalls.UIText_GetText == null)
+                    return string.Empty;
+                IntPtr textPointer = InternalCalls.UIText_GetText(Entity.ID);
+                return textPointer == IntPtr.Zero
+                    ? string.Empty
+                    : Marshal.PtrToStringUTF8(textPointer) ?? string.Empty;
+            }
+            set
+            {
+                if (InternalCalls.UIText_SetText == null)
+                    return;
+                IntPtr textPointer = Marshal.StringToCoTaskMemUTF8(value ?? string.Empty);
+                InternalCalls.UIText_SetText(Entity.ID, textPointer);
+                Marshal.FreeCoTaskMem(textPointer);
+            }
+        }
+
+        public Vector4 Color
+        {
+            get
+            {
+                Vector4 result = new Vector4(1.0f, 1.0f, 1.0f, 1.0f);
+                InternalCalls.UIText_GetColor?.Invoke(Entity.ID, out result);
+                return result;
+            }
+            set => InternalCalls.UIText_SetColor?.Invoke(Entity.ID, ref value);
+        }
+
+        public float FontSize
+        {
+            get => InternalCalls.UIText_GetFontSize?.Invoke(Entity.ID) ?? 48.0f;
+            set => InternalCalls.UIText_SetFontSize?.Invoke(Entity.ID, value);
+        }
+    }
+
     public class SpriteRenderer : Component
     {
         public Vector4 Color

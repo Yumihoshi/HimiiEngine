@@ -442,6 +442,16 @@ namespace Himii
             out << YAML::EndMap;
         }
 
+        if (entity.HasComponent<CanvasComponent>())
+        {
+            out << YAML::Key << "CanvasComponent";
+            out << YAML::BeginMap;
+            auto& canvas = entity.GetComponent<CanvasComponent>();
+            out << YAML::Key << "ReferenceResolution" << YAML::Value << canvas.ReferenceResolution;
+            out << YAML::Key << "MatchWidthOrHeight" << YAML::Value << canvas.MatchWidthOrHeight;
+            out << YAML::EndMap;
+        }
+
         if (entity.HasComponent<UIImageComponent>())
         {
             out << YAML::Key << "UIImageComponent";
@@ -465,6 +475,7 @@ namespace Himii
 
             out << YAML::Key << "TextString" << YAML::Value << textComponent.TextString;
             out << YAML::Key << "Color" << YAML::Value << textComponent.Color;
+            out << YAML::Key << "FontSize" << YAML::Value << textComponent.FontSize;
             out << YAML::Key << "Kerning" << YAML::Value << textComponent.Kerning;
             out << YAML::Key << "LineSpacing" << YAML::Value << textComponent.LineSpacing;
 
@@ -786,6 +797,17 @@ namespace Himii
             uiTc.Size = uiTransformComponent["Size"].as<glm::vec2>();
         }
 
+        auto canvasComponent = entity["CanvasComponent"];
+        if (canvasComponent)
+        {
+            auto& canvas = deserializedEntity.AddComponent<CanvasComponent>();
+            if (canvasComponent["ReferenceResolution"])
+                canvas.ReferenceResolution = canvasComponent["ReferenceResolution"].as<glm::vec2>();
+            if (canvasComponent["MatchWidthOrHeight"])
+                canvas.MatchWidthOrHeight = canvasComponent["MatchWidthOrHeight"].as<float>();
+            scene->SyncCanvasReferenceResolutionToTransform(deserializedEntity);
+        }
+
         auto uiImageComponent = entity["UIImageComponent"];
         if (uiImageComponent)
         {
@@ -808,6 +830,8 @@ namespace Himii
             textComp.Color = uiTextComponent["Color"].as<glm::vec4>();
 
             // 使用 IsDefined 检查可选字段，防止老版本场景文件崩溃
+            if (uiTextComponent["FontSize"])
+                textComp.FontSize = uiTextComponent["FontSize"].as<float>();
             if (uiTextComponent["Kerning"])
                 textComp.Kerning = uiTextComponent["Kerning"].as<float>();
             if (uiTextComponent["LineSpacing"])

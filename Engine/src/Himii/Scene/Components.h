@@ -253,8 +253,19 @@ namespace Himii
     };
 
 #pragma region UIComponent
+    /// Screen Space Overlay Canvas（含 Scale With Screen Size 参数）。
+    struct CanvasComponent {
+        glm::vec2 ReferenceResolution{1920.0f, 1080.0f};
+        /// 0 = 按宽度适配，1 = 按高度适配，0.5 = 折中。
+        float MatchWidthOrHeight = 0.5f;
+
+        CanvasComponent() = default;
+        CanvasComponent(const CanvasComponent &) = default;
+    };
+
     struct UITransformComponent {
         glm::vec3 Position{0.0f};
+        /// 设计空间中的矩形尺寸（用于 Image 绘制 / Canvas 参考画布）；不参与父子矩阵缩放。
         glm::vec2 Size{100.0f};
         glm::vec3 Rotation{0.0f};
 
@@ -270,8 +281,7 @@ namespace Himii
         glm::mat4 GetLocalTransform() const
         {
             glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
-            return glm::translate(glm::mat4(1.0f), Position) * rotation
-                   * glm::scale(glm::mat4(1.0f), glm::vec3(Size, 1.0f));
+            return glm::translate(glm::mat4(1.0f), Position) * rotation;
         }
 
         glm::mat4 GetTransform() const
@@ -292,7 +302,9 @@ namespace Himii
     struct UITextComponent {
         std::string TextString = "Text";
         Ref<Font> FontAsset;
-        glm::vec4 Color = {1.0f, 1.0f, 1.0f, 1.0f}; 
+        glm::vec4 Color = {1.0f, 1.0f, 1.0f, 1.0f};
+        /// 设计像素字号（一行高度约等于该值）。
+        float FontSize = 48.0f;
 
         // 排版参数
         float Kerning = 0.0f;     // 字间距微调

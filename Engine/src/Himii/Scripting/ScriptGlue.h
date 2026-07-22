@@ -134,6 +134,13 @@ namespace Himii
         void *Transform_GetWorldTranslation;
         void *Transform_SetWorldTranslation;
         void *Transform_GetWorldRotation;
+
+        void *UIText_GetText;
+        void *UIText_SetText;
+        void *UIText_GetColor;
+        void *UIText_SetColor;
+        void *UIText_GetFontSize;
+        void *UIText_SetFontSize;
     };
 
     class ScriptGlue {

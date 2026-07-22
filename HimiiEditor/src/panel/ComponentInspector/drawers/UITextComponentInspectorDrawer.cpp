@@ -35,10 +35,13 @@ namespace Himii
                 ImGui::PopID();
 
                 DrawColorControl("Text Color", component.Color);
+                DrawFloatControl("Font Size", component.FontSize, 1.0f);
+                if (component.FontSize < 1.0f)
+                    component.FontSize = 1.0f;
                 DrawFloatControl("Kerning", component.Kerning, 0.01f);
                 DrawFloatControl("Line Spacing", component.LineSpacing, 0.01f);
 
-                ImGui::Text("Font: %s", component.FontAsset ? "Default Font" : "None");
+                ImGui::Text("Font: %s", component.FontAsset ? "Assigned" : "None (Default)");
                 if (!component.FontAsset)
                 {
                     if (ImGui::Button("Attach Default Font"))

@@ -584,7 +584,9 @@ namespace Himii
                     {
                         cameraProjection = glm::ortho(0.0f, m_ViewportSize.x, 0.0f, m_ViewportSize.y, -1.0f, 1.0f);
                         cameraView = glm::mat4(1.0f);
-                        transform = m_EditorScene->GetEntityWorldTransformMatrix(selectEntity);
+                        const glm::mat4 canvasToScreen =
+                                m_EditorScene->GetCanvasToScreenMatrix(m_ViewportSize.x, m_ViewportSize.y);
+                        transform = canvasToScreen * m_EditorScene->GetEntityWorldTransformMatrix(selectEntity);
                     }
                     else
                     {
@@ -648,7 +650,10 @@ namespace Himii
                     {
                         if (isUI)
                         {
-                            m_EditorScene->ApplyWorldMatrixAsLocalTransform(selectEntity, transform);
+                            const glm::mat4 canvasToScreen =
+                                    m_EditorScene->GetCanvasToScreenMatrix(m_ViewportSize.x, m_ViewportSize.y);
+                            const glm::mat4 designMatrix = glm::inverse(canvasToScreen) * transform;
+                            m_EditorScene->ApplyWorldMatrixAsLocalTransform(selectEntity, designMatrix);
                             m_EditorScene->NotifyEntityLocalTransformChanged(selectEntity);
                         }
                         else
@@ -1051,19 +1056,23 @@ namespace Himii
 
         if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
         {
-            if (selectedEntity.HasComponent<UITransformComponent>())
+            if (selectedEntity.HasComponent<UITransformComponent>()
+                && m_EditorScene->IsEntityUnderCanvas(selectedEntity))
             {
-                // 构造与 Scene::RenderUI 完全一样的矩阵 (左下角为 0,0)
                 glm::mat4 uiProjection = glm::ortho(0.0f, m_ViewportSize.x, 0.0f, m_ViewportSize.y, -1.0f, 1.0f);
-                glm::mat4 uiView = glm::mat4(1.0f); // UI 不需要视图偏移
+                glm::mat4 uiView = glm::mat4(1.0f);
 
                 Renderer2D::BeginScene(uiProjection, uiView);
 
                 const UITransformComponent &uiTransform = selectedEntity.GetComponent<UITransformComponent>();
+                const glm::mat4 canvasToScreen =
+                        m_EditorScene->GetCanvasToScreenMatrix(m_ViewportSize.x, m_ViewportSize.y);
+                const glm::mat4 highlightTransform = canvasToScreen
+                        * m_EditorScene->GetEntityWorldTransformMatrix(selectedEntity)
+                        * glm::scale(glm::mat4(1.0f),
+                                     glm::vec3(uiTransform.Size.x, uiTransform.Size.y, 1.0f));
 
-                // 绘制高亮框
-                Renderer2D::DrawRect(m_EditorScene->GetEntityWorldTransformMatrix(selectedEntity),
-                                     glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
+                Renderer2D::DrawRect(highlightTransform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
 
                 Renderer2D::EndScene();
             }

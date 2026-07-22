@@ -6,6 +6,8 @@
 #include "Himii/Scene/PrefabSerializer.h"
 #include "Himii/Utils/PlatformUtils.h"
 #include "Himii/Asset/AssetManager.h"
+#include "Himii/Renderer/Font.h"
+#include "Himii/Core/Log.h"
 
 #include "panel/ComponentInspector/ComponentInspectorDrawContext.h"
 #include "panel/ComponentInspector/ComponentInspectorRegistry.h"
@@ -117,7 +119,45 @@ namespace Himii
                 else
                     m_Context->CreateEntity("Empty Entity");
             }
-            if (ImGui::MenuItem("Create UI Entty"))
+            if (ImGui::MenuItem("Create UI Canvas"))
+            {
+                if (m_Context->FindCanvasEntity())
+                {
+                    HIMII_CORE_WARNING("Scene already has a Canvas.");
+                }
+                else if (m_CommandHistory)
+                {
+                    m_CommandHistory->Execute(std::make_unique<CreateEntityCommand>(
+                        m_Context,
+                        [](const Ref<Scene>& scene) { return scene->CreateCanvasEntity("Canvas"); }));
+                }
+                else
+                    m_Context->CreateCanvasEntity("Canvas");
+            }
+            if (ImGui::MenuItem("Create UI Text"))
+            {
+                auto createTextEntity = [](const Ref<Scene>& scene) -> Entity
+                {
+                    Entity canvasEntity = scene->FindCanvasEntity();
+                    if (!canvasEntity)
+                        canvasEntity = scene->CreateCanvasEntity("Canvas");
+                    if (!canvasEntity)
+                        return {};
+
+                    Entity textEntity = scene->CreateUIEntity("Text");
+                    auto& text = textEntity.AddComponent<UITextComponent>();
+                    text.FontAsset = Font::GetDefault();
+                    text.FontSize = 48.0f;
+                    scene->SetEntityParent(textEntity, canvasEntity, false);
+                    return textEntity;
+                };
+
+                if (m_CommandHistory)
+                    m_CommandHistory->Execute(std::make_unique<CreateEntityCommand>(m_Context, createTextEntity));
+                else
+                    createTextEntity(m_Context);
+            }
+            if (ImGui::MenuItem("Create UI Entity"))
             {
                 if (m_CommandHistory)
                 {
@@ -225,6 +265,9 @@ namespace Himii
         auto &tag = entity.GetComponent<TagComponent>().Tag;
         const std::vector<UUID>& children = m_Context->GetEntityChildren(entity);
         const bool hasChildren = !children.empty();
+        const bool isUserInterfaceEntity = entity.HasComponent<UITransformComponent>();
+        const bool isOrphanUserInterface =
+                isUserInterfaceEntity && !m_Context->IsEntityUnderCanvas(entity);
 
         ImGuiTreeNodeFlags flags =
                 ((m_SelectionContext == entity) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
@@ -232,9 +275,19 @@ namespace Himii
         if (!hasChildren)
             flags |= ImGuiTreeNodeFlags_Leaf;
 
+        if (isOrphanUserInterface)
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.55f, 0.2f, 1.0f));
+
         const UUID entityIdentifier = entity.GetUUID();
         bool opened = ImGui::TreeNodeEx(reinterpret_cast<void*>(static_cast<uintptr_t>(entityIdentifier)),
-                                        flags, tag.c_str());
+                                        flags, "%s%s", tag.c_str(),
+                                        isOrphanUserInterface ? " (needs Canvas)" : "");
+        if (isOrphanUserInterface)
+            ImGui::PopStyleColor();
+
+        if (ImGui::IsItemHovered() && isOrphanUserInterface)
+            ImGui::SetTooltip("UI entities only render under a Canvas. Drag onto Canvas.");
+
         if (ImGui::IsItemClicked())
             m_SelectionContext = entity;
 
@@ -362,6 +415,8 @@ namespace Himii
             DisplayAddComponentEntry<UITransformComponent>("Rect Transform");
             DisplayAddComponentEntry<UIImageComponent>("Image");
             DisplayAddComponentEntry<UITextComponent>("Text");
+            if (!m_Context->FindCanvasEntity())
+                DisplayAddComponentEntry<CanvasComponent>("Canvas");
 
             ImGui::EndPopup();
         }

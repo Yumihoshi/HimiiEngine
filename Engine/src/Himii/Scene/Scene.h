@@ -38,6 +38,7 @@ namespace Himii
 
         Entity CreateUIEntity(const std::string &name);
         Entity CreateUIEntityWithUUID(UUID uuid, const std::string &name);
+        Entity CreateCanvasEntity(const std::string &name = "Canvas");
 
         void DestroyEntity(entt::entity e);
         void ClearEntities();
@@ -99,6 +100,12 @@ namespace Himii
         void NotifyEntityLocalTransformChanged(Entity entity);
         void SyncEntityTransformSubtreeToPhysics(Entity entity);
         void RebuildHierarchyCache();
+
+        Entity FindCanvasEntity() const;
+        bool IsEntityUnderCanvas(Entity entity) const;
+        float ComputeCanvasScaleFactor(float viewportWidth, float viewportHeight) const;
+        glm::mat4 GetCanvasToScreenMatrix(float viewportWidth, float viewportHeight) const;
+        void SyncCanvasReferenceResolutionToTransform(Entity canvasEntity);
 
         /// 将 Transform 写入 Box2D 刚体（Play/Simulate 期间脚本改 Position/Rotation 时调用）。
         void SyncEntityTransformToPhysics(Entity entity);

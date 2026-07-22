@@ -17,12 +17,15 @@
 #include "Himii/Scene/TilemapColliderBuilder.h"
 #include "Himii/Scene/ParticleEmitterAsset.h"
 #include "Himii/Renderer/Texture.h"
+#include "Himii/Renderer/Font.h"
 #include "Himii/Particle/ParticleSystem.h"
 #include "Himii/Scripting/ScriptEngine.h"
 #include "ScriptableEntity.h"
 #include "Himii/Math/Math.h"
+#include "Himii/Core/Log.h"
 
 #include <glm/glm.hpp>
+#include <cmath>
 #include <vector>
 #include <algorithm>
 
@@ -209,6 +212,22 @@ namespace Himii
         m_EntityMap[uuid] = entity;
 
         return entity;
+    }
+
+    Entity Scene::CreateCanvasEntity(const std::string &name)
+    {
+        if (FindCanvasEntity())
+        {
+            HIMII_CORE_WARNING("Scene already has a Canvas; only one Canvas is allowed.");
+            return {};
+        }
+
+        Entity canvasEntity = CreateUIEntity(name.empty() ? "Canvas" : name);
+        auto& canvas = canvasEntity.AddComponent<CanvasComponent>();
+        canvas.ReferenceResolution = {1920.0f, 1080.0f};
+        canvas.MatchWidthOrHeight = 0.5f;
+        SyncCanvasReferenceResolutionToTransform(canvasEntity);
+        return canvasEntity;
     }
 
     void Scene::DestroyEntity(entt::entity entityHandle)
@@ -711,6 +730,7 @@ namespace Himii
         //UI
         CopyComponent<RelationshipComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<UITransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+        CopyComponent<CanvasComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<UIImageComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<UITextComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 
@@ -768,6 +788,8 @@ namespace Himii
         //UI
         if (entity.HasComponent<UITransformComponent>())
             newEntity.AddComponent<UITransformComponent>(entity.GetComponent<UITransformComponent>());
+        if (entity.HasComponent<CanvasComponent>())
+            newEntity.AddComponent<CanvasComponent>(entity.GetComponent<CanvasComponent>());
         if (entity.HasComponent<UIImageComponent>())
             newEntity.AddComponent<UIImageComponent>(entity.GetComponent<UIImageComponent>());
         if (entity.HasComponent<UITextComponent>())
@@ -1169,47 +1191,126 @@ namespace Himii
         if (viewportWidth == 0.0f || viewportHeight == 0.0f)
             return;
 
-        glm::mat4 projection = glm::ortho(0.0f, viewportWidth, 0.0f, viewportHeight, -1.0f, 1.0f);
-        glm::mat4 view = glm::mat4(1.0f);
+        Entity canvasEntity = FindCanvasEntity();
+        if (!canvasEntity)
+            return;
 
-        // 关闭深度测试，开启透明混合
+        const glm::mat4 projection = glm::ortho(0.0f, viewportWidth, 0.0f, viewportHeight, -1.0f, 1.0f);
+        const glm::mat4 view = glm::mat4(1.0f);
+        const glm::mat4 canvasToScreen = GetCanvasToScreenMatrix(viewportWidth, viewportHeight);
+
         RenderCommand::SetDepthTest(false);
-
         Renderer2D::BeginScene(projection, view);
 
-        // 3. 获取所有 UI 实体
-        auto viewGrp = m_Registry.view<UITransformComponent,UIImageComponent>();
-        viewGrp.each(
-                [&](auto entityHandle, auto&, auto &image)
-                {
-                    const glm::mat4 transformMatrix =
-                            GetEntityWorldTransformMatrix({entityHandle, this});
+        auto imageView = m_Registry.view<UITransformComponent, UIImageComponent>();
+        for (auto entityHandle : imageView)
+        {
+            Entity entity{entityHandle, this};
+            if (!IsEntityUnderCanvas(entity))
+                continue;
 
-                    if (image.Texture)
-                    {
-                        Renderer2D::DrawQuad(transformMatrix, image.Texture, 1.0f, image.Color, (int)entityHandle);
-                    }
-                    else
-                    {
-                        Renderer2D::DrawQuad(transformMatrix, image.Color, (int)entityHandle);
-                    }
-                });
+            auto& image = entity.GetComponent<UIImageComponent>();
+            auto& userInterfaceTransform = entity.GetComponent<UITransformComponent>();
+            const glm::mat4 designTransform = GetEntityWorldTransformMatrix(entity);
+            const glm::mat4 drawTransform = canvasToScreen * designTransform
+                    * glm::scale(glm::mat4(1.0f),
+                                 glm::vec3(userInterfaceTransform.Size.x, userInterfaceTransform.Size.y, 1.0f));
+
+            if (image.Texture)
+                Renderer2D::DrawQuad(drawTransform, image.Texture, 1.0f, image.Color, (int)entityHandle);
+            else
+                Renderer2D::DrawQuad(drawTransform, image.Color, (int)entityHandle);
+        }
+
         auto textView = m_Registry.view<UITransformComponent, UITextComponent>();
-        textView.each(
-                [&](auto entityHandle, auto&, auto &text)
-                {
-                    if (text.FontAsset)
-                    {
-                        Renderer2D::DrawString(text.TextString, text.FontAsset,
-                                               GetEntityWorldTransformMatrix({entityHandle, this}), text.Color,
-                                               (int)entityHandle);
-                    }
-                });
+        for (auto entityHandle : textView)
+        {
+            Entity entity{entityHandle, this};
+            if (!IsEntityUnderCanvas(entity))
+                continue;
+
+            auto& text = entity.GetComponent<UITextComponent>();
+            Ref<Font> fontAsset = text.FontAsset ? text.FontAsset : Font::GetDefault();
+            if (!fontAsset)
+                continue;
+
+            const float fontSize = text.FontSize > 0.0f ? text.FontSize : 48.0f;
+            const glm::mat4 designTransform = GetEntityWorldTransformMatrix(entity);
+            const glm::mat4 drawTransform = canvasToScreen * designTransform
+                    * glm::scale(glm::mat4(1.0f), glm::vec3(fontSize, fontSize, 1.0f));
+
+            Renderer2D::DrawString(text.TextString, fontAsset, drawTransform, text.Color, (int)entityHandle);
+        }
 
         Renderer2D::EndScene();
-
-        // 4. 恢复深度测试
         RenderCommand::SetDepthTest(true);
+    }
+
+    Entity Scene::FindCanvasEntity() const
+    {
+        auto canvasView = m_Registry.view<CanvasComponent>();
+        for (auto entityHandle : canvasView)
+            return Entity{entityHandle, const_cast<Scene*>(this)};
+        return {};
+    }
+
+    bool Scene::IsEntityUnderCanvas(Entity entity) const
+    {
+        Entity canvasEntity = FindCanvasEntity();
+        if (!entity || !canvasEntity)
+            return false;
+        if (entity == canvasEntity)
+            return true;
+        return IsEntityDescendantOf(entity, canvasEntity);
+    }
+
+    float Scene::ComputeCanvasScaleFactor(float viewportWidth, float viewportHeight) const
+    {
+        Entity canvasEntity = FindCanvasEntity();
+        if (!canvasEntity)
+            return 1.0f;
+
+        const auto& canvas = canvasEntity.GetComponent<CanvasComponent>();
+        const float referenceWidth = std::max(canvas.ReferenceResolution.x, 1.0f);
+        const float referenceHeight = std::max(canvas.ReferenceResolution.y, 1.0f);
+        const float scaleWidth = viewportWidth / referenceWidth;
+        const float scaleHeight = viewportHeight / referenceHeight;
+        const float match = glm::clamp(canvas.MatchWidthOrHeight, 0.0f, 1.0f);
+
+        // Unity Scale With Screen Size（对数加权）
+        const float logWidth = std::log2(std::max(scaleWidth, 1.0e-5f));
+        const float logHeight = std::log2(std::max(scaleHeight, 1.0e-5f));
+        const float logWeighted = glm::mix(logWidth, logHeight, match);
+        return std::pow(2.0f, logWeighted);
+    }
+
+    glm::mat4 Scene::GetCanvasToScreenMatrix(float viewportWidth, float viewportHeight) const
+    {
+        Entity canvasEntity = FindCanvasEntity();
+        if (!canvasEntity)
+            return glm::mat4(1.0f);
+
+        const auto& canvas = canvasEntity.GetComponent<CanvasComponent>();
+        const float scaleFactor = ComputeCanvasScaleFactor(viewportWidth, viewportHeight);
+        const float scaledWidth = canvas.ReferenceResolution.x * scaleFactor;
+        const float scaledHeight = canvas.ReferenceResolution.y * scaleFactor;
+        const float offsetX = (viewportWidth - scaledWidth) * 0.5f;
+        const float offsetY = (viewportHeight - scaledHeight) * 0.5f;
+
+        return glm::translate(glm::mat4(1.0f), glm::vec3(offsetX, offsetY, 0.0f))
+               * glm::scale(glm::mat4(1.0f), glm::vec3(scaleFactor, scaleFactor, 1.0f));
+    }
+
+    void Scene::SyncCanvasReferenceResolutionToTransform(Entity canvasEntity)
+    {
+        if (!canvasEntity || !canvasEntity.HasComponent<CanvasComponent>()
+            || !canvasEntity.HasComponent<UITransformComponent>())
+            return;
+
+        const auto& canvas = canvasEntity.GetComponent<CanvasComponent>();
+        auto& userInterfaceTransform = canvasEntity.GetComponent<UITransformComponent>();
+        userInterfaceTransform.Size = canvas.ReferenceResolution;
+        MarkEntityTransformDirty(canvasEntity);
     }
 
     bool Scene::EntitiesShareTransformDomain(Entity left, Entity right) const
@@ -1401,7 +1502,7 @@ namespace Himii
             auto& userInterfaceTransform = entity.GetComponent<UITransformComponent>();
             userInterfaceTransform.Position = translation;
             userInterfaceTransform.Rotation = rotation;
-            userInterfaceTransform.Size = glm::vec2(scale.x, scale.y);
+            // Size 不参与父子矩阵，分解出的 scale 不写回 Size。
         }
     }
 
@@ -1623,6 +1724,14 @@ namespace Himii
     template<>
     void Scene::OnComponentAdded<UITextComponent>(Entity entity, UITextComponent &component)
     {
+        if (!component.FontAsset)
+            component.FontAsset = Font::GetDefault();
+    }
+    template<>
+    void Scene::OnComponentAdded<CanvasComponent>(Entity entity, CanvasComponent &component)
+    {
+        (void)component;
+        SyncCanvasReferenceResolutionToTransform(entity);
     }
     template<>
     void Scene::OnComponentAdded<RelationshipComponent>(Entity entity, RelationshipComponent &component)

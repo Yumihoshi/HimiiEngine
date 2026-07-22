@@ -109,6 +109,7 @@ namespace Himii {
         static const uint32_t BoxCollider2DId = Fnv1A32("HimiiEngine.BoxCollider2D");
         static const uint32_t CircleCollider2DId = Fnv1A32("HimiiEngine.CircleCollider2D");
         static const uint32_t CameraId = Fnv1A32("HimiiEngine.Camera");
+        static const uint32_t UITextId = Fnv1A32("HimiiEngine.UIText");
 
         if (typeId == TilemapId)
             return entity.HasComponent<TilemapComponent>() ? 1 : 0;
@@ -126,6 +127,8 @@ namespace Himii {
             return entity.HasComponent<CircleCollider2DComponent>() ? 1 : 0;
         if (typeId == CameraId)
             return entity.HasComponent<CameraComponent>() ? 1 : 0;
+        if (typeId == UITextId)
+            return entity.HasComponent<UITextComponent>() ? 1 : 0;
 
         // 未注册的组件类型：默认认为不存在
         return 0;
@@ -339,6 +342,88 @@ namespace Himii {
             return 0;
 
         return children[static_cast<size_t>(childIndex)];
+    }
+
+    static const char* UIText_GetText(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return "";
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<UITextComponent>())
+            return "";
+
+        return entity.GetComponent<UITextComponent>().TextString.c_str();
+    }
+
+    static void UIText_SetText(uint64_t entityID, const char* text)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene || !text)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<UITextComponent>())
+            return;
+
+        entity.GetComponent<UITextComponent>().TextString = text;
+    }
+
+    static void UIText_GetColor(uint64_t entityID, glm::vec4* outColor)
+    {
+        if (!outColor)
+            return;
+        *outColor = glm::vec4(1.0f);
+
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<UITextComponent>())
+            return;
+
+        *outColor = entity.GetComponent<UITextComponent>().Color;
+    }
+
+    static void UIText_SetColor(uint64_t entityID, glm::vec4* color)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene || !color)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<UITextComponent>())
+            return;
+
+        entity.GetComponent<UITextComponent>().Color = *color;
+    }
+
+    static float UIText_GetFontSize(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 48.0f;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<UITextComponent>())
+            return 48.0f;
+
+        return entity.GetComponent<UITextComponent>().FontSize;
+    }
+
+    static void UIText_SetFontSize(uint64_t entityID, float fontSize)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<UITextComponent>())
+            return;
+
+        entity.GetComponent<UITextComponent>().FontSize = fontSize > 0.0f ? fontSize : 1.0f;
     }
 
     static bool Input_IsKeyDown(int keycode)
@@ -1642,6 +1727,13 @@ namespace Himii {
         data.Transform_GetWorldTranslation = (void *)&Transform_GetWorldTranslation;
         data.Transform_SetWorldTranslation = (void *)&Transform_SetWorldTranslation;
         data.Transform_GetWorldRotation = (void *)&Transform_GetWorldRotation;
+
+        data.UIText_GetText = (void *)&UIText_GetText;
+        data.UIText_SetText = (void *)&UIText_SetText;
+        data.UIText_GetColor = (void *)&UIText_GetColor;
+        data.UIText_SetColor = (void *)&UIText_SetColor;
+        data.UIText_GetFontSize = (void *)&UIText_GetFontSize;
+        data.UIText_SetFontSize = (void *)&UIText_SetFontSize;
 
         return data;
     }

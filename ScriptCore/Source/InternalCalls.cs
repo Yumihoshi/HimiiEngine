@@ -62,6 +62,13 @@ namespace HimiiEngine
         internal delegate int EntityGetChildCountDelegate(ulong entityID);
         internal delegate ulong EntityGetChildAtDelegate(ulong entityID, int childIndex);
 
+        internal delegate IntPtr UITextGetTextDelegate(ulong entityID);
+        internal delegate void UITextSetTextDelegate(ulong entityID, IntPtr text);
+        internal delegate void UITextGetColorDelegate(ulong entityID, out Vector4 color);
+        internal delegate void UITextSetColorDelegate(ulong entityID, ref Vector4 color);
+        internal delegate float UITextGetFontSizeDelegate(ulong entityID);
+        internal delegate void UITextSetFontSizeDelegate(ulong entityID, float fontSize);
+
         internal delegate void SpriteRendererGetColorDelegate(ulong entityID, out Vector4 color);
         internal delegate void SpriteRendererSetColorDelegate(ulong entityID, ref Vector4 color);
         internal delegate ulong SpriteRendererGetHandleDelegate(ulong entityID);
@@ -155,6 +162,13 @@ namespace HimiiEngine
         internal static TransformPosDelegate Transform_GetWorldTranslation;
         internal static TransformSetPosDelegate Transform_SetWorldTranslation;
         internal static TransformPosDelegate Transform_GetWorldRotation;
+
+        internal static UITextGetTextDelegate UIText_GetText;
+        internal static UITextSetTextDelegate UIText_SetText;
+        internal static UITextGetColorDelegate UIText_GetColor;
+        internal static UITextSetColorDelegate UIText_SetColor;
+        internal static UITextGetFontSizeDelegate UIText_GetFontSize;
+        internal static UITextSetFontSizeDelegate UIText_SetFontSize;
 
         internal static SpriteRendererGetColorDelegate SpriteRenderer_GetColor;
         internal static SpriteRendererSetColorDelegate SpriteRenderer_SetColor;
@@ -287,6 +301,19 @@ namespace HimiiEngine
                 Marshal.GetDelegateForFunctionPointer<TransformSetPosDelegate>(funcs.Transform_SetWorldTranslation);
             Transform_GetWorldRotation =
                 Marshal.GetDelegateForFunctionPointer<TransformPosDelegate>(funcs.Transform_GetWorldRotation);
+
+            UIText_GetText =
+                Marshal.GetDelegateForFunctionPointer<UITextGetTextDelegate>(funcs.UIText_GetText);
+            UIText_SetText =
+                Marshal.GetDelegateForFunctionPointer<UITextSetTextDelegate>(funcs.UIText_SetText);
+            UIText_GetColor =
+                Marshal.GetDelegateForFunctionPointer<UITextGetColorDelegate>(funcs.UIText_GetColor);
+            UIText_SetColor =
+                Marshal.GetDelegateForFunctionPointer<UITextSetColorDelegate>(funcs.UIText_SetColor);
+            UIText_GetFontSize =
+                Marshal.GetDelegateForFunctionPointer<UITextGetFontSizeDelegate>(funcs.UIText_GetFontSize);
+            UIText_SetFontSize =
+                Marshal.GetDelegateForFunctionPointer<UITextSetFontSizeDelegate>(funcs.UIText_SetFontSize);
 
             SpriteRenderer_GetColor =
                 Marshal.GetDelegateForFunctionPointer<SpriteRendererGetColorDelegate>(funcs.SpriteRenderer_GetColor);

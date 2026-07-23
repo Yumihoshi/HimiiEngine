@@ -2,6 +2,7 @@
 #include "Himii/Core/Log.h"
 #include "Himii/Project/Project.h"
 #include "Himii/Renderer/Texture.h"
+#include "Himii/Renderer/Font.h"
 #include "Himii/Asset/AssetSerializer.h"
 #include "Himii/Asset/TextureImportSerializer.h"
 #include "Himii/Asset/SpriteSheetUtility.h"
@@ -58,6 +59,14 @@ namespace Himii
             case AssetType::ParticleEmitter:
             {
                 asset = ParticleEmitterAssetSerializer::Deserialize(pathString);
+                break;
+            }
+            case AssetType::Font:
+            {
+                FontSpecification specification;
+                specification.FilePath = filesystemPath;
+                specification.FaceIndex = 0;
+                asset = CreateRef<Font>(specification);
                 break;
             }
             case AssetType::None:
@@ -139,6 +148,8 @@ namespace Himii
             return AssetType::ParticleEmitter;
         if (extensionLower == ".hprefab")
             return AssetType::Prefab;
+        if (extensionLower == ".ttf" || extensionLower == ".otf" || extensionLower == ".ttc")
+            return AssetType::Font;
 
         return AssetType::None;
     }

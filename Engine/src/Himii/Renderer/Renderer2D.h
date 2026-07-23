@@ -52,6 +52,10 @@ namespace Himii
         static void DrawTilemap(const glm::mat4 &transform, const Ref<TileMapData>& mapData, const Ref<TileSet>& tileSet, int entityID = -1);
 
         static void DrawString(const std::string &string, Ref<Font> font, const glm::mat4 &transform,const glm::vec4 &color, int entityID = -1);
+        static void DrawStringInRectangle(
+                const std::string& string, const Ref<Font>& font,
+                const glm::mat4& transform, const TextLayoutSettings& layoutSettings,
+                const glm::vec4& color, int entityIdentifier = -1);
 
         static float GetLineWidth();
         static void SetLineWidth(float width);
@@ -99,6 +103,12 @@ namespace Himii
 
         static void ResetStats();
         static Statistics GetStatistics();
+
+        // 供同编译单元批处理辅助函数在槽位耗尽时换批。
+        static void FlushCurrentBatch()
+        {
+            NextBatch();
+        }
 
         private:
             static void StartBatch();

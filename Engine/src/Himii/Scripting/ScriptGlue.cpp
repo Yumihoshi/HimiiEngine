@@ -14,9 +14,13 @@
 #include "Himii/Core/Input.h"
 #include "Himii/Core/KeyCodes.h"
 #include "Himii/Core/Log.h"
+#include "Himii/Core/JobSystem.h"
 #include "Himii/Math/Math.h"
+#include "Himii/Renderer/Font.h"
 #include <box2d/box2d.h>
 #include <iostream>
+#include <thread>
+#include <chrono>
 
 namespace Himii {
 
@@ -424,6 +428,63 @@ namespace Himii {
             return;
 
         entity.GetComponent<UITextComponent>().FontSize = fontSize > 0.0f ? fontSize : 1.0f;
+    }
+
+    static Ref<Font> ResolveFontAssetByHandle(uint64_t handle)
+    {
+        Ref<Font> defaultFont = Font::GetDefault();
+        if (defaultFont && static_cast<uint64_t>(defaultFont->Handle) == handle)
+            return defaultFont;
+
+        if (Project::GetActive())
+        {
+            if (auto assetManager = Project::GetAssetManager())
+            {
+                if (Ref<Asset> asset = assetManager->GetAsset(handle))
+                    return std::dynamic_pointer_cast<Font>(asset);
+            }
+        }
+        return nullptr;
+    }
+
+    static uint64_t FontAsset_GetDefaultHandle()
+    {
+        Ref<Font> defaultFont = Font::GetDefault();
+        return defaultFont ? static_cast<uint64_t>(defaultFont->Handle) : 0;
+    }
+
+    static void FontAsset_PreloadCharacters(uint64_t handle, const char *text)
+    {
+        Ref<Font> font = ResolveFontAssetByHandle(handle);
+        if (!font || !text)
+            return;
+        font->PreloadCharacters(text);
+    }
+
+    static void FontAsset_PreloadTextAsync(uint64_t handle, const char *text)
+    {
+        Ref<Font> font = ResolveFontAssetByHandle(handle);
+        if (!font || !text)
+            return;
+        font->PreloadTextAsync(text);
+    }
+
+    static void FontAsset_WaitForPendingGenerations(uint64_t handle)
+    {
+        Ref<Font> font = ResolveFontAssetByHandle(handle);
+        if (!font)
+            return;
+
+        for (int attempt = 0; attempt < 2000; ++attempt)
+        {
+            JobSystem::PumpMainThreadCompletions();
+            font->ProcessCompletedGenerations();
+            if (JobSystem::GetPendingWorkerTaskCount() == 0
+                && JobSystem::GetPendingMainThreadCompletionCount() == 0)
+                break;
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        }
+        font->ProcessCompletedGenerations();
     }
 
     static bool Input_IsKeyDown(int keycode)
@@ -1734,6 +1795,11 @@ namespace Himii {
         data.UIText_SetColor = (void *)&UIText_SetColor;
         data.UIText_GetFontSize = (void *)&UIText_GetFontSize;
         data.UIText_SetFontSize = (void *)&UIText_SetFontSize;
+
+        data.FontAsset_GetDefaultHandle = (void *)&FontAsset_GetDefaultHandle;
+        data.FontAsset_PreloadCharacters = (void *)&FontAsset_PreloadCharacters;
+        data.FontAsset_PreloadTextAsync = (void *)&FontAsset_PreloadTextAsync;
+        data.FontAsset_WaitForPendingGenerations = (void *)&FontAsset_WaitForPendingGenerations;
 
         return data;
     }

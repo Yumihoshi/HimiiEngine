@@ -161,6 +161,78 @@ namespace Himii
         ImGui::PopID();
     }
 
+    void DrawVec2AxisControl(const std::string& label, glm::vec2& values, float resetValue,
+                             const std::function<void()>& onEditBegin,
+                             const std::function<void()>& onEditEnd)
+    {
+        ImFont* boldFont = ImGui::GetIO().Fonts->Fonts[0];
+        ImGui::PushID(label.c_str());
+        if (ImGui::BeginTable(
+                    "##Vec2AxisControl", 2,
+                    ImGuiTableFlags_BordersInnerV | ImGuiTableFlags_SizingStretchProp))
+        {
+            ImGui::TableSetupColumn(
+                    "Label", ImGuiTableColumnFlags_WidthFixed, InspectorLabelColumnWidth);
+            ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted(label.c_str());
+            ImGui::TableNextColumn();
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{0.0f, 0.0f});
+
+            const float lineHeight =
+                    GImGui->FontSize + GImGui->Style.FramePadding.y * 2.0f;
+            const ImVec2 buttonSize = {lineHeight + 3.0f, lineHeight};
+            const float widthEach =
+                    (ImGui::GetContentRegionAvail().x - 2.0f * buttonSize.x) / 2.0f;
+
+            const auto drawAxis = [&](const char* axisLabel, float& value,
+                                      const ImVec4& color, const ImVec4& hoveredColor,
+                                      const ImVec4& activeColor)
+            {
+                ImGui::PushStyleColor(ImGuiCol_Button, color);
+                ImGui::PushStyleColor(ImGuiCol_ButtonHovered, hoveredColor);
+                ImGui::PushStyleColor(ImGuiCol_ButtonActive, activeColor);
+                ImGui::PushFont(boldFont);
+                if (ImGui::Button(axisLabel, buttonSize))
+                {
+                    if (onEditBegin)
+                        onEditBegin();
+                    value = resetValue;
+                    if (onEditEnd)
+                        onEditEnd();
+                }
+                ImGui::PopFont();
+                ImGui::PopStyleColor(3);
+
+                ImGui::SameLine();
+                ImGui::SetNextItemWidth(widthEach);
+                std::string inputIdentifier = std::string("##") + axisLabel;
+                ImGui::DragFloat(
+                        inputIdentifier.c_str(), &value, 0.1f, 0.0f, 0.0f, "%.2f");
+                if (ImGui::IsItemActivated() && onEditBegin)
+                    onEditBegin();
+                if (ImGui::IsItemDeactivatedAfterEdit() && onEditEnd)
+                    onEditEnd();
+            };
+
+            drawAxis(
+                    "X", values.x,
+                    ImVec4{0.8f, 0.23f, 0.12f, 1.0f},
+                    ImVec4{0.9f, 0.2f, 0.2f, 1.0f},
+                    ImVec4{0.8f, 0.1f, 0.15f, 1.0f});
+            ImGui::SameLine();
+            drawAxis(
+                    "Y", values.y,
+                    ImVec4{0.12f, 0.7f, 0.2f, 1.0f},
+                    ImVec4{0.3f, 0.8f, 0.3f, 1.0f},
+                    ImVec4{0.2f, 0.7f, 0.2f, 1.0f});
+
+            ImGui::PopStyleVar();
+            ImGui::EndTable();
+        }
+        ImGui::PopID();
+    }
+
     void DrawStdStringControl(const char* label, std::string& value,
                               const std::function<void()>& onEdited)
     {

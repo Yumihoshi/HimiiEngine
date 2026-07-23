@@ -10,6 +10,7 @@
 #include "panel/EditorPreferencesPanel.h"
 #include "panel/ProjectSettingsPanel.h"
 #include "panel/TextureInspectorPanel.h"
+#include "panel/FontDiagnosticsPanel.h"
 
 #include "Himii/Core/FileWatcher.h"
 #include "Himii/Scene/TileMapCoordinateUtility.h"
@@ -116,12 +117,31 @@ namespace Himii
         EditorCamera m_EditorCamera;
 
         bool m_ViewportFocused = false, m_ViewportHovered = false;
+        bool m_GameViewportFocused = false, m_GameViewportHovered = false;
+        bool m_ShowGameUserInterface = true;
+        bool m_RequestSceneViewportFocus = false;
+        bool m_RequestGameViewportFocus = false;
+        bool m_RestoreSceneViewportAfterPlay = true;
 
         // Scene 视口用的离屏帧缓冲
         Ref<Framebuffer> m_Framebuffer;
+        Ref<Framebuffer> m_GameFramebuffer;
 
         glm::vec2 m_ViewportSize = {0.0f, 0.0f};
         glm::vec2 m_ViewportBounds[2];
+        glm::vec2 m_GameViewportPanelSize = {0.0f, 0.0f};
+        glm::vec2 m_GameViewportBounds[2];
+        glm::uvec2 m_GameTargetResolution = {1920, 1080};
+        bool m_GameViewHasValidPrimaryCamera = false;
+
+        enum class GameResolutionPreset
+        {
+            FreeAspect = 0,
+            FullHighDefinition,
+            HighDefinition,
+            Custom
+        };
+        GameResolutionPreset m_GameResolutionPreset = GameResolutionPreset::FullHighDefinition;
 
         int m_GizmoType = -1;
 
@@ -141,6 +161,9 @@ namespace Himii
 
         TextureInspectorPanel m_TextureInspectorPanel;
         bool m_ShowTextureInspector = false;
+
+        FontDiagnosticsPanel m_FontDiagnosticsPanel;
+        bool m_ShowFontDiagnostics = false;
 
         TileMapEditorPanel m_TileMapEditorPanel;
         bool m_ShowTileMapEditor = false;
@@ -186,8 +209,11 @@ namespace Himii
 
         bool m_GizmoTransformCaptureActive = false;
         bool m_GizmoCaptureIsUserInterface = false;
+        bool m_GizmoCaptureIsUIText = false;
+        bool m_ShowSceneUserInterface = true;
         TransformComponent m_GizmoStartTransform;
-        UITransformComponent m_GizmoStartUITransform;
+        RectTransformComponent m_GizmoStartRectTransform;
+        float m_GizmoStartFontSize = 48.0f;
 
         glm::ivec2 m_TilemapHoveredTile{TileMapCoordinateUtility::InvalidTileCoordinate,
                                         TileMapCoordinateUtility::InvalidTileCoordinate};

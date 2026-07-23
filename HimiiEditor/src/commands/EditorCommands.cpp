@@ -1,5 +1,7 @@
 #include "EditorCommands.h"
 
+#include <algorithm>
+
 namespace Himii
 {
     CreateEntityCommand::CreateEntityCommand(const Ref<Scene>& scene,
@@ -97,9 +99,10 @@ namespace Himii
         return true;
     }
 
-    ModifyUITransformCommand::ModifyUITransformCommand(const Ref<Scene>& scene, UUID entityIdentifier,
-                                                       const UITransformComponent& beforeTransform,
-                                                       const UITransformComponent& afterTransform)
+    ModifyRectTransformCommand::ModifyRectTransformCommand(
+            const Ref<Scene>& scene, UUID entityIdentifier,
+            const RectTransformComponent& beforeTransform,
+            const RectTransformComponent& afterTransform)
         : m_Scene(scene)
         , m_EntityIdentifier(entityIdentifier)
         , m_BeforeTransform(beforeTransform)
@@ -107,34 +110,70 @@ namespace Himii
     {
     }
 
-    void ModifyUITransformCommand::ApplyTransform(const UITransformComponent& transform)
+    void ModifyRectTransformCommand::ApplyTransform(const RectTransformComponent& transform)
     {
         Entity entity = m_Scene->GetEntityByUUID(m_EntityIdentifier);
-        if (entity && entity.HasComponent<UITransformComponent>())
+        if (entity && entity.HasComponent<RectTransformComponent>())
         {
-            entity.GetComponent<UITransformComponent>() = transform;
-            entity.GetComponent<UITransformComponent>().WorldTransformDirty = true;
+            entity.GetComponent<RectTransformComponent>() = transform;
+            entity.GetComponent<RectTransformComponent>().WorldTransformDirty = true;
             m_Scene->NotifyEntityLocalTransformChanged(entity);
         }
     }
 
-    void ModifyUITransformCommand::Execute()
+    void ModifyRectTransformCommand::Execute()
     {
         ApplyTransform(m_AfterTransform);
     }
 
-    void ModifyUITransformCommand::Undo()
+    void ModifyRectTransformCommand::Undo()
     {
         ApplyTransform(m_BeforeTransform);
     }
 
-    bool ModifyUITransformCommand::TryMerge(const IEditorCommand& other)
+    bool ModifyRectTransformCommand::TryMerge(const IEditorCommand& other)
     {
-        const auto* otherCommand = dynamic_cast<const ModifyUITransformCommand*>(&other);
+        const auto* otherCommand = dynamic_cast<const ModifyRectTransformCommand*>(&other);
         if (!otherCommand || otherCommand->m_EntityIdentifier != m_EntityIdentifier)
             return false;
 
         m_AfterTransform = otherCommand->m_AfterTransform;
+        return true;
+    }
+
+    ModifyUITextFontSizeCommand::ModifyUITextFontSizeCommand(const Ref<Scene>& scene, UUID entityIdentifier,
+                                                             float beforeFontSize, float afterFontSize)
+        : m_Scene(scene)
+        , m_EntityIdentifier(entityIdentifier)
+        , m_BeforeFontSize(beforeFontSize)
+        , m_AfterFontSize(afterFontSize)
+    {
+    }
+
+    void ModifyUITextFontSizeCommand::ApplyFontSize(float fontSize)
+    {
+        Entity entity = m_Scene->GetEntityByUUID(m_EntityIdentifier);
+        if (entity && entity.HasComponent<UITextComponent>())
+            entity.GetComponent<UITextComponent>().FontSize = std::max(fontSize, 1.0f);
+    }
+
+    void ModifyUITextFontSizeCommand::Execute()
+    {
+        ApplyFontSize(m_AfterFontSize);
+    }
+
+    void ModifyUITextFontSizeCommand::Undo()
+    {
+        ApplyFontSize(m_BeforeFontSize);
+    }
+
+    bool ModifyUITextFontSizeCommand::TryMerge(const IEditorCommand& other)
+    {
+        const auto* otherCommand = dynamic_cast<const ModifyUITextFontSizeCommand*>(&other);
+        if (!otherCommand || otherCommand->m_EntityIdentifier != m_EntityIdentifier)
+            return false;
+
+        m_AfterFontSize = otherCommand->m_AfterFontSize;
         return true;
     }
 
@@ -171,19 +210,19 @@ namespace Himii
         , m_ParentAfterIdentifier(newParent ? newParent.GetUUID() : 0)
         , m_KeepWorldPosition(keepWorldPosition)
     {
-        m_IsUserInterface = child.HasComponent<UITransformComponent>();
+        m_IsUserInterface = child.HasComponent<RectTransformComponent>();
         Entity parentBefore = scene->GetParentEntity(child);
         m_ParentBeforeIdentifier = parentBefore ? parentBefore.GetUUID() : 0;
 
         if (m_IsUserInterface)
-            m_UserInterfaceTransformBefore = child.GetComponent<UITransformComponent>();
+            m_RectTransformBefore = child.GetComponent<RectTransformComponent>();
         else
             m_LocalTransformBefore = child.GetComponent<TransformComponent>();
     }
 
     void ReparentEntityCommand::ApplyParent(UUID parentIdentifier,
                                             const TransformComponent& localTransform,
-                                            const UITransformComponent& userInterfaceTransform,
+                                            const RectTransformComponent& rectTransform,
                                             bool isUserInterface)
     {
         Entity childEntity = m_Scene->GetEntityByUUID(m_ChildIdentifier);
@@ -192,7 +231,7 @@ namespace Himii
 
         Entity parentEntity = parentIdentifier != 0 ? m_Scene->GetEntityByUUID(parentIdentifier) : Entity{};
         if (isUserInterface)
-            childEntity.GetComponent<UITransformComponent>() = userInterfaceTransform;
+            childEntity.GetComponent<RectTransformComponent>() = rectTransform;
         else
             childEntity.GetComponent<TransformComponent>() = localTransform;
 
@@ -210,7 +249,7 @@ namespace Himii
         m_Scene->SetEntityParent(childEntity, parentEntity, m_KeepWorldPosition);
 
         if (m_IsUserInterface)
-            m_UserInterfaceTransformAfter = childEntity.GetComponent<UITransformComponent>();
+            m_RectTransformAfter = childEntity.GetComponent<RectTransformComponent>();
         else
             m_LocalTransformAfter = childEntity.GetComponent<TransformComponent>();
     }
@@ -218,7 +257,7 @@ namespace Himii
     void ReparentEntityCommand::Undo()
     {
         if (m_IsUserInterface)
-            ApplyParent(m_ParentBeforeIdentifier, {}, m_UserInterfaceTransformBefore, true);
+            ApplyParent(m_ParentBeforeIdentifier, {}, m_RectTransformBefore, true);
         else
             ApplyParent(m_ParentBeforeIdentifier, m_LocalTransformBefore, {}, false);
     }

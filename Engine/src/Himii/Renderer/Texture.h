@@ -21,6 +21,8 @@ namespace Himii
         uint32_t Height = 1;
         ImageFormat Format = ImageFormat::RGBA8;
         bool GenerateMips = false;
+        bool ClampToEdge = false;
+        bool UseLinearFiltering = true;
     };
 
     class Texture : public Asset {
@@ -36,6 +38,9 @@ namespace Himii
         virtual const std::string &GetPath() const = 0;
 
         virtual void SetData(void *data, uint32_t size) = 0;
+        virtual void SetDataRegion(
+                uint32_t offsetX, uint32_t offsetY, uint32_t width, uint32_t height, void *data,
+                uint32_t size) = 0;
 
         virtual void Bind(uint32_t slot = 0) const = 0;
 
@@ -47,13 +52,12 @@ namespace Himii
         {
             return AssetType::Texture2D;
         }
-
-    private:
     };
 
     class Texture2D : public Texture {
     public:
         static Ref<Texture2D> Create(uint32_t width, uint32_t height);
+        static Ref<Texture2D> Create(const TextureSpecification &specification);
         static Ref<Texture2D> Create(const std::string &path);
     };
 

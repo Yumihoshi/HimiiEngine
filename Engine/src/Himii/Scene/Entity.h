@@ -5,6 +5,8 @@
 #include "Scene.h"
 
 #include "entt/entt.hpp"
+#include <stdexcept>
+#include <type_traits>
 
 namespace Himii
 {
@@ -19,6 +21,7 @@ namespace Himii
         template<typename T, typename... Args>
         T &AddComponent(Args &&...args)
         {
+            ValidateTransformDomain<T>();
             T &component = m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
             m_Scene->OnComponentAdded<T>(*this, component);
             return component;
@@ -27,6 +30,7 @@ namespace Himii
         template<typename T, typename... Args>
         T &AddOrReplaceComponent(Args &&...args)
         {
+            ValidateTransformDomain<T>();
             T &component = m_Scene->m_Registry.emplace_or_replace<T>(m_EntityHandle, std::forward<Args>(args)...);
             m_Scene->OnComponentAdded<T>(*this, component);
             return component;
@@ -102,6 +106,23 @@ namespace Himii
         }
 
     private:
+        template<typename T>
+        void ValidateTransformDomain() const
+        {
+            if constexpr (std::is_same_v<T, TransformComponent>)
+            {
+                if (HasComponent<RectTransformComponent>())
+                    throw std::logic_error(
+                            "TransformComponent cannot coexist with RectTransformComponent.");
+            }
+            else if constexpr (std::is_same_v<T, RectTransformComponent>)
+            {
+                if (HasComponent<TransformComponent>())
+                    throw std::logic_error(
+                            "RectTransformComponent cannot coexist with TransformComponent.");
+            }
+        }
+
         entt::entity m_EntityHandle{entt::null};
         Scene *m_Scene{};
     };

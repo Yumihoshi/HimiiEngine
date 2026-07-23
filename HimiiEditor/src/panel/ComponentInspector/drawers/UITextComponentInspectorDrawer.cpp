@@ -41,6 +41,32 @@ namespace Himii
                 DrawFloatControl("Kerning", component.Kerning, 0.01f);
                 DrawFloatControl("Line Spacing", component.LineSpacing, 0.01f);
 
+                static const char* horizontalAlignmentLabels[] = {
+                        "Left", "Center", "Right"};
+                int horizontalAlignmentIndex =
+                        static_cast<int>(component.HorizontalAlignment);
+                DrawEnumComboControl(
+                        "Horizontal Alignment", horizontalAlignmentIndex,
+                        horizontalAlignmentLabels, 3,
+                        [&](int selectedIndex)
+                        {
+                            component.HorizontalAlignment =
+                                    static_cast<TextHorizontalAlignment>(selectedIndex);
+                        });
+
+                static const char* verticalAlignmentLabels[] = {
+                        "Top", "Middle", "Bottom"};
+                int verticalAlignmentIndex =
+                        static_cast<int>(component.VerticalAlignment);
+                DrawEnumComboControl(
+                        "Vertical Alignment", verticalAlignmentIndex,
+                        verticalAlignmentLabels, 3,
+                        [&](int selectedIndex)
+                        {
+                            component.VerticalAlignment =
+                                    static_cast<TextVerticalAlignment>(selectedIndex);
+                        });
+
                 ImGui::Text("Font: %s", component.FontAsset ? "Assigned" : "None (Default)");
                 if (!component.FontAsset)
                 {

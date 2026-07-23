@@ -228,11 +228,12 @@ namespace Himii
         if (entity.HasComponent<RelationshipComponent>())
         {
             const auto& relationship = entity.GetComponent<RelationshipComponent>();
-            if (relationship.Parent != 0)
+            if (relationship.Parent != 0 || relationship.SiblingIndex != 0)
             {
                 out << YAML::Key << "RelationshipComponent";
                 out << YAML::BeginMap;
                 out << YAML::Key << "Parent" << YAML::Value << relationship.Parent;
+                out << YAML::Key << "SiblingIndex" << YAML::Value << relationship.SiblingIndex;
                 out << YAML::EndMap;
             }
         }
@@ -431,14 +432,17 @@ namespace Himii
         }
 
         //------------UI-----------
-        if (entity.HasComponent<UITransformComponent>())
+        if (entity.HasComponent<RectTransformComponent>())
         {
-            out << YAML::Key << "UITransformComponent";
+            out << YAML::Key << "RectTransformComponent";
             out << YAML::BeginMap;
-            auto &uiTransform = entity.GetComponent<UITransformComponent>();
-            out << YAML::Key << "Position" << YAML::Value << uiTransform.Position;
-            out << YAML::Key << "Rotation" << YAML::Value << uiTransform.Rotation;
-            out << YAML::Key << "Size" << YAML::Value << uiTransform.Size;
+            auto &rectTransform = entity.GetComponent<RectTransformComponent>();
+            out << YAML::Key << "AnchorMinimum" << YAML::Value << rectTransform.AnchorMinimum;
+            out << YAML::Key << "AnchorMaximum" << YAML::Value << rectTransform.AnchorMaximum;
+            out << YAML::Key << "Pivot" << YAML::Value << rectTransform.Pivot;
+            out << YAML::Key << "AnchoredPosition" << YAML::Value << rectTransform.AnchoredPosition;
+            out << YAML::Key << "SizeDelta" << YAML::Value << rectTransform.SizeDelta;
+            out << YAML::Key << "RotationRadians" << YAML::Value << rectTransform.RotationRadians;
             out << YAML::EndMap;
         }
 
@@ -447,6 +451,7 @@ namespace Himii
             out << YAML::Key << "CanvasComponent";
             out << YAML::BeginMap;
             auto& canvas = entity.GetComponent<CanvasComponent>();
+            out << YAML::Key << "ScaleMode" << YAML::Value << static_cast<int>(canvas.ScaleMode);
             out << YAML::Key << "ReferenceResolution" << YAML::Value << canvas.ReferenceResolution;
             out << YAML::Key << "MatchWidthOrHeight" << YAML::Value << canvas.MatchWidthOrHeight;
             out << YAML::EndMap;
@@ -478,12 +483,19 @@ namespace Himii
             out << YAML::Key << "FontSize" << YAML::Value << textComponent.FontSize;
             out << YAML::Key << "Kerning" << YAML::Value << textComponent.Kerning;
             out << YAML::Key << "LineSpacing" << YAML::Value << textComponent.LineSpacing;
+            out << YAML::Key << "HorizontalAlignment" << YAML::Value
+                << static_cast<int>(textComponent.HorizontalAlignment);
+            out << YAML::Key << "VerticalAlignment" << YAML::Value
+                << static_cast<int>(textComponent.VerticalAlignment);
 
-            // 序列化字体路径
+            // 序列化字体资产句柄；兼容旧 FontPath。
+            if (textComponent.FontHandle)
+                out << YAML::Key << "FontHandle" << YAML::Value << (uint64_t)textComponent.FontHandle;
+            out << YAML::Key << "FontFaceIndex" << YAML::Value << textComponent.FontFaceIndex;
             if (textComponent.FontAsset)
                 out << YAML::Key << "FontPath" << YAML::Value << textComponent.FontAsset->GetFilePath().string();
             else
-                out << YAML::Key << "FontPath" << YAML::Value << ""; // 或者记录为默认字体
+                out << YAML::Key << "FontPath" << YAML::Value << "";
 
             out << YAML::EndMap; // UITextComponent
         }
@@ -495,6 +507,7 @@ namespace Himii
         YAML::Emitter out;
         out << YAML::BeginMap;
         out << YAML::Key << "Scene" << YAML::Value << "Untitled";
+        out << YAML::Key << "SceneFormatVersion" << YAML::Value << 3;
         out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
         m_Scene->m_Registry.view<IDComponent>().each(
                 [&](auto entityHandle, IDComponent &id)
@@ -555,13 +568,15 @@ namespace Himii
         if (tagComponent)
             name = tagComponent["Tag"].as<std::string>();
 
-        bool isUI = entity["UITransformComponent"].IsDefined();
+        const bool isUserInterfaceEntity =
+                entity["RectTransformComponent"].IsDefined() || entity["UITransformComponent"].IsDefined();
 
         Entity deserializedEntity =
-                isUI ? scene->CreateUIEntityWithUUID(uuid, name) : scene->CreateEntityWithUUID(uuid, name);
+                isUserInterfaceEntity ? scene->CreateUIEntityWithUUID(uuid, name)
+                                      : scene->CreateEntityWithUUID(uuid, name);
 
         auto transformComponent = entity["TransformComponent"];
-        if (transformComponent&&!isUI)
+        if (transformComponent && !isUserInterfaceEntity)
         {
             auto &transform = deserializedEntity.GetComponent<TransformComponent>();
             transform.Position = transformComponent["Position"].as<glm::vec3>();
@@ -573,7 +588,10 @@ namespace Himii
         if (relationshipComponent)
         {
             auto& relationship = deserializedEntity.AddComponent<RelationshipComponent>();
-            relationship.Parent = relationshipComponent["Parent"].as<UUID>();
+            if (relationshipComponent["Parent"])
+                relationship.Parent = relationshipComponent["Parent"].as<UUID>();
+            if (relationshipComponent["SiblingIndex"])
+                relationship.SiblingIndex = relationshipComponent["SiblingIndex"].as<uint32_t>();
         }
 
         auto cameraComponent = entity["CameraComponent"];
@@ -788,19 +806,45 @@ namespace Himii
 
 
         //-----------UI----------
-        auto uiTransformComponent = entity["UITransformComponent"];
-        if (uiTransformComponent)
+        auto rectTransformComponent = entity["RectTransformComponent"];
+        auto legacyUserInterfaceTransformComponent = entity["UITransformComponent"];
+        if (rectTransformComponent)
         {
-            auto &uiTc = deserializedEntity.GetComponent<UITransformComponent>();
-            uiTc.Position = uiTransformComponent["Position"].as<glm::vec3>();
-            uiTc.Rotation = uiTransformComponent["Rotation"].as<glm::vec3>();
-            uiTc.Size = uiTransformComponent["Size"].as<glm::vec2>();
+            auto &rectTransform = deserializedEntity.GetComponent<RectTransformComponent>();
+            rectTransform.AnchorMinimum = rectTransformComponent["AnchorMinimum"].as<glm::vec2>();
+            rectTransform.AnchorMaximum = rectTransformComponent["AnchorMaximum"].as<glm::vec2>();
+            rectTransform.Pivot = rectTransformComponent["Pivot"].as<glm::vec2>();
+            rectTransform.AnchoredPosition = rectTransformComponent["AnchoredPosition"].as<glm::vec2>();
+            rectTransform.SizeDelta = rectTransformComponent["SizeDelta"].as<glm::vec2>();
+            if (rectTransformComponent["RotationRadians"])
+                rectTransform.RotationRadians =
+                        rectTransformComponent["RotationRadians"].as<float>();
+            else if (rectTransformComponent["Rotation"])
+                rectTransform.RotationRadians =
+                        rectTransformComponent["Rotation"].as<glm::vec3>().z;
+            rectTransform.ResolvedSize = rectTransform.SizeDelta;
+        }
+        else if (legacyUserInterfaceTransformComponent)
+        {
+            auto &rectTransform = deserializedEntity.GetComponent<RectTransformComponent>();
+            const glm::vec3 legacyPosition =
+                    legacyUserInterfaceTransformComponent["Position"].as<glm::vec3>();
+            rectTransform.AnchorMinimum = glm::vec2(0.5f);
+            rectTransform.AnchorMaximum = glm::vec2(0.5f);
+            rectTransform.Pivot = glm::vec2(0.5f);
+            rectTransform.AnchoredPosition = glm::vec2(legacyPosition);
+            rectTransform.SizeDelta = legacyUserInterfaceTransformComponent["Size"].as<glm::vec2>();
+            rectTransform.RotationRadians =
+                    legacyUserInterfaceTransformComponent["Rotation"].as<glm::vec3>().z;
+            rectTransform.ResolvedSize = rectTransform.SizeDelta;
         }
 
         auto canvasComponent = entity["CanvasComponent"];
         if (canvasComponent)
         {
             auto& canvas = deserializedEntity.AddComponent<CanvasComponent>();
+            if (canvasComponent["ScaleMode"])
+                canvas.ScaleMode = static_cast<CanvasScaleMode>(canvasComponent["ScaleMode"].as<int>());
             if (canvasComponent["ReferenceResolution"])
                 canvas.ReferenceResolution = canvasComponent["ReferenceResolution"].as<glm::vec2>();
             if (canvasComponent["MatchWidthOrHeight"])
@@ -836,22 +880,46 @@ namespace Himii
                 textComp.Kerning = uiTextComponent["Kerning"].as<float>();
             if (uiTextComponent["LineSpacing"])
                 textComp.LineSpacing = uiTextComponent["LineSpacing"].as<float>();
+            if (uiTextComponent["HorizontalAlignment"])
+                textComp.HorizontalAlignment = static_cast<TextHorizontalAlignment>(
+                        uiTextComponent["HorizontalAlignment"].as<int>());
+            if (uiTextComponent["VerticalAlignment"])
+                textComp.VerticalAlignment = static_cast<TextVerticalAlignment>(
+                        uiTextComponent["VerticalAlignment"].as<int>());
 
             // 反序列化并加载字体
-            if (uiTextComponent["FontPath"])
+            if (uiTextComponent["FontHandle"])
+            {
+                textComp.FontHandle = uiTextComponent["FontHandle"].as<uint64_t>();
+                if (textComp.FontHandle && Project::GetActive())
+                {
+                    if (auto assetManager = Project::GetAssetManager())
+                    {
+                        if (Ref<Asset> asset = assetManager->GetAsset(textComp.FontHandle))
+                            textComp.FontAsset = std::dynamic_pointer_cast<Font>(asset);
+                    }
+                }
+            }
+            if (uiTextComponent["FontFaceIndex"])
+                textComp.FontFaceIndex = uiTextComponent["FontFaceIndex"].as<int>();
+
+            if (!textComp.FontAsset && uiTextComponent["FontPath"])
             {
                 std::string fontPath = uiTextComponent["FontPath"].as<std::string>();
                 if (!fontPath.empty())
                 {
-                    // 这里建议先检查文件是否存在，或者交给 Font 构造函数处理
-                    textComp.FontAsset = CreateRef<Font>(fontPath);
+                    FontSpecification specification;
+                    specification.FilePath = fontPath;
+                    specification.FaceIndex = textComp.FontFaceIndex;
+                    textComp.FontAsset = CreateRef<Font>(specification);
                 }
                 else
                 {
-                    // 如果路径为空，加载引擎默认字体
                     textComp.FontAsset = Font::GetDefault();
                 }
             }
+            if (!textComp.FontAsset)
+                textComp.FontAsset = Font::GetDefault();
         }
     }
     

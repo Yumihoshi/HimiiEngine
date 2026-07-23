@@ -69,6 +69,11 @@ namespace HimiiEngine
         internal delegate float UITextGetFontSizeDelegate(ulong entityID);
         internal delegate void UITextSetFontSizeDelegate(ulong entityID, float fontSize);
 
+        internal delegate ulong FontAssetGetDefaultHandleDelegate();
+        internal delegate void FontAssetPreloadCharactersDelegate(ulong handle, IntPtr text);
+        internal delegate void FontAssetPreloadTextAsyncDelegate(ulong handle, IntPtr text);
+        internal delegate void FontAssetWaitForPendingGenerationsDelegate(ulong handle);
+
         internal delegate void SpriteRendererGetColorDelegate(ulong entityID, out Vector4 color);
         internal delegate void SpriteRendererSetColorDelegate(ulong entityID, ref Vector4 color);
         internal delegate ulong SpriteRendererGetHandleDelegate(ulong entityID);
@@ -169,6 +174,11 @@ namespace HimiiEngine
         internal static UITextSetColorDelegate UIText_SetColor;
         internal static UITextGetFontSizeDelegate UIText_GetFontSize;
         internal static UITextSetFontSizeDelegate UIText_SetFontSize;
+
+        internal static FontAssetGetDefaultHandleDelegate FontAsset_GetDefaultHandle;
+        internal static FontAssetPreloadCharactersDelegate FontAsset_PreloadCharacters;
+        internal static FontAssetPreloadTextAsyncDelegate FontAsset_PreloadTextAsync;
+        internal static FontAssetWaitForPendingGenerationsDelegate FontAsset_WaitForPendingGenerations;
 
         internal static SpriteRendererGetColorDelegate SpriteRenderer_GetColor;
         internal static SpriteRendererSetColorDelegate SpriteRenderer_SetColor;
@@ -314,6 +324,19 @@ namespace HimiiEngine
                 Marshal.GetDelegateForFunctionPointer<UITextGetFontSizeDelegate>(funcs.UIText_GetFontSize);
             UIText_SetFontSize =
                 Marshal.GetDelegateForFunctionPointer<UITextSetFontSizeDelegate>(funcs.UIText_SetFontSize);
+
+            FontAsset_GetDefaultHandle =
+                Marshal.GetDelegateForFunctionPointer<FontAssetGetDefaultHandleDelegate>(
+                    funcs.FontAsset_GetDefaultHandle);
+            FontAsset_PreloadCharacters =
+                Marshal.GetDelegateForFunctionPointer<FontAssetPreloadCharactersDelegate>(
+                    funcs.FontAsset_PreloadCharacters);
+            FontAsset_PreloadTextAsync =
+                Marshal.GetDelegateForFunctionPointer<FontAssetPreloadTextAsyncDelegate>(
+                    funcs.FontAsset_PreloadTextAsync);
+            FontAsset_WaitForPendingGenerations =
+                Marshal.GetDelegateForFunctionPointer<FontAssetWaitForPendingGenerationsDelegate>(
+                    funcs.FontAsset_WaitForPendingGenerations);
 
             SpriteRenderer_GetColor =
                 Marshal.GetDelegateForFunctionPointer<SpriteRendererGetColorDelegate>(funcs.SpriteRenderer_GetColor);

@@ -140,6 +140,11 @@ namespace HimiiEngine
         public IntPtr UIText_SetColor;
         public IntPtr UIText_GetFontSize;
         public IntPtr UIText_SetFontSize;
+
+        public IntPtr FontAsset_GetDefaultHandle;
+        public IntPtr FontAsset_PreloadCharacters;
+        public IntPtr FontAsset_PreloadTextAsync;
+        public IntPtr FontAsset_WaitForPendingGenerations;
     }
 
     [StructLayout(LayoutKind.Sequential)]

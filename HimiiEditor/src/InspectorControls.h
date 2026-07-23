@@ -36,6 +36,10 @@ namespace Himii
                          const std::function<void()>& onEditBegin = nullptr,
                          const std::function<void()>& onEditEnd = nullptr);
 
+    void DrawVec2AxisControl(const std::string& label, glm::vec2& values, float resetValue = 0.0f,
+                             const std::function<void()>& onEditBegin = nullptr,
+                             const std::function<void()>& onEditEnd = nullptr);
+
     void DrawStdStringControl(const char* label, std::string& value,
                               const std::function<void()>& onEdited = nullptr);
 

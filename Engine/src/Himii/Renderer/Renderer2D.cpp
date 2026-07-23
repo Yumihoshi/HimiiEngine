@@ -7,6 +7,9 @@
 #include "Himii/Renderer/Shader.h"
 #include "Himii/Renderer/UniformBuffer.h"
 #include "Himii/Renderer/VertexArray.h"
+#include "Himii/Renderer/Font.h"
+#include "Himii/Renderer/TextLayout.h"
+#include "Himii/Renderer/FontRegressionTests.h"
 #include "Himii/Project/Project.h"
 
 #include "glm/gtc/matrix_transform.hpp"
@@ -47,6 +50,7 @@ namespace Himii
         glm::vec3 Position;
         glm::vec4 Color;
         glm::vec2 TexCoord;
+        float TexIndex;
         int EntityID;
     };
 
@@ -94,9 +98,10 @@ namespace Himii
         std::array<Ref<Texture2D>, MaxTextureSlots> TextureSlots;
         uint32_t TextureSlotIndex = 1;
 
-        glm::vec4 QuadVertexPositions[4];
+        std::array<Ref<Texture2D>, MaxTextureSlots> FontAtlasSlots;
+        uint32_t FontAtlasSlotIndex = 0;
 
-        Ref<Texture2D> FontAtlasTexture;
+        glm::vec4 QuadVertexPositions[4];
 
         Renderer2D::Statistics Stats;
 
@@ -185,9 +190,10 @@ namespace Himii
         s_Data.TextVertexBuffer->SetLayout({{ShaderDataType::Float3, "a_Position"},
                                             {ShaderDataType::Float4, "a_Color"},
                                             {ShaderDataType::Float2, "a_TexCoord"},
+                                            {ShaderDataType::Float, "a_TexIndex"},
                                             {ShaderDataType::Int, "a_EntityID"}});
         s_Data.TextVertexArray->AddVertexBuffer(s_Data.TextVertexBuffer);
-        s_Data.TextVertexArray->SetIndexBuffer(quadIB); // 完美复用 Quad 的 IndexBuffer！
+        s_Data.TextVertexArray->SetIndexBuffer(quadIB);
         s_Data.TextVertexBufferBase = new TextVertex[s_Data.MaxVertices];
 
         s_Data.WhiteTexture = Texture2D::Create(1, 1);
@@ -198,11 +204,17 @@ namespace Himii
         for (uint32_t i = 0; i < s_Data.MaxTextureSlots; i++)
             samplers[i] = i;
 
-        //  锟斤拷锟斤拷锟斤拷色锟斤拷锟斤拷锟斤拷
         s_Data.QuadShader = Shader::Create("assets/shaders/Renderer2D_Quad.glsl");
         s_Data.CircleShader = Shader::Create("assets/shaders/Renderer2D_Circle.glsl");
         s_Data.LineShader = Shader::Create("assets/shaders/Renderer2D_Line.glsl");
         s_Data.TextShader = Shader::Create("assets/shaders/Renderer2D_Text.glsl");
+        HIMII_CORE_ASSERT(s_Data.TextShader && s_Data.TextShader->IsValid(),
+                          "Text shader failed to create!");
+        s_Data.TextShader->Bind();
+        s_Data.TextShader->SetIntArray("u_FontAtlases", samplers, s_Data.MaxTextureSlots);
+
+        FontRegression::RunTextLayoutSmokeTests();
+        FontRegression::RunShaderValiditySmokeTest(s_Data.TextShader);
 
         s_Data.TextureSlots[0] = s_Data.WhiteTexture;
 
@@ -278,6 +290,7 @@ namespace Himii
         s_Data.TextVertexBufferPtr = s_Data.TextVertexBufferBase;
 
         s_Data.TextureSlotIndex = 1; // 0 reserved for white texture
+        s_Data.FontAtlasSlotIndex = 0;
     }
 
     void Renderer2D::Flush()
@@ -322,13 +335,17 @@ namespace Himii
 
         if (s_Data.TextIndexCount)
         {
+            HIMII_CORE_ASSERT(s_Data.TextShader && s_Data.TextShader->IsValid(),
+                              "Cannot flush text with invalid TextShader!");
             uint32_t dataSize =
                     (uint32_t)((uint8_t *)s_Data.TextVertexBufferPtr - (uint8_t *)s_Data.TextVertexBufferBase);
             s_Data.TextVertexBuffer->SetData(s_Data.TextVertexBufferBase, dataSize);
 
-            // 将字体图集绑定到 0 号槽位
-            if (s_Data.FontAtlasTexture)
-                s_Data.FontAtlasTexture->Bind(0);
+            for (uint32_t slotIndex = 0; slotIndex < s_Data.FontAtlasSlotIndex; ++slotIndex)
+            {
+                HIMII_CORE_ASSERT(s_Data.FontAtlasSlots[slotIndex], "Missing font atlas texture slot!");
+                s_Data.FontAtlasSlots[slotIndex]->Bind(slotIndex);
+            }
 
             s_Data.TextShader->Bind();
             RenderCommand::DrawIndexed(s_Data.TextVertexArray, s_Data.TextIndexCount);
@@ -831,118 +848,288 @@ namespace Himii
         });
     }
 
+    static float GetFontAtlasTextureIndex(const Ref<Texture2D> &atlasTexture)
+    {
+        if (!atlasTexture)
+            return 0.0f;
+
+        for (uint32_t slotIndex = 0; slotIndex < s_Data.FontAtlasSlotIndex; ++slotIndex)
+        {
+            if (*s_Data.FontAtlasSlots[slotIndex] == *atlasTexture)
+                return static_cast<float>(slotIndex);
+        }
+
+        if (s_Data.FontAtlasSlotIndex >= Renderer2DData::MaxTextureSlots)
+            Renderer2D::FlushCurrentBatch();
+
+        const float textureIndex = static_cast<float>(s_Data.FontAtlasSlotIndex);
+        s_Data.FontAtlasSlots[s_Data.FontAtlasSlotIndex] = atlasTexture;
+        ++s_Data.FontAtlasSlotIndex;
+        return textureIndex;
+    }
+
+    static void EmitTextGlyphQuad(
+            const glm::mat4 &transform, const glm::vec4 &color, int entityIdentifier,
+            const glm::vec2 &minimum, const glm::vec2 &maximum,
+            const glm::vec2 &textureMinimum, const glm::vec2 &textureMaximum,
+            const Ref<Texture2D> &atlasTexture)
+    {
+        if (s_Data.TextIndexCount >= Renderer2DData::MaxIndices)
+            Renderer2D::FlushCurrentBatch();
+
+        const float textureIndex = GetFontAtlasTextureIndex(atlasTexture);
+        const glm::vec4 localPositions[4] = {
+                {minimum.x, minimum.y, 0.0f, 1.0f},
+                {maximum.x, minimum.y, 0.0f, 1.0f},
+                {maximum.x, maximum.y, 0.0f, 1.0f},
+                {minimum.x, maximum.y, 0.0f, 1.0f}};
+        const glm::vec2 textureCoordinates[4] = {
+                textureMinimum,
+                {textureMaximum.x, textureMinimum.y},
+                textureMaximum,
+                {textureMinimum.x, textureMaximum.y}};
+
+        for (size_t vertexIndex = 0; vertexIndex < 4; ++vertexIndex)
+        {
+            s_Data.TextVertexBufferPtr->Position = transform * localPositions[vertexIndex];
+            s_Data.TextVertexBufferPtr->Color = color;
+            s_Data.TextVertexBufferPtr->TexCoord = textureCoordinates[vertexIndex];
+            s_Data.TextVertexBufferPtr->TexIndex = textureIndex;
+            s_Data.TextVertexBufferPtr->EntityID = entityIdentifier;
+            ++s_Data.TextVertexBufferPtr;
+        }
+        s_Data.TextIndexCount += 6;
+        ++s_Data.Stats.QuadCount;
+    }
+
     void Renderer2D::DrawString(const std::string &string, Ref<Font> font, const glm::mat4 &transform,
                                 const glm::vec4 &color, int entityID)
     {
-        if (!font || string.empty())
+        if (!font || string.empty() || !s_Data.TextShader || !s_Data.TextShader->IsValid())
             return;
 
-        const auto &fontGeometry = font->GetMSDFData()->FontGeometry;
-        const auto &metrics = fontGeometry.getMetrics();
-        Ref<Texture2D> fontAtlas = font->GetAtlasTexture();
+        font->EnsureGlyphsForText(string);
+        const FontMetrics &metrics = font->GetMetrics();
+        const float fontScale =
+                1.0f / std::max(metrics.AscenderY - metrics.DescenderY, 0.0001f);
+        float cursorX = 0.0f;
+        float cursorY = 0.0f;
 
-        // 字体缩放系数：将字体内部的坐标系缩放，使得 "1个单位 = 1个标准行高"
-        double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
-        double x = 0.0;
-        double y = 0.0;
-
-        const float spaceGlyphAdvance = fontGeometry.getGlyph(' ')->getAdvance();
-
-        for (size_t i = 0; i < string.length(); i++)
+        const std::vector<char32_t> codePoints = TextShaper::DecodeUtf8(string);
+        for (size_t index = 0; index < codePoints.size(); ++index)
         {
-            char32_t character = string[i];
-
-            // 处理换行符
-            if (character == '\n')
+            const char32_t character = codePoints[index];
+            if (character == U'\n')
             {
-                x = 0;
-                y -= fsScale * metrics.lineHeight; // 暂未加入额外的行间距 LineSpacing
+                cursorX = 0.0f;
+                cursorY -= fontScale * metrics.LineHeight;
                 continue;
             }
 
-            // 处理空格
-            if (character == ' ')
+            const char32_t nextCharacter =
+                    index + 1 < codePoints.size() ? codePoints[index + 1] : U'\0';
+            FontGlyphQuad glyph;
+            if (!font->TryGetGlyph(character, glyph) || !glyph.Valid)
+                continue;
+
+            if (!glyph.IsWhitespace && glyph.AtlasPageTexture)
             {
-                float advance = spaceGlyphAdvance;
-                if (i < string.length() - 1)
+                const glm::vec2 minimum = glyph.PlaneMinimum * fontScale + glm::vec2(cursorX, cursorY);
+                const glm::vec2 maximum = glyph.PlaneMaximum * fontScale + glm::vec2(cursorX, cursorY);
+                EmitTextGlyphQuad(
+                        transform, color, entityID, minimum, maximum, glyph.AtlasUVMinimum,
+                        glyph.AtlasUVMaximum, glyph.AtlasPageTexture);
+            }
+
+            cursorX += font->GetAdvance(character, nextCharacter) * fontScale;
+        }
+    }
+
+    void Renderer2D::DrawStringInRectangle(
+            const std::string &string, const Ref<Font> &font,
+            const glm::mat4 &transform, const TextLayoutSettings &layoutSettings,
+            const glm::vec4 &color, int entityIdentifier)
+    {
+        if (!font || string.empty() || layoutSettings.FontSize <= 0.0f
+            || layoutSettings.RectangleSize.x <= 0.0f
+            || layoutSettings.RectangleSize.y <= 0.0f
+            || !s_Data.TextShader || !s_Data.TextShader->IsValid())
+            return;
+
+        font->EnsureGlyphsForText(string);
+        const FontMetrics &metrics = font->GetMetrics();
+        // FontSize = em 字号（设计像素）
+        const float fontScale = layoutSettings.FontSize;
+        const float lineHeight = std::max(
+                metrics.LineHeight * fontScale + layoutSettings.LineSpacing, 0.01f);
+        const std::vector<char32_t> codePoints = TextShaper::DecodeUtf8(string);
+
+        const auto getAdvance = [&](char32_t codePoint, char32_t nextCodePoint)
+        {
+            return font->GetAdvance(codePoint, nextCodePoint) * fontScale
+                   + (nextCodePoint != U'\0' ? layoutSettings.Kerning : 0.0f);
+        };
+        const auto measureCodePoints =
+                [&](const std::vector<char32_t> &measuredCodePoints)
+        {
+            float width = 0.0f;
+            for (size_t codePointIndex = 0; codePointIndex < measuredCodePoints.size();
+                 ++codePointIndex)
+            {
+                const char32_t nextCodePoint =
+                        codePointIndex + 1 < measuredCodePoints.size()
+                                ? measuredCodePoints[codePointIndex + 1]
+                                : U'\0';
+                width += getAdvance(measuredCodePoints[codePointIndex], nextCodePoint);
+            }
+            return width;
+        };
+
+        struct TextLine
+        {
+            std::vector<char32_t> CodePoints;
+            float Width = 0.0f;
+        };
+
+        std::vector<TextLine> lines;
+        TextLine currentLine;
+        const auto finishCurrentLine = [&]()
+        {
+            currentLine.Width = measureCodePoints(currentLine.CodePoints);
+            lines.push_back(currentLine);
+            currentLine = {};
+        };
+
+        for (size_t codePointIndex = 0; codePointIndex < codePoints.size();)
+        {
+            if (codePoints[codePointIndex] == U'\n')
+            {
+                finishCurrentLine();
+                ++codePointIndex;
+                continue;
+            }
+
+            std::vector<char32_t> token;
+            const char32_t firstCodePoint = codePoints[codePointIndex];
+            if (firstCodePoint == U' ' || firstCodePoint == U'\t'
+                || TextShaper::IsChineseJapaneseKoreanCodePoint(firstCodePoint))
+            {
+                token.push_back(firstCodePoint);
+                ++codePointIndex;
+            }
+            else
+            {
+                while (codePointIndex < codePoints.size())
                 {
-                    char32_t nextCharacter = string[i + 1];
-                    double advanceHack;
-                    fontGeometry.getAdvance(advanceHack, character, nextCharacter);
-                    advance = (float)advanceHack;
+                    const char32_t codePoint = codePoints[codePointIndex];
+                    if (codePoint == U'\n' || codePoint == U' ' || codePoint == U'\t'
+                        || TextShaper::IsChineseJapaneseKoreanCodePoint(codePoint))
+                        break;
+                    token.push_back(codePoint);
+                    ++codePointIndex;
                 }
-                x += fsScale * advance;
-                continue;
             }
 
-            // 查找字符数据 (找不到就用问号代替)
-            auto glyph = fontGeometry.getGlyph(character);
-            if (!glyph)
-                glyph = fontGeometry.getGlyph('?');
-            if (!glyph)
+            if (token.empty())
                 continue;
-
-            // 1. 获取字符在图集(Atlas)中的 UV 坐标
-            double al, ab, ar, at;
-            glyph->getQuadAtlasBounds(al, ab, ar, at);
-
-            // 转换为 0.0 到 1.0 的 UV 空间
-            glm::vec2 texCoordMin((float)al / fontAtlas->GetWidth(), (float)ab / fontAtlas->GetHeight());
-            glm::vec2 texCoordMax((float)ar / fontAtlas->GetWidth(), (float)at / fontAtlas->GetHeight());
-
-            // 2. 获取字符在平面(Plane)上的几何尺寸
-            double pl, pb, pr, pt;
-            glyph->getQuadPlaneBounds(pl, pb, pr, pt);
-
-            glm::vec2 quadMin((float)pl, (float)pb);
-            glm::vec2 quadMax((float)pr, (float)pt);
-
-            quadMin *= fsScale;
-            quadMax *= fsScale;
-            quadMin += glm::vec2(x, y);
-            quadMax += glm::vec2(x, y);
-
-            // 计算这个字体的四边形大小和中心偏移
-            glm::vec2 size = quadMax - quadMin;
-            glm::vec2 center = (quadMax + quadMin) / 2.0f;
-
-            // 计算这个单字符的绝对 Transform
-            glm::mat4 charTransform = transform * glm::translate(glm::mat4(1.0f), glm::vec3(center, 0.0f)) *
-                                      glm::scale(glm::mat4(1.0f), glm::vec3(size, 1.0f));
-
-            // 3. 将这个字符画出来！
-            // ⚠️ 关键点：这里我们需要传自定义的 UV 坐标！
-            glm::vec2 texCoords[4] = {
-                    {texCoordMin.x, texCoordMin.y}, // 左下
-                    {texCoordMax.x, texCoordMin.y}, // 右下
-                    {texCoordMax.x, texCoordMax.y}, // 右上
-                    {texCoordMin.x, texCoordMax.y}  // 左上
-            };
-
-            /*if (s_Data.FontAtlasTexture && *s_Data.FontAtlasTexture != *fontAtlas)
-                NextBatch();*/
-            if (s_Data.TextIndexCount >= Renderer2DData::MaxIndices)
-                NextBatch();
-
-            s_Data.FontAtlasTexture = fontAtlas;
-
-            // 将计算好的 4 个顶点写入 Text 批次缓冲
-            for (size_t v = 0; v < 4; v++)
+            if (!currentLine.CodePoints.empty()
+                && measureCodePoints(currentLine.CodePoints) + measureCodePoints(token)
+                           > layoutSettings.RectangleSize.x)
             {
-                s_Data.TextVertexBufferPtr->Position = charTransform * s_Data.QuadVertexPositions[v];
-                s_Data.TextVertexBufferPtr->Color = color;
-                s_Data.TextVertexBufferPtr->TexCoord = texCoords[v];
-                s_Data.TextVertexBufferPtr->EntityID = entityID;
-                s_Data.TextVertexBufferPtr++;
+                finishCurrentLine();
             }
+            if (currentLine.CodePoints.empty()
+                && (token.front() == U' ' || token.front() == U'\t'))
+                continue;
 
-            s_Data.TextIndexCount += 6;
-            s_Data.Stats.QuadCount++;
+            for (char32_t codePoint : token)
+            {
+                std::vector<char32_t> candidate = currentLine.CodePoints;
+                candidate.push_back(codePoint);
+                if (!currentLine.CodePoints.empty()
+                    && measureCodePoints(candidate) > layoutSettings.RectangleSize.x)
+                {
+                    finishCurrentLine();
+                }
+                currentLine.CodePoints.push_back(codePoint);
+            }
+        }
+        if (!currentLine.CodePoints.empty() || lines.empty())
+            finishCurrentLine();
 
-            // 推进光标 (计算下一个字符的 X 坐标)
-            double advance = glyph->getAdvance();
-            fontGeometry.getAdvance(advance, character, string[i + 1]);
-            x += fsScale * advance; // 暂未加入额外的字间距 Kerning
+        const float textBlockHeight =
+                layoutSettings.FontSize + lineHeight * static_cast<float>(lines.size() - 1);
+        const float ascenderHeight = metrics.AscenderY * fontScale;
+        float firstBaseline = 0.0f;
+        if (layoutSettings.VerticalAlignment == TextVerticalAlignment::Top)
+            firstBaseline = layoutSettings.RectangleSize.y * 0.5f - ascenderHeight;
+        else if (layoutSettings.VerticalAlignment == TextVerticalAlignment::Middle)
+            firstBaseline = textBlockHeight * 0.5f - ascenderHeight;
+        else
+            firstBaseline = -layoutSettings.RectangleSize.y * 0.5f + textBlockHeight
+                            - ascenderHeight;
+
+        const glm::vec2 rectangleMinimum = -layoutSettings.RectangleSize * 0.5f;
+        const glm::vec2 rectangleMaximum = layoutSettings.RectangleSize * 0.5f;
+
+        for (size_t lineIndex = 0; lineIndex < lines.size(); ++lineIndex)
+        {
+            const TextLine &line = lines[lineIndex];
+            float cursorX = rectangleMinimum.x;
+            if (layoutSettings.HorizontalAlignment == TextHorizontalAlignment::Center)
+                cursorX = -line.Width * 0.5f;
+            else if (layoutSettings.HorizontalAlignment == TextHorizontalAlignment::Right)
+                cursorX = rectangleMaximum.x - line.Width;
+            const float baselineY = firstBaseline - static_cast<float>(lineIndex) * lineHeight;
+
+            for (size_t characterIndex = 0; characterIndex < line.CodePoints.size();
+                 ++characterIndex)
+            {
+                const char32_t character = line.CodePoints[characterIndex];
+                const char32_t nextCharacter =
+                        characterIndex + 1 < line.CodePoints.size()
+                                ? line.CodePoints[characterIndex + 1]
+                                : U'\0';
+
+                FontGlyphQuad glyph;
+                Ref<Font> resolvedFont = Font::ResolveWithFallback(font, character);
+                if (!resolvedFont || !resolvedFont->TryGetGlyph(character, glyph) || !glyph.Valid)
+                {
+                    cursorX += getAdvance(character, nextCharacter);
+                    continue;
+                }
+
+                if (!glyph.IsWhitespace && glyph.AtlasPageTexture)
+                {
+                    const glm::vec2 originalMinimum = {
+                            cursorX + glyph.PlaneMinimum.x * fontScale,
+                            baselineY + glyph.PlaneMinimum.y * fontScale};
+                    const glm::vec2 originalMaximum = {
+                            cursorX + glyph.PlaneMaximum.x * fontScale,
+                            baselineY + glyph.PlaneMaximum.y * fontScale};
+                    const glm::vec2 clippedMinimum = glm::max(originalMinimum, rectangleMinimum);
+                    const glm::vec2 clippedMaximum = glm::min(originalMaximum, rectangleMaximum);
+
+                    if (clippedMinimum.x < clippedMaximum.x && clippedMinimum.y < clippedMaximum.y)
+                    {
+                        const glm::vec2 originalSize = originalMaximum - originalMinimum;
+                        const glm::vec2 minimumRatio =
+                                (clippedMinimum - originalMinimum) / originalSize;
+                        const glm::vec2 maximumRatio =
+                                (clippedMaximum - originalMinimum) / originalSize;
+                        const glm::vec2 clippedTextureMinimum =
+                                glm::mix(glyph.AtlasUVMinimum, glyph.AtlasUVMaximum, minimumRatio);
+                        const glm::vec2 clippedTextureMaximum =
+                                glm::mix(glyph.AtlasUVMinimum, glyph.AtlasUVMaximum, maximumRatio);
+                        EmitTextGlyphQuad(
+                                transform, color, entityIdentifier, clippedMinimum,
+                                clippedMaximum, clippedTextureMinimum, clippedTextureMaximum,
+                                glyph.AtlasPageTexture);
+                    }
+                }
+
+                cursorX += getAdvance(character, nextCharacter);
+            }
         }
     }
 

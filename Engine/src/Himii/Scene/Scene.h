@@ -54,9 +54,14 @@ namespace Himii
         void OnRuntimeStop();
         void OnSimulationStop();
 
-        void OnUpdateEditor(Timestep ts,EditorCamera &camera);
-        void OnUpdateRuntime(Timestep ts);
+        void OnUpdateEditor(Timestep ts, EditorCamera &camera, bool drawUserInterfaceContent = true);
+        void OnUpdateRuntime(Timestep ts, bool drawUserInterfaceContent = true);
         void OnUpdateSimulation(Timestep ts,EditorCamera &camera);
+        void RenderEditorView(EditorCamera& camera, bool drawUserInterfaceContent = true);
+        /// 使用场景 Primary Camera 渲染世界与 Runtime UI；无有效相机时返回 false。
+        bool RenderGameView(
+                uint32_t targetWidth, uint32_t targetHeight,
+                bool drawUserInterfaceContent = true);
 
         void UpdateSpriteAnimations(Timestep timestep, bool allowEditorPreview);
 
@@ -103,9 +108,54 @@ namespace Himii
 
         Entity FindCanvasEntity() const;
         bool IsEntityUnderCanvas(Entity entity) const;
-        float ComputeCanvasScaleFactor(float viewportWidth, float viewportHeight) const;
+
+        struct CanvasLayoutContext
+        {
+            bool Valid = false;
+            glm::vec2 TargetSize{0.0f};
+            glm::vec2 LogicalSize{0.0f};
+            float ScaleFactor = 1.0f;
+        };
+
+        struct ResolvedRectTransform
+        {
+            bool Valid = false;
+            glm::vec2 Size{0.0f};
+            glm::mat4 WorldTransform{1.0f};
+        };
+
+        CanvasLayoutContext GetCanvasLayoutContext(float targetWidth, float targetHeight) const;
+        ResolvedRectTransform ResolveRectTransform(
+                Entity entity, float targetWidth, float targetHeight) const;
+        float ComputeCanvasScaleFactor(float targetWidth, float targetHeight) const;
         glm::mat4 GetCanvasToScreenMatrix(float viewportWidth, float viewportHeight) const;
         void SyncCanvasReferenceResolutionToTransform(Entity canvasEntity);
+
+        struct OrthographicViewBounds {
+            bool Valid = false;
+            glm::mat4 CameraWorldMatrix{1.0f};
+            float Left = 0.0f;
+            float Right = 0.0f;
+            float Bottom = 0.0f;
+            float Top = 0.0f;
+        };
+
+        /// Edit：Canvas 设计框在世界 XY（z=0）上的半宽半高；中心固定在世界原点。
+        struct DesignFrameWorldBounds {
+            bool Valid = false;
+            float HalfWidth = 0.0f;
+            float HalfHeight = 0.0f;
+            float DesignToWorldScale = 1.0f;
+        };
+
+        OrthographicViewBounds GetPrimaryOrthographicViewBounds() const;
+        DesignFrameWorldBounds GetDesignFrameWorldBounds() const;
+        /// 设计空间（中心原点）→ 世界空间（Edit 预览用，中心钉在世界原点）。
+        glm::mat4 GetDesignToWorldMatrix() const;
+        void DrawPrimaryCameraBounds(const glm::vec4& color) const;
+        void DrawCanvasDesignBounds(const glm::vec4& color) const;
+        void RenderUIInEditor(EditorCamera& editorCamera, bool drawUserInterfaceContent = true);
+        bool IsWorldPositionInsideDesignFrame(const glm::vec2& worldPosition) const;
 
         /// 将 Transform 写入 Box2D 刚体（Play/Simulate 期间脚本改 Position/Rotation 时调用）。
         void SyncEntityTransformToPhysics(Entity entity);
@@ -137,6 +187,9 @@ namespace Himii
         void RenderScene(EditorCamera &camera);
 
         void RenderUI(float viewportWidth, float viewportHeight);
+        void PrepareUserInterfaceFonts();
+        void RenderUIElements(
+                const glm::mat4& designToTargetMatrix, float targetWidth, float targetHeight);
 
     private:
         entt::registry m_Registry;

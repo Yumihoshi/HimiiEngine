@@ -141,6 +141,11 @@ namespace Himii
         void *UIText_SetColor;
         void *UIText_GetFontSize;
         void *UIText_SetFontSize;
+
+        void *FontAsset_GetDefaultHandle;
+        void *FontAsset_PreloadCharacters;
+        void *FontAsset_PreloadTextAsync;
+        void *FontAsset_WaitForPendingGenerations;
     };
 
     class ScriptGlue {

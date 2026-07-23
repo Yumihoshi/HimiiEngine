@@ -153,6 +153,12 @@ namespace Himii
                                                          FramebufferFormat::Depth};
                 m_Framebuffer = Framebuffer::Create(framebuffer_specification);
 
+                FramebufferSpecification gameFramebufferSpecification{
+                        m_GameTargetResolution.x, m_GameTargetResolution.y};
+                gameFramebufferSpecification.Attachments = {
+                        FramebufferFormat::RGBA8, FramebufferFormat::Depth};
+                m_GameFramebuffer = Framebuffer::Create(gameFramebufferSpecification);
+
                 m_EditorCamera = EditorCamera(45.0f, 1.778f, 0.1f, 1000.0f);
                 m_StartupProgress = 0.60f;
                 m_StartupLoadingStep = EditorStartupLoadingStep::Panels;
@@ -254,8 +260,24 @@ namespace Himii
             m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
             m_CameraController.OnResize(m_ViewportSize.x, m_ViewportSize.y);
             m_EditorCamera.SetViewportSize(m_ViewportSize.x, m_ViewportSize.y);
-            m_ActiveScene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
         }
+
+        if (m_GameResolutionPreset == GameResolutionPreset::FreeAspect)
+        {
+            m_GameTargetResolution.x =
+                    std::max(1u, static_cast<uint32_t>(m_GameViewportPanelSize.x));
+            m_GameTargetResolution.y =
+                    std::max(1u, static_cast<uint32_t>(m_GameViewportPanelSize.y));
+        }
+        else if (m_GameResolutionPreset == GameResolutionPreset::FullHighDefinition)
+        {
+            m_GameTargetResolution = {1920, 1080};
+        }
+        else if (m_GameResolutionPreset == GameResolutionPreset::HighDefinition)
+        {
+            m_GameTargetResolution = {1280, 720};
+        }
+        m_ActiveScene->OnViewportResize(m_GameTargetResolution.x, m_GameTargetResolution.y);
 
         // 从 EditorLayer 获取 Scene 面板的期望尺寸并驱动 FBO 调整
         Renderer2D::ResetStats();
@@ -284,12 +306,19 @@ namespace Himii
                 m_EditorCamera.SetOrthographicProjection(is2D);
                 m_EditorCamera.OnUpdate(ts, m_ViewportHovered, is2D);
                 
-                m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera);
+                m_ActiveScene->OnUpdateEditor(ts, m_EditorCamera, m_ShowSceneUserInterface);
                 break;
             }
             case SceneState::Play:
             {
-                m_ActiveScene->OnUpdateRuntime(ts);
+                bool isTwoDimensional = false;
+                if (Project::GetActive())
+                    isTwoDimensional = Project::GetActive()->GetConfig().Is2D;
+                m_EditorCamera.SetOrthographicProjection(isTwoDimensional);
+                m_EditorCamera.OnUpdate(
+                        ts, m_ViewportHovered, isTwoDimensional);
+                m_ActiveScene->RenderEditorView(
+                        m_EditorCamera, m_ShowSceneUserInterface);
                 break;
             }
             case SceneState::Simulate:
@@ -333,6 +362,35 @@ namespace Himii
         OnOverlayRender();
 
         m_Framebuffer->Unbind();
+
+        const FramebufferSpecification gameFramebufferSpecification =
+                m_GameFramebuffer->GetSpecification();
+        if (gameFramebufferSpecification.Width != m_GameTargetResolution.x
+            || gameFramebufferSpecification.Height != m_GameTargetResolution.y)
+        {
+            m_GameFramebuffer->Resize(
+                    m_GameTargetResolution.x, m_GameTargetResolution.y);
+        }
+
+        m_GameFramebuffer->Bind();
+        Entity primaryCameraEntity = m_ActiveScene->GetPrimaryCameraEntity();
+        m_GameViewHasValidPrimaryCamera =
+                primaryCameraEntity
+                && primaryCameraEntity.HasComponent<TransformComponent>();
+        glm::vec4 gameClearColor{0.18f, 0.28f, 0.46f, 1.0f};
+        if (m_GameViewHasValidPrimaryCamera)
+            gameClearColor =
+                    primaryCameraEntity.GetComponent<CameraComponent>().Camera.GetBackgroundColor();
+        RenderCommand::SetClearColor(gameClearColor);
+        RenderCommand::Clear();
+
+        if (m_SceneState == SceneState::Play)
+            m_ActiveScene->OnUpdateRuntime(ts, m_ShowGameUserInterface);
+        else if (m_GameViewHasValidPrimaryCamera)
+            m_ActiveScene->RenderGameView(
+                    m_GameTargetResolution.x, m_GameTargetResolution.y,
+                    m_ShowGameUserInterface);
+        m_GameFramebuffer->Unbind();
     }
     void EditorLayer::OnImGuiRender()
     {
@@ -424,6 +482,13 @@ namespace Himii
                 m_ScriptConsolePanel.OnImGuiRender(&m_ShowScriptConsole);
             if (m_ShowConsole)
                 m_ConsolePanel.OnImGuiRender(&m_ShowConsole);
+            if (m_ShowFontDiagnostics)
+            {
+                m_FontDiagnosticsPanel.GetShowFlag() = m_ShowFontDiagnostics;
+                m_FontDiagnosticsPanel.SetFont(Font::GetDefault());
+                m_FontDiagnosticsPanel.OnImGuiRender();
+                m_ShowFontDiagnostics = m_FontDiagnosticsPanel.GetShowFlag();
+            }
             if (m_ShowEditorPreferences)
                 m_EditorPreferencesPanel.OnImGuiRender(&m_ShowEditorPreferences);
             if (m_ShowProjectSettings)
@@ -489,7 +554,10 @@ namespace Himii
             ImGui::End();
 
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0, 0});
+            if (m_RequestSceneViewportFocus)
+                ImGui::SetNextWindowFocus();
             ImGui::Begin("ViewPort");
+            m_RequestSceneViewportFocus = false;
             auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
             auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
             auto viewportOffset = ImGui::GetWindowPos();
@@ -561,10 +629,12 @@ namespace Himii
             // gizmos（Tilemap 绘制模式关闭时才显示，避免与笔刷抢鼠标）
             if (selectEntity && m_GizmoType != -1 && m_SceneState == SceneState::Edit && !tilemapPaintModeActive)
             {
-                bool isUI = selectEntity.HasComponent<UITransformComponent>();
+                bool isUI = selectEntity.HasComponent<RectTransformComponent>();
                 bool isTransform = selectEntity.HasComponent<TransformComponent>();
+                const bool isCanvasRoot = isUI && selectEntity.HasComponent<CanvasComponent>();
 
-                if (isUI || isTransform)
+                // Canvas 根禁止 Gizmo 移动/缩放；UI 范围由主相机取景框表示。
+                if ((isUI || isTransform) && !isCanvasRoot)
                 {
                     // UI 强制使用正交投影，3D 物体取决于项目配置
                     ImGuizmo::SetOrthographic(isUI ? true : Project::GetConfig().Is2D);
@@ -579,14 +649,28 @@ namespace Himii
                     glm::mat4 cameraProjection;
                     glm::mat4 cameraView;
                     glm::mat4 transform;
-
+                    glm::mat4 designToWorld = glm::mat4(1.0f);
+                    float userInterfaceVisualScaleX = 1.0f;
+                    float userInterfaceVisualScaleY = 1.0f;
                     if (isUI)
                     {
-                        cameraProjection = glm::ortho(0.0f, m_ViewportSize.x, 0.0f, m_ViewportSize.y, -1.0f, 1.0f);
-                        cameraView = glm::mat4(1.0f);
-                        const glm::mat4 canvasToScreen =
-                                m_EditorScene->GetCanvasToScreenMatrix(m_ViewportSize.x, m_ViewportSize.y);
-                        transform = canvasToScreen * m_EditorScene->GetEntityWorldTransformMatrix(selectEntity);
+                        cameraProjection = m_EditorCamera.GetProjection();
+                        cameraView = m_EditorCamera.GetViewMatrix();
+                        designToWorld = m_EditorScene->GetDesignToWorldMatrix();
+
+                        const auto& userInterfaceTransform =
+                                selectEntity.GetComponent<RectTransformComponent>();
+                        const Scene::ResolvedRectTransform resolvedRectTransform =
+                                m_EditorScene->ResolveRectTransform(
+                                        selectEntity,
+                                        static_cast<float>(m_GameTargetResolution.x),
+                                        static_cast<float>(m_GameTargetResolution.y));
+                        userInterfaceVisualScaleX = resolvedRectTransform.Size.x;
+                        userInterfaceVisualScaleY = resolvedRectTransform.Size.y;
+                        transform = designToWorld
+                                * m_EditorScene->GetEntityWorldTransformMatrix(selectEntity)
+                                * glm::scale(glm::mat4(1.0f),
+                                             glm::vec3(userInterfaceVisualScaleX, userInterfaceVisualScaleY, 1.0f));
                     }
                     else
                     {
@@ -634,8 +718,10 @@ namespace Himii
                     {
                         m_GizmoTransformCaptureActive = true;
                         m_GizmoCaptureIsUserInterface = isUI;
+                        m_GizmoCaptureIsUIText = false;
                         if (isUI)
-                            m_GizmoStartUITransform = selectEntity.GetComponent<UITransformComponent>();
+                            m_GizmoStartRectTransform =
+                                    selectEntity.GetComponent<RectTransformComponent>();
                         else
                             m_GizmoStartTransform = selectEntity.GetComponent<TransformComponent>();
                     }
@@ -650,10 +736,59 @@ namespace Himii
                     {
                         if (isUI)
                         {
-                            const glm::mat4 canvasToScreen =
-                                    m_EditorScene->GetCanvasToScreenMatrix(m_ViewportSize.x, m_ViewportSize.y);
-                            const glm::mat4 designMatrix = glm::inverse(canvasToScreen) * transform;
-                            m_EditorScene->ApplyWorldMatrixAsLocalTransform(selectEntity, designMatrix);
+                            const glm::mat4 designMatrixWithVisualScale =
+                                    glm::inverse(designToWorld) * transform;
+
+                            Entity parentEntity = m_EditorScene->GetParentEntity(selectEntity);
+                            const glm::mat4 parentWorldMatrix =
+                                    parentEntity ? m_EditorScene->GetEntityWorldTransformMatrix(parentEntity)
+                                                 : glm::mat4(1.0f);
+                            const glm::mat4 localMatrixWithVisualScale =
+                                    glm::inverse(parentWorldMatrix) * designMatrixWithVisualScale;
+
+                            glm::vec3 translation{};
+                            glm::vec3 rotation{};
+                            glm::vec3 scale{};
+                            Math::DecomposeTransform(localMatrixWithVisualScale, translation, rotation, scale);
+
+                            auto& userInterfaceTransform =
+                                    selectEntity.GetComponent<RectTransformComponent>();
+                            userInterfaceTransform.RotationRadians = rotation.z;
+
+                            float sizeScaleX = std::abs(scale.x);
+                            float sizeScaleY = std::abs(scale.y);
+                            glm::vec2 parentRectSize(0.0f);
+                            Entity parentRectEntity = m_EditorScene->GetParentEntity(selectEntity);
+                            if (parentRectEntity)
+                            {
+                                const Scene::ResolvedRectTransform parentResolvedRectTransform =
+                                        m_EditorScene->ResolveRectTransform(
+                                                parentRectEntity,
+                                                static_cast<float>(m_GameTargetResolution.x),
+                                                static_cast<float>(m_GameTargetResolution.y));
+                                parentRectSize = parentResolvedRectTransform.Size;
+                            }
+                            const glm::vec2 anchorRange =
+                                    userInterfaceTransform.AnchorMaximum
+                                    - userInterfaceTransform.AnchorMinimum;
+                            const glm::vec2 stretchedSize = parentRectSize * anchorRange;
+                            const glm::vec2 manipulatedRectSize(
+                                    std::max(0.01f, sizeScaleX),
+                                    std::max(0.01f, sizeScaleY));
+                            userInterfaceTransform.SizeDelta =
+                                    manipulatedRectSize - stretchedSize;
+
+                            const glm::vec2 anchorReference =
+                                    -parentRectSize * 0.5f
+                                    + parentRectSize
+                                              * (userInterfaceTransform.AnchorMinimum
+                                                 + anchorRange * userInterfaceTransform.Pivot);
+                            userInterfaceTransform.AnchoredPosition =
+                                    glm::vec2(translation)
+                                    - (glm::vec2(0.5f) - userInterfaceTransform.Pivot)
+                                              * manipulatedRectSize
+                                    - anchorReference;
+
                             m_EditorScene->NotifyEntityLocalTransformChanged(selectEntity);
                         }
                         else
@@ -666,15 +801,25 @@ namespace Himii
                     {
                         if (m_SceneState == SceneState::Edit)
                         {
-                            if (m_GizmoCaptureIsUserInterface && selectEntity.HasComponent<UITransformComponent>())
+                            if (m_GizmoCaptureIsUserInterface
+                                && selectEntity.HasComponent<RectTransformComponent>())
                             {
-                                const auto &afterTransform = selectEntity.GetComponent<UITransformComponent>();
-                                if (m_GizmoStartUITransform.Position != afterTransform.Position
-                                    || m_GizmoStartUITransform.Rotation != afterTransform.Rotation
-                                    || m_GizmoStartUITransform.Size != afterTransform.Size)
+                                const auto &afterTransform =
+                                        selectEntity.GetComponent<RectTransformComponent>();
+                                if (m_GizmoStartRectTransform.AnchorMinimum
+                                            != afterTransform.AnchorMinimum
+                                    || m_GizmoStartRectTransform.AnchorMaximum
+                                            != afterTransform.AnchorMaximum
+                                    || m_GizmoStartRectTransform.Pivot != afterTransform.Pivot
+                                    || m_GizmoStartRectTransform.AnchoredPosition
+                                            != afterTransform.AnchoredPosition
+                                    || m_GizmoStartRectTransform.RotationRadians
+                                            != afterTransform.RotationRadians
+                                    || m_GizmoStartRectTransform.SizeDelta
+                                            != afterTransform.SizeDelta)
                                 {
-                                    m_CommandHistory.Execute(std::make_unique<ModifyUITransformCommand>(
-                                        m_EditorScene, selectEntity.GetUUID(), m_GizmoStartUITransform,
+                                    m_CommandHistory.Execute(std::make_unique<ModifyRectTransformCommand>(
+                                        m_EditorScene, selectEntity.GetUUID(), m_GizmoStartRectTransform,
                                         afterTransform));
                                 }
                             }
@@ -693,6 +838,7 @@ namespace Himii
                             }
                         }
                         m_GizmoTransformCaptureActive = false;
+                        m_GizmoCaptureIsUIText = false;
                     }
                 }
             }
@@ -720,6 +866,102 @@ namespace Himii
 
             ImGui::End();
         }
+
+        if (m_RequestGameViewportFocus)
+            ImGui::SetNextWindowFocus();
+        ImGui::Begin("Game");
+        m_RequestGameViewportFocus = false;
+        const char* resolutionPreview = "1920 x 1080";
+        if (m_GameResolutionPreset == GameResolutionPreset::FreeAspect)
+            resolutionPreview = "Free Aspect";
+        else if (m_GameResolutionPreset == GameResolutionPreset::HighDefinition)
+            resolutionPreview = "1280 x 720";
+        else if (m_GameResolutionPreset == GameResolutionPreset::Custom)
+            resolutionPreview = "Custom";
+
+        ImGui::SetNextItemWidth(150.0f);
+        if (ImGui::BeginCombo("Resolution", resolutionPreview))
+        {
+            if (ImGui::Selectable(
+                        "Free Aspect",
+                        m_GameResolutionPreset == GameResolutionPreset::FreeAspect))
+                m_GameResolutionPreset = GameResolutionPreset::FreeAspect;
+            if (ImGui::Selectable(
+                        "1920 x 1080",
+                        m_GameResolutionPreset == GameResolutionPreset::FullHighDefinition))
+                m_GameResolutionPreset = GameResolutionPreset::FullHighDefinition;
+            if (ImGui::Selectable(
+                        "1280 x 720",
+                        m_GameResolutionPreset == GameResolutionPreset::HighDefinition))
+                m_GameResolutionPreset = GameResolutionPreset::HighDefinition;
+            if (ImGui::Selectable(
+                        "Custom",
+                        m_GameResolutionPreset == GameResolutionPreset::Custom))
+                m_GameResolutionPreset = GameResolutionPreset::Custom;
+            ImGui::EndCombo();
+        }
+
+        if (m_GameResolutionPreset == GameResolutionPreset::Custom)
+        {
+            int customResolution[2] = {
+                    static_cast<int>(m_GameTargetResolution.x),
+                    static_cast<int>(m_GameTargetResolution.y)};
+            ImGui::SetNextItemWidth(180.0f);
+            if (ImGui::InputInt2("Custom Size", customResolution))
+            {
+                m_GameTargetResolution.x =
+                        static_cast<uint32_t>(std::max(customResolution[0], 1));
+                m_GameTargetResolution.y =
+                        static_cast<uint32_t>(std::max(customResolution[1], 1));
+            }
+        }
+
+        ImGui::SameLine();
+        ImGui::Checkbox("Show UI", &m_ShowGameUserInterface);
+
+        const ImVec2 gameAvailableSize = ImGui::GetContentRegionAvail();
+        m_GameViewportPanelSize = {
+                std::max(gameAvailableSize.x, 1.0f),
+                std::max(gameAvailableSize.y, 1.0f)};
+        const float gameImageScale = std::min(
+                m_GameViewportPanelSize.x / static_cast<float>(m_GameTargetResolution.x),
+                m_GameViewportPanelSize.y / static_cast<float>(m_GameTargetResolution.y));
+        const glm::vec2 gameImageSize = glm::vec2(m_GameTargetResolution) * gameImageScale;
+        const glm::vec2 gameImageOffset =
+                (m_GameViewportPanelSize - gameImageSize) * 0.5f;
+        const ImVec2 gameContentStart = ImGui::GetCursorScreenPos();
+        ImGui::SetCursorScreenPos(
+                ImVec2(gameContentStart.x + gameImageOffset.x,
+                       gameContentStart.y + gameImageOffset.y));
+        const ImVec2 gameImageMinimum = ImGui::GetCursorScreenPos();
+        ImGui::Image(
+                reinterpret_cast<void*>(
+                        static_cast<uint64_t>(
+                                m_GameFramebuffer->GetColorAttachmentRendererID())),
+                ImVec2(gameImageSize.x, gameImageSize.y),
+                ImVec2(0, 1), ImVec2(1, 0));
+        m_GameViewportBounds[0] = {gameImageMinimum.x, gameImageMinimum.y};
+        m_GameViewportBounds[1] = {
+                gameImageMinimum.x + gameImageSize.x,
+                gameImageMinimum.y + gameImageSize.y};
+        m_GameViewportFocused = ImGui::IsWindowFocused();
+        m_GameViewportHovered = ImGui::IsWindowHovered();
+
+        if (!m_GameViewHasValidPrimaryCamera)
+        {
+            const char* errorMessage = "No valid Primary Camera";
+            const ImVec2 textSize = ImGui::CalcTextSize(errorMessage);
+            ImGui::GetWindowDrawList()->AddText(
+                    ImVec2(
+                            gameImageMinimum.x + (gameImageSize.x - textSize.x) * 0.5f,
+                            gameImageMinimum.y + (gameImageSize.y - textSize.y) * 0.5f),
+                    ImGui::GetColorU32(ImGuiCol_Text), errorMessage);
+        }
+        ImGui::End();
+
+        Application::Get().GetImGuiLayer()->BlockEvents(
+                !(m_ViewportHovered
+                  || (m_SceneState == SceneState::Play && m_GameViewportHovered)));
     }
 
     void EditorLayer::OnEvent(Himii::Event &event)
@@ -736,10 +978,10 @@ namespace Himii
 
     bool EditorLayer::OnKeyPressed(KeyPressedEvent &e)
     {
-        if (e.IsRepeat() > 0)
+        if (e.IsRepeat())
             return false;
         bool control = Input::IsKeyPressed(Key::LeftControl) || Input::IsKeyPressed(Key::RightControl);
-        bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightControl);
+        bool shift = Input::IsKeyPressed(Key::LeftShift) || Input::IsKeyPressed(Key::RightShift);
         switch (e.GetKeyCode())
         {
             case Key::N:
@@ -858,7 +1100,27 @@ namespace Himii
 
             if (m_ViewportHovered && !ImGuizmo::IsOver() && !Input::IsKeyPressed(Key::LeftAlt)
                 && m_SceneState == SceneState::Edit && !blockViewportSelectionPick)
-                m_SceneHierarchyPanel.SetSelectedEntity(m_HoveredEntity);
+            {
+                Entity pickedEntity = m_HoveredEntity;
+                if (pickedEntity && pickedEntity.HasComponent<RectTransformComponent>())
+                {
+                    const glm::vec2 viewportSize = m_ViewportBounds[1] - m_ViewportBounds[0];
+                    glm::vec2 viewportMouse = {Input::GetMouseX() - m_ViewportBounds[0].x,
+                                              Input::GetMouseY() - m_ViewportBounds[0].y};
+                    viewportMouse.y = viewportSize.y - viewportMouse.y;
+
+                    const glm::vec3 worldPosition = TilemapEditorUtility::ViewportMouseToWorldOnPlane(
+                            viewportMouse, viewportSize, m_EditorCamera.GetViewProjection(), 0.0f);
+                    const bool insideDesignFrame =
+                            m_EditorScene->IsWorldPositionInsideDesignFrame(glm::vec2(worldPosition));
+
+                    // Scene UI 关闭时不点选 UI；设计框外也不选 UI。
+                    if (!m_ShowSceneUserInterface || !insideDesignFrame)
+                        pickedEntity = {};
+                }
+
+                m_SceneHierarchyPanel.SetSelectedEntity(pickedEntity);
+            }
         }
         return false;
     }
@@ -1056,21 +1318,22 @@ namespace Himii
 
         if (Entity selectedEntity = m_SceneHierarchyPanel.GetSelectedEntity())
         {
-            if (selectedEntity.HasComponent<UITransformComponent>()
-                && m_EditorScene->IsEntityUnderCanvas(selectedEntity))
+            if (selectedEntity.HasComponent<RectTransformComponent>()
+                && m_EditorScene->IsEntityUnderCanvas(selectedEntity)
+                && !selectedEntity.HasComponent<CanvasComponent>())
             {
-                glm::mat4 uiProjection = glm::ortho(0.0f, m_ViewportSize.x, 0.0f, m_ViewportSize.y, -1.0f, 1.0f);
-                glm::mat4 uiView = glm::mat4(1.0f);
+                Renderer2D::BeginScene(m_EditorCamera);
 
-                Renderer2D::BeginScene(uiProjection, uiView);
-
-                const UITransformComponent &uiTransform = selectedEntity.GetComponent<UITransformComponent>();
-                const glm::mat4 canvasToScreen =
-                        m_EditorScene->GetCanvasToScreenMatrix(m_ViewportSize.x, m_ViewportSize.y);
-                const glm::mat4 highlightTransform = canvasToScreen
-                        * m_EditorScene->GetEntityWorldTransformMatrix(selectedEntity)
-                        * glm::scale(glm::mat4(1.0f),
-                                     glm::vec3(uiTransform.Size.x, uiTransform.Size.y, 1.0f));
+                const glm::mat4 designToWorld = m_EditorScene->GetDesignToWorldMatrix();
+                const Scene::ResolvedRectTransform resolvedRectTransform =
+                        m_EditorScene->ResolveRectTransform(
+                                selectedEntity,
+                                static_cast<float>(m_GameTargetResolution.x),
+                                static_cast<float>(m_GameTargetResolution.y));
+                glm::vec2 highlightSize = resolvedRectTransform.Size;
+                const glm::mat4 highlightTransform = designToWorld
+                        * resolvedRectTransform.WorldTransform
+                        * glm::scale(glm::mat4(1.0f), glm::vec3(highlightSize.x, highlightSize.y, 1.0f));
 
                 Renderer2D::DrawRect(highlightTransform, glm::vec4(1.0f, 0.5f, 0.0f, 1.0f));
 
@@ -1268,6 +1531,7 @@ namespace Himii
             ImGui::MenuItem("Particle Emitter Editor", nullptr, &m_ShowParticleEmitterEditor);
             ImGui::MenuItem("Script Console", nullptr, &m_ShowScriptConsole);
             ImGui::MenuItem("Console", nullptr, &m_ShowConsole);
+            ImGui::MenuItem("Font Diagnostics", nullptr, &m_ShowFontDiagnostics);
             ImGui::MenuItem("Show Grid", nullptr, &m_ShowGrid);
             ImGui::EndMenu();
         }
@@ -1796,6 +2060,9 @@ namespace Himii
         m_CommandHistory.Clear();
         ConsoleLog::Clear();
 
+        m_RestoreSceneViewportAfterPlay =
+                m_ViewportFocused || !m_GameViewportFocused;
+        m_RequestGameViewportFocus = true;
         m_SceneState = SceneState::Play;
 
         m_ActiveScene = Scene::Copy(m_EditorScene);
@@ -1830,8 +2097,9 @@ namespace Himii
     void EditorLayer::OnSceneStop()
     {
         m_SceneHierarchyPanel.SetSelectedEntity({});
+        const bool wasPlaying = m_SceneState == SceneState::Play;
 
-        if (m_SceneState == SceneState::Play)
+        if (wasPlaying)
             m_ActiveScene->OnRuntimeStop();
         else if (m_SceneState == SceneState::Simulate)
             m_ActiveScene->OnSimulationStop();
@@ -1841,6 +2109,12 @@ namespace Himii
         m_ActiveScene = m_EditorScene;
 
         m_SceneHierarchyPanel.SetContext(m_ActiveScene);
+
+        if (wasPlaying)
+        {
+            m_RequestSceneViewportFocus = m_RestoreSceneViewportAfterPlay;
+            m_RequestGameViewportFocus = !m_RestoreSceneViewportAfterPlay;
+        }
     }
 
     void EditorLayer::OnDuplicateEntity()
@@ -1978,6 +2252,20 @@ namespace Himii
             drawGizmoButton(ImGuizmo::OPERATION::TRANSLATE);
             drawGizmoButton(ImGuizmo::OPERATION::ROTATE);
             drawGizmoButton(ImGuizmo::OPERATION::SCALE);
+
+            {
+                const bool active = m_ShowSceneUserInterface;
+                if (active)
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.45f, 0.65f, 1.0f));
+                if (ImGui::Button(active ? "Scene UI: On" : "Scene UI: Off", ImVec2(100.0f, size)))
+                    m_ShowSceneUserInterface = !m_ShowSceneUserInterface;
+                if (ImGui::IsItemHovered())
+                    ImGui::SetTooltip(
+                            "Show or hide UI content in the Scene view. When off, UI does not occlude or pick world objects; design frame and selection gizmos remain.");
+                if (active)
+                    ImGui::PopStyleColor();
+                ImGui::SameLine();
+            }
 
             ImGui::PopStyleVar(2);
         }

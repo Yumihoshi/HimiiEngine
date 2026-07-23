@@ -17,7 +17,8 @@ namespace Himii {
         TileSet,
         TileMap,
         ParticleEmitter,
-        Prefab
+        Prefab,
+        Font
     };
 
     class Asset {
@@ -40,6 +41,7 @@ namespace Himii {
                 case AssetType::TileMap:         return "TileMap";
                 case AssetType::ParticleEmitter: return "ParticleEmitter";
                 case AssetType::Prefab:          return "Prefab";
+                case AssetType::Font:            return "Font";
             }
             return "None";
         }
@@ -54,6 +56,7 @@ namespace Himii {
             if (assetType == "TileMap")         return AssetType::TileMap;
             if (assetType == "ParticleEmitter") return AssetType::ParticleEmitter;
             if (assetType == "Prefab")          return AssetType::Prefab;
+            if (assetType == "Font")            return AssetType::Font;
 
             return AssetType::None;
         }

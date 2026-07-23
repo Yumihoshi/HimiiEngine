@@ -14,6 +14,7 @@
 
 #include "Himii/Scripting/ScriptEngine.h"
 #include "Himii/Scripting/ScriptCompiler.h"
+#include "Himii/Core/JobSystem.h"
 
 namespace Himii
 {
@@ -35,6 +36,7 @@ namespace Himii
         m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
         Renderer::Init();
+        JobSystem::Initialize();
         ScriptEngine::Init();
 
         m_ImGuiLayer = new ImGuiLayer();
@@ -47,6 +49,7 @@ namespace Himii
 
         ScriptCompiler::Shutdown();
         ScriptEngine::Shutdown();
+        JobSystem::Shutdown();
         FileSystem::Shutdown();
         s_Instance = nullptr;
     }
@@ -167,6 +170,7 @@ namespace Himii
 
             if (!m_Minimized)
             {
+                JobSystem::PumpMainThreadCompletions();
                 {
                     HIMII_PROFILE_SCOPE("LayerStack OnUpdate")
                     for (Layer *layer: m_LayerStack)

@@ -205,7 +205,7 @@ namespace Himii
         Entity entity(m_Registry.create(), this);
 
         entity.AddComponent<IDComponent>(uuid);
-        entity.AddComponent<UITransformComponent>();
+        entity.AddComponent<RectTransformComponent>();
         auto &tag = entity.AddComponent<TagComponent>();
         tag.Tag = name.empty() ? "Entity" : name;
 
@@ -319,11 +319,16 @@ namespace Himii
         ScriptEngine::OnRuntimeStop();
     }
 
-    void Scene::OnUpdateEditor(Timestep ts, EditorCamera &camera)
+    void Scene::OnUpdateEditor(Timestep ts, EditorCamera &camera, bool drawUserInterfaceContent)
     {
         UpdateSpriteAnimations(ts, true);
+        RenderEditorView(camera, drawUserInterfaceContent);
+    }
+
+    void Scene::RenderEditorView(EditorCamera& camera, bool drawUserInterfaceContent)
+    {
         RenderScene(camera);
-        RenderUI((float)m_ViewportWidth, (float)m_ViewportHeight);
+        RenderUIInEditor(camera, drawUserInterfaceContent);
     }
 
     void Scene::UpdateSpriteAnimations(Timestep timestep, bool allowEditorPreview)
@@ -378,7 +383,7 @@ namespace Himii
         }
     }
 
-    void Scene::OnUpdateRuntime(Timestep ts)
+    void Scene::OnUpdateRuntime(Timestep ts, bool drawUserInterfaceContent)
     {
         {
             auto view = m_Registry.view<ScriptComponent>();
@@ -468,126 +473,133 @@ namespace Himii
         }
         m_ParticleSystem.OnUpdate(ts);
 
-        Camera *mainCamera = nullptr;
-        glm::mat4 cameraTransform{1.0f};
+        RenderGameView(
+                m_ViewportWidth, m_ViewportHeight,
+                drawUserInterfaceContent);
+    }
+
+    bool Scene::RenderGameView(
+            uint32_t targetWidth, uint32_t targetHeight,
+            bool drawUserInterfaceContent)
+    {
+        if (targetWidth == 0 || targetHeight == 0)
+            return false;
+
+        OnViewportResize(targetWidth, targetHeight);
+        Entity cameraEntity = GetPrimaryCameraEntity();
+        if (!cameraEntity || !cameraEntity.HasComponent<TransformComponent>())
+            return false;
+
+        auto& cameraComponent = cameraEntity.GetComponent<CameraComponent>();
+        const glm::mat4 cameraTransform = GetEntityWorldTransformMatrix(cameraEntity);
+
+        RenderCommand::SetDepthTest(true);
+        Renderer3D::BeginScene(cameraComponent.Camera, cameraTransform);
+        const bool isTwoDimensional =
+                Project::GetActive() && Project::GetActive()->GetConfig().Is2D;
+        if (m_SkyboxTexture && !isTwoDimensional)
+            Renderer3D::DrawSkybox(
+                    m_SkyboxTexture, cameraComponent.Camera, cameraTransform);
+
+        auto meshView = m_Registry.view<TransformComponent, MeshComponent>();
+        meshView.each(
+                [&](entt::entity entityHandle, TransformComponent&, MeshComponent& mesh)
+                {
+                    const glm::mat4 worldTransform =
+                            GetEntityWorldTransformMatrix({entityHandle, this});
+                    if (mesh.Type == MeshComponent::MeshType::Cube)
+                        Renderer3D::DrawCube(worldTransform, mesh.Color, (int)entityHandle);
+                    else if (mesh.Type == MeshComponent::MeshType::Plane)
+                        Renderer3D::DrawPlane(worldTransform, mesh.Color, (int)entityHandle);
+                    else if (mesh.Type == MeshComponent::MeshType::Sphere)
+                        Renderer3D::DrawSphere(worldTransform, mesh.Color, (int)entityHandle);
+                    else if (mesh.Type == MeshComponent::MeshType::Capsule)
+                        Renderer3D::DrawCapsule(worldTransform, mesh.Color, (int)entityHandle);
+                });
+        Renderer3D::EndScene();
+
+        RenderCommand::SetDepthTest(true);
+        Renderer2D::BeginScene(cameraComponent.Camera, cameraTransform);
         {
-            auto view = m_Registry.view<TransformComponent, CameraComponent>();
-            view.each(
-                    [&](entt::entity entityHandle, TransformComponent&, CameraComponent &camera)
-                    {
-                        if (camera.Primary)
-                        {
-                            mainCamera = &camera.Camera;
-                            cameraTransform = GetEntityWorldTransformMatrix({entityHandle, this});
-                        }
-                    });
+            auto assetManager = Project::TryGetAssetManager();
+            DrawSpriteRenderersSorted(this, m_Registry, assetManager.get());
         }
 
-        if (mainCamera)
+        if (Project::GetActive())
         {
-            Renderer2D::BeginScene(*mainCamera, cameraTransform);
-            {
-                auto assetManager = Project::TryGetAssetManager();
-                DrawSpriteRenderersSorted(this, m_Registry, assetManager.get());
-            }
-            {
-                if (Project::GetActive())
-                {
-                    auto assetManager = Project::GetAssetManager();
-                    auto view = m_Registry.view<TransformComponent, TilemapComponent>();
-                    view.each([&](entt::entity entityHandle, TransformComponent&, TilemapComponent &tilemap)
+            auto assetManager = Project::GetAssetManager();
+            auto tilemapView = m_Registry.view<TransformComponent, TilemapComponent>();
+            tilemapView.each(
+                    [&](entt::entity entityHandle, TransformComponent&, TilemapComponent& tilemap)
                     {
-                        if (!assetManager || tilemap.TileMapHandle == 0) return;
-
-                        auto mapAsset = assetManager->GetAsset(tilemap.TileMapHandle);
-                        if (!mapAsset) return;
-                        auto mapData = std::static_pointer_cast<TileMapData>(mapAsset);
-
-                        Ref<TileSet> tileSet = nullptr;
+                        if (!assetManager || tilemap.TileMapHandle == 0)
+                            return;
+                        Ref<Asset> mapAsset = assetManager->GetAsset(tilemap.TileMapHandle);
+                        if (!mapAsset)
+                            return;
+                        Ref<TileMapData> mapData = std::static_pointer_cast<TileMapData>(mapAsset);
+                        Ref<TileSet> tileSet;
                         if (mapData->GetTileSetHandle() != 0)
                         {
-                            auto tsAsset = assetManager->GetAsset(mapData->GetTileSetHandle());
-                            if (tsAsset)
-                                tileSet = std::static_pointer_cast<TileSet>(tsAsset);
+                            Ref<Asset> tileSetAsset =
+                                    assetManager->GetAsset(mapData->GetTileSetHandle());
+                            if (tileSetAsset)
+                                tileSet = std::static_pointer_cast<TileSet>(tileSetAsset);
                         }
-
-                        Himii::Renderer2D::DrawTilemap(GetEntityWorldTransformMatrix({entityHandle, this}), mapData,
-                                                         tileSet, (int)entityHandle);
+                        Renderer2D::DrawTilemap(
+                                GetEntityWorldTransformMatrix({entityHandle, this}),
+                                mapData, tileSet, (int)entityHandle);
                     });
-                }
-            }
-            {
-                auto view = m_Registry.view<TransformComponent, CircleRendererComponent>();
-                view.each(
-                        [&](entt::entity entityHandle, TransformComponent&, CircleRendererComponent &circle) {
-                            Himii::Renderer2D::DrawCircle(GetEntityWorldTransformMatrix({entityHandle, this}),
-                                                          circle.Color, circle.Thickness, circle.Fade,
-                                                          (int)entityHandle);
-                        });
-            }
-            // 粒子系统 2D 渲染（与 Renderer2D 同批次）
-            auto particleAssetManager = Project::GetActive() ? Project::GetAssetManager() : nullptr;
-            m_ParticleSystem.ForEachAlive([&](const ParticleSystem::ParticleView& p)
-            {
-                float t = 1.0f - p.remainingLife / p.lifetime;
-                glm::vec4 color = glm::mix(p.colorBegin, p.colorEnd, t);
-                float size = glm::mix(p.sizeBegin, p.sizeEnd, t);
-                glm::mat4 transform = glm::translate(glm::mat4(1.0f), p.position)
-                    * glm::rotate(glm::mat4(1.0f), p.rotation, glm::vec3(0, 0, 1))
-                    * glm::scale(glm::mat4(1.0f), glm::vec3(size));
+        }
 
-                Ref<Texture2D> tex;
-                if (p.textureHandle != 0 && particleAssetManager && particleAssetManager->IsAssetHandleValid(static_cast<AssetHandle>(p.textureHandle)))
+        auto circleView = m_Registry.view<TransformComponent, CircleRendererComponent>();
+        circleView.each(
+                [&](entt::entity entityHandle, TransformComponent&, CircleRendererComponent& circle)
                 {
-                    Ref<Asset> a = particleAssetManager->GetAsset(static_cast<AssetHandle>(p.textureHandle));
-                    tex = std::dynamic_pointer_cast<Texture2D>(a);
-                }
+                    Renderer2D::DrawCircle(
+                            GetEntityWorldTransformMatrix({entityHandle, this}),
+                            circle.Color, circle.Thickness, circle.Fade, (int)entityHandle);
+                });
 
-                if (p.shape == ParticleShape::Circle)
-                    Renderer2D::DrawCircle(transform, color, 1.0f, 0.0025f);
-                else
+        auto particleAssetManager = Project::GetActive() ? Project::GetAssetManager() : nullptr;
+        m_ParticleSystem.ForEachAlive(
+                [&](const ParticleSystem::ParticleView& particle)
                 {
-                    if (tex)
-                        Renderer2D::DrawQuad(transform, tex, 1.0f, color);
+                    const float lifetimeProgress =
+                            1.0f - particle.remainingLife / particle.lifetime;
+                    const glm::vec4 color =
+                            glm::mix(particle.colorBegin, particle.colorEnd, lifetimeProgress);
+                    const float size =
+                            glm::mix(particle.sizeBegin, particle.sizeEnd, lifetimeProgress);
+                    const glm::mat4 transform =
+                            glm::translate(glm::mat4(1.0f), particle.position)
+                            * glm::rotate(
+                                    glm::mat4(1.0f), particle.rotation,
+                                    glm::vec3(0.0f, 0.0f, 1.0f))
+                            * glm::scale(glm::mat4(1.0f), glm::vec3(size));
+
+                    Ref<Texture2D> texture;
+                    if (particle.textureHandle != 0 && particleAssetManager
+                        && particleAssetManager->IsAssetHandleValid(
+                                static_cast<AssetHandle>(particle.textureHandle)))
+                    {
+                        texture = std::dynamic_pointer_cast<Texture2D>(
+                                particleAssetManager->GetAsset(
+                                        static_cast<AssetHandle>(particle.textureHandle)));
+                    }
+
+                    if (particle.shape == ParticleShape::Circle)
+                        Renderer2D::DrawCircle(transform, color, 1.0f, 0.0025f);
+                    else if (texture)
+                        Renderer2D::DrawQuad(transform, texture, 1.0f, color);
                     else
                         Renderer2D::DrawQuad(transform, color);
-                }
-            });
-            Renderer2D::EndScene();
-        }
+                });
+        Renderer2D::EndScene();
 
-        {
-             // 3D Rendering (MeshComponent)
-             if (mainCamera)
-             {
-                 Renderer3D::BeginScene(*mainCamera, cameraTransform);
-
-                 bool is2D = false;
-                 if (Project::GetActive())
-                    is2D = Project::GetActive()->GetConfig().Is2D;
-
-                 if (m_SkyboxTexture && !is2D)
-                     Renderer3D::DrawSkybox(m_SkyboxTexture, *mainCamera, cameraTransform);
-
-                 // Renderer3D::DrawGrid(*mainCamera, cameraTransform, is2D);
-
-                 auto view = m_Registry.view<TransformComponent, MeshComponent>();
-                 view.each([&](entt::entity entityHandle, TransformComponent&, MeshComponent &mesh)
-                 {
-                     const glm::mat4 worldTransform = GetEntityWorldTransformMatrix({entityHandle, this});
-                     if (mesh.Type == MeshComponent::MeshType::Cube)
-                         Renderer3D::DrawCube(worldTransform, mesh.Color, (int)entityHandle);
-                     else if (mesh.Type == MeshComponent::MeshType::Plane)
-                         Renderer3D::DrawPlane(worldTransform, mesh.Color, (int)entityHandle);
-                     else if (mesh.Type == MeshComponent::MeshType::Sphere)
-                         Renderer3D::DrawSphere(worldTransform, mesh.Color, (int)entityHandle);
-                     else if (mesh.Type == MeshComponent::MeshType::Capsule)
-                         Renderer3D::DrawCapsule(worldTransform, mesh.Color, (int)entityHandle);
-                 });
-                 Renderer3D::EndScene();
-             }
-        }
-        RenderUI((float)m_ViewportWidth, (float)m_ViewportHeight);
+        if (drawUserInterfaceContent)
+            RenderUI(static_cast<float>(targetWidth), static_cast<float>(targetHeight));
+        return true;
     }
 
     static float RayCastCallback(b2ShapeId shapeId, b2Vec2 point, b2Vec2 normal, float fraction, void* context)
@@ -684,6 +696,16 @@ namespace Himii
                 continue;
 
             entt::entity dstEnttID = enttMap.at(uuid);
+            if constexpr (std::is_same_v<Component, TransformComponent>)
+            {
+                if (dst.all_of<RectTransformComponent>(dstEnttID))
+                    continue;
+            }
+            else if constexpr (std::is_same_v<Component, RectTransformComponent>)
+            {
+                if (dst.all_of<TransformComponent>(dstEnttID))
+                    continue;
+            }
             auto &component = src.get<Component>(e);
             dst.emplace_or_replace<Component>(dstEnttID, component);
         }
@@ -702,13 +724,15 @@ namespace Himii
         auto &dstSceneRegistry = newScene->m_Registry;
         std::unordered_map<UUID, entt::entity> enttMap;
 
-        // Create entities in new scene
+        // Create entities in new scene（UI / 世界分域创建，避免 UI 被挂上默认 Transform）
         auto idView = srcSceneRegistry.view<IDComponent>();
         for (auto e: idView)
         {
             UUID uuid = srcSceneRegistry.get<IDComponent>(e).ID;
             const auto &name = srcSceneRegistry.get<TagComponent>(e).Tag;
-            Entity newEntity = newScene->CreateEntityWithUUID(uuid, name);
+            const bool isUserInterfaceEntity = srcSceneRegistry.all_of<RectTransformComponent>(e);
+            Entity newEntity = isUserInterfaceEntity ? newScene->CreateUIEntityWithUUID(uuid, name)
+                                                     : newScene->CreateEntityWithUUID(uuid, name);
             enttMap[uuid] = (entt::entity)newEntity;
         }
 
@@ -729,7 +753,7 @@ namespace Himii
         CopyComponent<ParticleEmitterComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         //UI
         CopyComponent<RelationshipComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
-        CopyComponent<UITransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+        CopyComponent<RectTransformComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<CanvasComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<UIImageComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<UITextComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
@@ -742,9 +766,10 @@ namespace Himii
     Entity Scene::DuplicateEntity(Entity entity)
     {
         std::string name = entity.GetName();
-        Entity newEntity = CreateEntity(name);
+        const bool isUserInterfaceEntity = entity.HasComponent<RectTransformComponent>();
+        Entity newEntity = isUserInterfaceEntity ? CreateUIEntity(name) : CreateEntity(name);
 
-        if (entity.HasComponent<TransformComponent>())
+        if (!isUserInterfaceEntity && entity.HasComponent<TransformComponent>())
             newEntity.GetComponent<TransformComponent>() = entity.GetComponent<TransformComponent>();
 
         if (entity.HasComponent<SpriteRendererComponent>())
@@ -785,9 +810,9 @@ namespace Himii
         if (entity.HasComponent<ParticleEmitterComponent>())
             newEntity.AddComponent<ParticleEmitterComponent>(entity.GetComponent<ParticleEmitterComponent>());
 
-        //UI
-        if (entity.HasComponent<UITransformComponent>())
-            newEntity.AddComponent<UITransformComponent>(entity.GetComponent<UITransformComponent>());
+        // UI：CreateUIEntity 已带 UITransform，只需覆盖数值
+        if (isUserInterfaceEntity && entity.HasComponent<RectTransformComponent>())
+            newEntity.GetComponent<RectTransformComponent>() = entity.GetComponent<RectTransformComponent>();
         if (entity.HasComponent<CanvasComponent>())
             newEntity.AddComponent<CanvasComponent>(entity.GetComponent<CanvasComponent>());
         if (entity.HasComponent<UIImageComponent>())
@@ -838,7 +863,7 @@ namespace Himii
 
     Entity Scene::GetPrimaryCameraEntity()
     {
-        auto view = m_Registry.view<CameraComponent>();
+        auto view = m_Registry.view<TransformComponent, CameraComponent>();
         for (auto entity: view)
         {
             const auto &cameraComponent = view.get<CameraComponent>(entity);
@@ -1199,51 +1224,273 @@ namespace Himii
         const glm::mat4 view = glm::mat4(1.0f);
         const glm::mat4 canvasToScreen = GetCanvasToScreenMatrix(viewportWidth, viewportHeight);
 
+        PrepareUserInterfaceFonts();
         RenderCommand::SetDepthTest(false);
         Renderer2D::BeginScene(projection, view);
+        RenderUIElements(canvasToScreen, viewportWidth, viewportHeight);
+        Renderer2D::EndScene();
+        RenderCommand::SetDepthTest(true);
+    }
 
-        auto imageView = m_Registry.view<UITransformComponent, UIImageComponent>();
-        for (auto entityHandle : imageView)
+    void Scene::PrepareUserInterfaceFonts()
+    {
+        struct FontTextCollection
+        {
+            Ref<Font> FontAsset;
+            std::string CombinedText;
+        };
+
+        std::unordered_map<Font*, FontTextCollection> textByFont;
+        auto textView = m_Registry.view<RectTransformComponent, UITextComponent>();
+        for (entt::entity entityHandle : textView)
         {
             Entity entity{entityHandle, this};
             if (!IsEntityUnderCanvas(entity))
                 continue;
-
-            auto& image = entity.GetComponent<UIImageComponent>();
-            auto& userInterfaceTransform = entity.GetComponent<UITransformComponent>();
-            const glm::mat4 designTransform = GetEntityWorldTransformMatrix(entity);
-            const glm::mat4 drawTransform = canvasToScreen * designTransform
-                    * glm::scale(glm::mat4(1.0f),
-                                 glm::vec3(userInterfaceTransform.Size.x, userInterfaceTransform.Size.y, 1.0f));
-
-            if (image.Texture)
-                Renderer2D::DrawQuad(drawTransform, image.Texture, 1.0f, image.Color, (int)entityHandle);
-            else
-                Renderer2D::DrawQuad(drawTransform, image.Color, (int)entityHandle);
-        }
-
-        auto textView = m_Registry.view<UITransformComponent, UITextComponent>();
-        for (auto entityHandle : textView)
-        {
-            Entity entity{entityHandle, this};
-            if (!IsEntityUnderCanvas(entity))
-                continue;
-
-            auto& text = entity.GetComponent<UITextComponent>();
+            const auto& text = entity.GetComponent<UITextComponent>();
             Ref<Font> fontAsset = text.FontAsset ? text.FontAsset : Font::GetDefault();
             if (!fontAsset)
                 continue;
 
-            const float fontSize = text.FontSize > 0.0f ? text.FontSize : 48.0f;
-            const glm::mat4 designTransform = GetEntityWorldTransformMatrix(entity);
-            const glm::mat4 drawTransform = canvasToScreen * designTransform
-                    * glm::scale(glm::mat4(1.0f), glm::vec3(fontSize, fontSize, 1.0f));
-
-            Renderer2D::DrawString(text.TextString, fontAsset, drawTransform, text.Color, (int)entityHandle);
+            FontTextCollection& collection = textByFont[fontAsset.get()];
+            collection.FontAsset = fontAsset;
+            collection.CombinedText += text.TextString;
         }
+
+        for (auto& [fontPointer, collection] : textByFont)
+        {
+            (void)fontPointer;
+            collection.FontAsset->EnsureGlyphsForText(collection.CombinedText);
+        }
+    }
+
+    void Scene::RenderUIElements(
+            const glm::mat4& designToTargetMatrix, float targetWidth, float targetHeight)
+    {
+        Entity canvasEntity = FindCanvasEntity();
+        if (!canvasEntity)
+            return;
+
+        enum class UserInterfacePrimitiveType
+        {
+            None = 0,
+            Image,
+            Text
+        };
+        UserInterfacePrimitiveType lastPrimitiveType = UserInterfacePrimitiveType::None;
+        const auto flushIfPrimitiveTypeChanged =
+                [&](UserInterfacePrimitiveType nextPrimitiveType)
+        {
+            if (lastPrimitiveType != UserInterfacePrimitiveType::None
+                && lastPrimitiveType != nextPrimitiveType)
+            {
+                // 有序命令流：相邻不同类型批次强制分隔，保持 SiblingIndex 顺序。
+                Renderer2D::FlushCurrentBatch();
+            }
+            lastPrimitiveType = nextPrimitiveType;
+        };
+
+        std::function<void(Entity)> drawUserInterfaceSubtree;
+        drawUserInterfaceSubtree = [&](Entity entity)
+        {
+            if (!entity || !entity.HasComponent<RectTransformComponent>())
+                return;
+
+            const ResolvedRectTransform resolvedRectTransform =
+                    ResolveRectTransform(entity, targetWidth, targetHeight);
+            if (!resolvedRectTransform.Valid)
+                return;
+
+            if (entity.HasComponent<UIImageComponent>())
+            {
+                flushIfPrimitiveTypeChanged(UserInterfacePrimitiveType::Image);
+                auto& image = entity.GetComponent<UIImageComponent>();
+                const glm::mat4 drawTransform = designToTargetMatrix
+                        * resolvedRectTransform.WorldTransform
+                        * glm::scale(glm::mat4(1.0f),
+                                     glm::vec3(resolvedRectTransform.Size, 1.0f));
+
+                if (image.Texture)
+                    Renderer2D::DrawQuad(
+                            drawTransform, image.Texture, 1.0f, image.Color, (int)(entt::entity)entity);
+                else
+                    Renderer2D::DrawQuad(drawTransform, image.Color, (int)(entt::entity)entity);
+            }
+
+            if (entity.HasComponent<UITextComponent>())
+            {
+                flushIfPrimitiveTypeChanged(UserInterfacePrimitiveType::Text);
+                auto& text = entity.GetComponent<UITextComponent>();
+                Ref<Font> fontAsset = text.FontAsset ? text.FontAsset : Font::GetDefault();
+                if (fontAsset)
+                {
+                    fontAsset->ProcessCompletedGenerations();
+                    const glm::mat4 drawTransform = designToTargetMatrix
+                            * resolvedRectTransform.WorldTransform;
+                    TextLayoutSettings layoutSettings;
+                    layoutSettings.RectangleSize = resolvedRectTransform.Size;
+                    layoutSettings.FontSize = std::max(text.FontSize, 1.0f);
+                    layoutSettings.Kerning = text.Kerning;
+                    layoutSettings.LineSpacing = text.LineSpacing;
+                    layoutSettings.HorizontalAlignment = text.HorizontalAlignment;
+                    layoutSettings.VerticalAlignment = text.VerticalAlignment;
+                    Renderer2D::DrawStringInRectangle(
+                            text.TextString, fontAsset, drawTransform,
+                            layoutSettings, text.Color,
+                            (int)(entt::entity)entity);
+                }
+            }
+
+            for (UUID childIdentifier : GetEntityChildren(entity))
+                drawUserInterfaceSubtree(GetEntityByUUID(childIdentifier));
+        };
+
+        for (UUID childIdentifier : GetEntityChildren(canvasEntity))
+            drawUserInterfaceSubtree(GetEntityByUUID(childIdentifier));
+    }
+
+    Scene::OrthographicViewBounds Scene::GetPrimaryOrthographicViewBounds() const
+    {
+        OrthographicViewBounds bounds;
+        Entity cameraEntity = const_cast<Scene*>(this)->GetPrimaryCameraEntity();
+        if (!cameraEntity || !cameraEntity.HasComponent<CameraComponent>()
+            || !cameraEntity.HasComponent<TransformComponent>())
+            return bounds;
+
+        auto& cameraComponent = cameraEntity.GetComponent<CameraComponent>();
+        if (cameraComponent.Camera.GetProjectionType() != SceneCamera::ProjectionType::Orthographic)
+            return bounds;
+
+        const float orthographicSize = cameraComponent.Camera.GetOrthographicSize();
+        const float aspectRatio = (m_ViewportHeight > 0)
+                                         ? static_cast<float>(m_ViewportWidth) / static_cast<float>(m_ViewportHeight)
+                                         : 1.0f;
+
+        bounds.Valid = true;
+        bounds.CameraWorldMatrix = GetEntityWorldTransformMatrix(cameraEntity);
+        bounds.Left = -orthographicSize * aspectRatio * 0.5f;
+        bounds.Right = orthographicSize * aspectRatio * 0.5f;
+        bounds.Bottom = -orthographicSize * 0.5f;
+        bounds.Top = orthographicSize * 0.5f;
+        return bounds;
+    }
+
+    Scene::DesignFrameWorldBounds Scene::GetDesignFrameWorldBounds() const
+    {
+        DesignFrameWorldBounds designBounds;
+        Entity canvasEntity = FindCanvasEntity();
+        if (!canvasEntity || !canvasEntity.HasComponent<CanvasComponent>())
+            return designBounds;
+
+        const float targetWidth = std::max(static_cast<float>(m_ViewportWidth), 1.0f);
+        const float targetHeight = std::max(static_cast<float>(m_ViewportHeight), 1.0f);
+        const CanvasLayoutContext layoutContext =
+                GetCanvasLayoutContext(targetWidth, targetHeight);
+        if (!layoutContext.Valid)
+            return designBounds;
+
+        float cameraWidth = targetWidth * 0.01f;
+        float cameraHeight = targetHeight * 0.01f;
+        OrthographicViewBounds cameraBounds = GetPrimaryOrthographicViewBounds();
+        if (cameraBounds.Valid)
+        {
+            cameraWidth = cameraBounds.Right - cameraBounds.Left;
+            cameraHeight = cameraBounds.Top - cameraBounds.Bottom;
+        }
+
+        const float targetAspectRatio = targetWidth / targetHeight;
+        float frameWidth = cameraWidth;
+        float frameHeight = frameWidth / targetAspectRatio;
+        if (frameHeight > cameraHeight)
+        {
+            frameHeight = cameraHeight;
+            frameWidth = frameHeight * targetAspectRatio;
+        }
+        const float designToWorldScale =
+                frameWidth / std::max(layoutContext.LogicalSize.x, 1.0e-5f);
+
+        designBounds.Valid = true;
+        designBounds.DesignToWorldScale = designToWorldScale;
+        designBounds.HalfWidth = frameWidth * 0.5f;
+        designBounds.HalfHeight = frameHeight * 0.5f;
+        return designBounds;
+    }
+
+    glm::mat4 Scene::GetDesignToWorldMatrix() const
+    {
+        DesignFrameWorldBounds designBounds = GetDesignFrameWorldBounds();
+        if (!designBounds.Valid)
+            return glm::mat4(1.0f);
+
+        // 设计中心原点 (0,0) → 世界原点；XY 平面 z=0。
+        return glm::scale(glm::mat4(1.0f),
+                          glm::vec3(designBounds.DesignToWorldScale, designBounds.DesignToWorldScale, 1.0f));
+    }
+
+    void Scene::DrawPrimaryCameraBounds(const glm::vec4& color) const
+    {
+        OrthographicViewBounds bounds = GetPrimaryOrthographicViewBounds();
+        if (!bounds.Valid)
+            return;
+
+        // 画在 z=0 玩法平面，避免主相机在 z=10 时 Edit 拉近后框落到相机背后消失。
+        const glm::vec3 cameraTranslation = glm::vec3(bounds.CameraWorldMatrix[3]);
+        const glm::vec3 bottomLeft{cameraTranslation.x + bounds.Left, cameraTranslation.y + bounds.Bottom, 0.0f};
+        const glm::vec3 bottomRight{cameraTranslation.x + bounds.Right, cameraTranslation.y + bounds.Bottom, 0.0f};
+        const glm::vec3 topRight{cameraTranslation.x + bounds.Right, cameraTranslation.y + bounds.Top, 0.0f};
+        const glm::vec3 topLeft{cameraTranslation.x + bounds.Left, cameraTranslation.y + bounds.Top, 0.0f};
+
+        Renderer2D::DrawLine(bottomLeft, bottomRight, color);
+        Renderer2D::DrawLine(bottomRight, topRight, color);
+        Renderer2D::DrawLine(topRight, topLeft, color);
+        Renderer2D::DrawLine(topLeft, bottomLeft, color);
+    }
+
+    void Scene::DrawCanvasDesignBounds(const glm::vec4& color) const
+    {
+        DesignFrameWorldBounds designBounds = GetDesignFrameWorldBounds();
+        if (!designBounds.Valid)
+            return;
+
+        const glm::vec3 bottomLeft{-designBounds.HalfWidth, -designBounds.HalfHeight, 0.0f};
+        const glm::vec3 bottomRight{designBounds.HalfWidth, -designBounds.HalfHeight, 0.0f};
+        const glm::vec3 topRight{designBounds.HalfWidth, designBounds.HalfHeight, 0.0f};
+        const glm::vec3 topLeft{-designBounds.HalfWidth, designBounds.HalfHeight, 0.0f};
+
+        Renderer2D::DrawLine(bottomLeft, bottomRight, color);
+        Renderer2D::DrawLine(bottomRight, topRight, color);
+        Renderer2D::DrawLine(topRight, topLeft, color);
+        Renderer2D::DrawLine(topLeft, bottomLeft, color);
+    }
+
+    void Scene::RenderUIInEditor(EditorCamera& editorCamera, bool drawUserInterfaceContent)
+    {
+        if (drawUserInterfaceContent)
+            PrepareUserInterfaceFonts();
+        RenderCommand::SetDepthTest(false);
+        Renderer2D::BeginScene(editorCamera);
+
+        DrawPrimaryCameraBounds(glm::vec4(0.95f, 0.85f, 0.2f, 0.9f));
+        DrawCanvasDesignBounds(glm::vec4(0.35f, 0.85f, 0.95f, 0.9f));
+
+        if (drawUserInterfaceContent && FindCanvasEntity())
+            RenderUIElements(
+                    GetDesignToWorldMatrix(),
+                    static_cast<float>(m_ViewportWidth),
+                    static_cast<float>(m_ViewportHeight));
 
         Renderer2D::EndScene();
         RenderCommand::SetDepthTest(true);
+    }
+
+    bool Scene::IsWorldPositionInsideDesignFrame(const glm::vec2& worldPosition) const
+    {
+        DesignFrameWorldBounds designBounds = GetDesignFrameWorldBounds();
+        if (!designBounds.Valid)
+            return false;
+
+        return worldPosition.x >= -designBounds.HalfWidth && worldPosition.x <= designBounds.HalfWidth
+               && worldPosition.y >= -designBounds.HalfHeight && worldPosition.y <= designBounds.HalfHeight;
     }
 
     Entity Scene::FindCanvasEntity() const
@@ -1262,6 +1509,89 @@ namespace Himii
         if (entity == canvasEntity)
             return true;
         return IsEntityDescendantOf(entity, canvasEntity);
+    }
+
+    Scene::CanvasLayoutContext Scene::GetCanvasLayoutContext(
+            float targetWidth, float targetHeight) const
+    {
+        CanvasLayoutContext context;
+        Entity canvasEntity = FindCanvasEntity();
+        if (!canvasEntity || targetWidth <= 0.0f || targetHeight <= 0.0f)
+            return context;
+
+        const auto& canvas = canvasEntity.GetComponent<CanvasComponent>();
+        context.Valid = true;
+        context.TargetSize = {targetWidth, targetHeight};
+        context.ScaleFactor = canvas.ScaleMode == CanvasScaleMode::ConstantPixelSize
+                                      ? 1.0f
+                                      : ComputeCanvasScaleFactor(targetWidth, targetHeight);
+        context.LogicalSize = context.TargetSize / std::max(context.ScaleFactor, 1.0e-5f);
+        return context;
+    }
+
+    Scene::ResolvedRectTransform Scene::ResolveRectTransform(
+            Entity entity, float targetWidth, float targetHeight) const
+    {
+        ResolvedRectTransform result;
+        if (!entity || !entity.HasComponent<RectTransformComponent>() || !IsEntityUnderCanvas(entity))
+            return result;
+
+        const CanvasLayoutContext context = GetCanvasLayoutContext(targetWidth, targetHeight);
+        if (!context.Valid)
+            return result;
+
+        Entity canvasEntity = FindCanvasEntity();
+        if (entity == canvasEntity)
+        {
+            result.Valid = true;
+            result.Size = context.LogicalSize;
+            result.WorldTransform = glm::mat4(1.0f);
+            auto& rectTransform = entity.GetComponent<RectTransformComponent>();
+            rectTransform.ResolvedSize = result.Size;
+            rectTransform.CachedWorldTransform = result.WorldTransform;
+            rectTransform.WorldTransformDirty = false;
+            return result;
+        }
+
+        Entity parentEntity = GetParentEntity(entity);
+        if (!parentEntity || !parentEntity.HasComponent<RectTransformComponent>())
+            return result;
+
+        const ResolvedRectTransform parentResult =
+                ResolveRectTransform(parentEntity, targetWidth, targetHeight);
+        if (!parentResult.Valid)
+            return result;
+
+        auto& rectTransform = entity.GetComponent<RectTransformComponent>();
+        const glm::vec2 anchorMinimum = glm::clamp(
+                rectTransform.AnchorMinimum, glm::vec2(0.0f), glm::vec2(1.0f));
+        const glm::vec2 anchorMaximum = glm::clamp(
+                rectTransform.AnchorMaximum, anchorMinimum, glm::vec2(1.0f));
+        const glm::vec2 pivot = glm::clamp(rectTransform.Pivot, glm::vec2(0.0f), glm::vec2(1.0f));
+
+        const glm::vec2 anchorRange = anchorMaximum - anchorMinimum;
+        const glm::vec2 resolvedSize =
+                glm::max(parentResult.Size * anchorRange + rectTransform.SizeDelta, glm::vec2(0.01f));
+        const glm::vec2 anchorReference =
+                -parentResult.Size * 0.5f
+                + parentResult.Size
+                          * (anchorMinimum + anchorRange * pivot);
+        const glm::vec2 pivotPosition = anchorReference + rectTransform.AnchoredPosition;
+        const glm::vec2 rectCenter = pivotPosition + (glm::vec2(0.5f) - pivot) * resolvedSize;
+
+        const glm::mat4 localTransform =
+                glm::translate(glm::mat4(1.0f), glm::vec3(rectCenter, 0.0f))
+                * glm::rotate(
+                        glm::mat4(1.0f), rectTransform.RotationRadians,
+                        glm::vec3(0.0f, 0.0f, 1.0f));
+
+        result.Valid = true;
+        result.Size = resolvedSize;
+        result.WorldTransform = parentResult.WorldTransform * localTransform;
+        rectTransform.ResolvedSize = resolvedSize;
+        rectTransform.CachedWorldTransform = result.WorldTransform;
+        rectTransform.WorldTransformDirty = false;
+        return result;
     }
 
     float Scene::ComputeCanvasScaleFactor(float viewportWidth, float viewportHeight) const
@@ -1286,30 +1616,35 @@ namespace Himii
 
     glm::mat4 Scene::GetCanvasToScreenMatrix(float viewportWidth, float viewportHeight) const
     {
-        Entity canvasEntity = FindCanvasEntity();
-        if (!canvasEntity)
+        if (!FindCanvasEntity())
             return glm::mat4(1.0f);
 
-        const auto& canvas = canvasEntity.GetComponent<CanvasComponent>();
-        const float scaleFactor = ComputeCanvasScaleFactor(viewportWidth, viewportHeight);
-        const float scaledWidth = canvas.ReferenceResolution.x * scaleFactor;
-        const float scaledHeight = canvas.ReferenceResolution.y * scaleFactor;
-        const float offsetX = (viewportWidth - scaledWidth) * 0.5f;
-        const float offsetY = (viewportHeight - scaledHeight) * 0.5f;
-
-        return glm::translate(glm::mat4(1.0f), glm::vec3(offsetX, offsetY, 0.0f))
-               * glm::scale(glm::mat4(1.0f), glm::vec3(scaleFactor, scaleFactor, 1.0f));
+        const CanvasLayoutContext context = GetCanvasLayoutContext(viewportWidth, viewportHeight);
+        if (!context.Valid)
+            return glm::mat4(1.0f);
+        // 设计中心原点 → 屏幕中心；letterbox 由 scaleFactor 保证等比。
+        return glm::translate(glm::mat4(1.0f), glm::vec3(viewportWidth * 0.5f, viewportHeight * 0.5f, 0.0f))
+               * glm::scale(
+                       glm::mat4(1.0f),
+                       glm::vec3(context.ScaleFactor, context.ScaleFactor, 1.0f));
     }
 
     void Scene::SyncCanvasReferenceResolutionToTransform(Entity canvasEntity)
     {
         if (!canvasEntity || !canvasEntity.HasComponent<CanvasComponent>()
-            || !canvasEntity.HasComponent<UITransformComponent>())
+            || !canvasEntity.HasComponent<RectTransformComponent>())
             return;
 
         const auto& canvas = canvasEntity.GetComponent<CanvasComponent>();
-        auto& userInterfaceTransform = canvasEntity.GetComponent<UITransformComponent>();
-        userInterfaceTransform.Size = canvas.ReferenceResolution;
+        auto& userInterfaceTransform = canvasEntity.GetComponent<RectTransformComponent>();
+        // Canvas 根节点锁定在设计空间原点；Size 仅镜像参考分辨率，不参与矩阵。
+        userInterfaceTransform.AnchoredPosition = glm::vec2(0.0f);
+        userInterfaceTransform.RotationRadians = 0.0f;
+        userInterfaceTransform.AnchorMinimum = glm::vec2(0.0f);
+        userInterfaceTransform.AnchorMaximum = glm::vec2(1.0f);
+        userInterfaceTransform.Pivot = glm::vec2(0.5f);
+        userInterfaceTransform.SizeDelta = glm::vec2(0.0f);
+        userInterfaceTransform.ResolvedSize = canvas.ReferenceResolution;
         MarkEntityTransformDirty(canvasEntity);
     }
 
@@ -1318,8 +1653,8 @@ namespace Himii
         if (!left || !right)
             return false;
 
-        const bool leftIsUserInterface = left.HasComponent<UITransformComponent>();
-        const bool rightIsUserInterface = right.HasComponent<UITransformComponent>();
+        const bool leftIsUserInterface = left.HasComponent<RectTransformComponent>();
+        const bool rightIsUserInterface = right.HasComponent<RectTransformComponent>();
         return leftIsUserInterface == rightIsUserInterface;
     }
 
@@ -1341,7 +1676,25 @@ namespace Himii
         for (auto& [parentIdentifier, children] : m_ChildrenCache)
         {
             (void)parentIdentifier;
-            std::sort(children.begin(), children.end());
+            std::sort(
+                    children.begin(), children.end(),
+                    [&](UUID leftIdentifier, UUID rightIdentifier)
+                    {
+                        Entity leftEntity = GetEntityByUUID(leftIdentifier);
+                        Entity rightEntity = GetEntityByUUID(rightIdentifier);
+                        const uint32_t leftSiblingIndex =
+                                leftEntity && leftEntity.HasComponent<RelationshipComponent>()
+                                        ? leftEntity.GetComponent<RelationshipComponent>().SiblingIndex
+                                        : 0;
+                        const uint32_t rightSiblingIndex =
+                                rightEntity && rightEntity.HasComponent<RelationshipComponent>()
+                                        ? rightEntity.GetComponent<RelationshipComponent>().SiblingIndex
+                                        : 0;
+                        if (leftSiblingIndex != rightSiblingIndex)
+                            return leftSiblingIndex < rightSiblingIndex;
+                        return static_cast<uint64_t>(leftIdentifier)
+                               < static_cast<uint64_t>(rightIdentifier);
+                    });
         }
     }
 
@@ -1376,7 +1729,7 @@ namespace Himii
         for (auto entityHandle : tagView)
         {
             Entity entity{entityHandle, const_cast<Scene*>(this)};
-            const bool isUserInterfaceEntity = entity.HasComponent<UITransformComponent>();
+            const bool isUserInterfaceEntity = entity.HasComponent<RectTransformComponent>();
             if (isUserInterfaceEntity != userInterfaceEntities)
                 continue;
 
@@ -1432,25 +1785,19 @@ namespace Himii
             return transform.CachedWorldTransform;
         }
 
-        if (entity.HasComponent<UITransformComponent>())
+        if (entity.HasComponent<RectTransformComponent>())
         {
-            auto& userInterfaceTransform = entity.GetComponent<UITransformComponent>();
-            if (userInterfaceTransform.WorldTransformDirty)
+            float targetWidth = static_cast<float>(m_ViewportWidth);
+            float targetHeight = static_cast<float>(m_ViewportHeight);
+            Entity canvasEntity = FindCanvasEntity();
+            if ((targetWidth <= 0.0f || targetHeight <= 0.0f)
+                && canvasEntity && canvasEntity.HasComponent<CanvasComponent>())
             {
-                Entity parentEntity = GetParentEntity(entity);
-                if (parentEntity)
-                {
-                    userInterfaceTransform.CachedWorldTransform =
-                            GetEntityWorldTransformMatrix(parentEntity) * userInterfaceTransform.GetLocalTransform();
-                }
-                else
-                {
-                    userInterfaceTransform.CachedWorldTransform = userInterfaceTransform.GetLocalTransform();
-                }
-                userInterfaceTransform.WorldTransformDirty = false;
+                const auto& canvas = canvasEntity.GetComponent<CanvasComponent>();
+                targetWidth = canvas.ReferenceResolution.x;
+                targetHeight = canvas.ReferenceResolution.y;
             }
-
-            return userInterfaceTransform.CachedWorldTransform;
+            return ResolveRectTransform(entity, targetWidth, targetHeight).WorldTransform;
         }
 
         return glm::mat4(1.0f);
@@ -1497,12 +1844,19 @@ namespace Himii
             transform.Rotation = rotation;
             transform.Scale = scale;
         }
-        else if (entity.HasComponent<UITransformComponent>())
+        else if (entity.HasComponent<RectTransformComponent>())
         {
-            auto& userInterfaceTransform = entity.GetComponent<UITransformComponent>();
-            userInterfaceTransform.Position = translation;
-            userInterfaceTransform.Rotation = rotation;
-            // Size 不参与父子矩阵，分解出的 scale 不写回 Size。
+            if (entity.HasComponent<CanvasComponent>())
+            {
+                // Canvas 根 Position/Rotation 锁定，忽略外部写回。
+                SyncCanvasReferenceResolutionToTransform(entity);
+                return;
+            }
+
+            auto& userInterfaceTransform = entity.GetComponent<RectTransformComponent>();
+            userInterfaceTransform.AnchoredPosition = glm::vec2(translation);
+            userInterfaceTransform.RotationRadians = rotation.z;
+            // Size 不参与父子矩阵，分解出的 scale 不写回 Size（由编辑器 Gizmo 单独处理）。
         }
     }
 
@@ -1521,8 +1875,8 @@ namespace Himii
 
         if (entity.HasComponent<TransformComponent>())
             entity.GetComponent<TransformComponent>().WorldTransformDirty = true;
-        if (entity.HasComponent<UITransformComponent>())
-            entity.GetComponent<UITransformComponent>().WorldTransformDirty = true;
+        if (entity.HasComponent<RectTransformComponent>())
+            entity.GetComponent<RectTransformComponent>().WorldTransformDirty = true;
 
         for (UUID childIdentifier : GetEntityChildren(entity))
         {
@@ -1600,7 +1954,10 @@ namespace Himii
         {
             if (!child.HasComponent<RelationshipComponent>())
                 child.AddComponent<RelationshipComponent>();
-            child.GetComponent<RelationshipComponent>().Parent = parent.GetUUID();
+            auto& relationship = child.GetComponent<RelationshipComponent>();
+            relationship.Parent = parent.GetUUID();
+            relationship.SiblingIndex =
+                    static_cast<uint32_t>(GetEntityChildren(parent).size());
         }
 
         RebuildHierarchyCache();
@@ -1645,6 +2002,8 @@ namespace Himii
     template<>
     void Scene::OnComponentAdded<TransformComponent>(Entity entity, TransformComponent &component)
     {
+        (void)entity;
+        (void)component;
     }
 
     template<>
@@ -1714,8 +2073,11 @@ namespace Himii
     {
     }
     template<>
-    void Scene::OnComponentAdded<UITransformComponent>(Entity entity, UITransformComponent &component)
+    void Scene::OnComponentAdded<RectTransformComponent>(
+            Entity entity, RectTransformComponent &component)
     {
+        (void)entity;
+        (void)component;
     }
     template<>
     void Scene::OnComponentAdded<UIImageComponent>(Entity entity, UIImageComponent &component)

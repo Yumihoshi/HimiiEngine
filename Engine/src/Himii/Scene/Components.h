@@ -44,6 +44,8 @@ namespace Himii
     /// 父子关系：仅子实体存储 Parent UUID（唯一真相源）。
     struct RelationshipComponent {
         UUID Parent = 0;
+        /// 同一父节点下的显式顺序；UI 使用该顺序决定覆盖关系。
+        uint32_t SiblingIndex = 0;
 
         RelationshipComponent() = default;
         RelationshipComponent(const RelationshipComponent &) = default;
@@ -253,8 +255,14 @@ namespace Himii
     };
 
 #pragma region UIComponent
-    /// Screen Space Overlay Canvas（含 Scale With Screen Size 参数）。
+    enum class CanvasScaleMode
+    {
+        ConstantPixelSize = 0,
+        ScaleWithScreenSize = 1
+    };
+
     struct CanvasComponent {
+        CanvasScaleMode ScaleMode = CanvasScaleMode::ScaleWithScreenSize;
         glm::vec2 ReferenceResolution{1920.0f, 1080.0f};
         /// 0 = 按宽度适配，1 = 按高度适配，0.5 = 折中。
         float MatchWidthOrHeight = 0.5f;
@@ -263,25 +271,29 @@ namespace Himii
         CanvasComponent(const CanvasComponent &) = default;
     };
 
-    struct UITransformComponent {
-        glm::vec3 Position{0.0f};
-        /// 设计空间中的矩形尺寸（用于 Image 绘制 / Canvas 参考画布）；不参与父子矩阵缩放。
-        glm::vec2 Size{100.0f};
-        glm::vec3 Rotation{0.0f};
+    struct RectTransformComponent {
+        glm::vec2 AnchorMinimum{0.5f, 0.5f};
+        glm::vec2 AnchorMaximum{0.5f, 0.5f};
+        glm::vec2 Pivot{0.5f, 0.5f};
+        glm::vec2 AnchoredPosition{0.0f};
+        glm::vec2 SizeDelta{100.0f, 100.0f};
+        float RotationRadians = 0.0f;
 
         mutable bool WorldTransformDirty = true;
         mutable glm::mat4 CachedWorldTransform{1.0f};
+        mutable glm::vec2 ResolvedSize{100.0f, 100.0f};
 
-        UITransformComponent() = default;
-        UITransformComponent(const glm::vec3 &position, const glm::vec2 &size, const glm::vec3 rotation) :
-            Position(position), Size(size), Rotation(rotation)
-        {
-        }
+        RectTransformComponent() = default;
+        RectTransformComponent(const RectTransformComponent &) = default;
 
         glm::mat4 GetLocalTransform() const
         {
-            glm::mat4 rotation = glm::toMat4(glm::quat(Rotation));
-            return glm::translate(glm::mat4(1.0f), Position) * rotation;
+            return glm::translate(
+                           glm::mat4(1.0f),
+                           glm::vec3(AnchoredPosition, 0.0f))
+                   * glm::rotate(
+                           glm::mat4(1.0f), RotationRadians,
+                           glm::vec3(0.0f, 0.0f, 1.0f));
         }
 
         glm::mat4 GetTransform() const
@@ -302,13 +314,17 @@ namespace Himii
     struct UITextComponent {
         std::string TextString = "Text";
         Ref<Font> FontAsset;
+        AssetHandle FontHandle = 0;
+        int FontFaceIndex = 0;
         glm::vec4 Color = {1.0f, 1.0f, 1.0f, 1.0f};
-        /// 设计像素字号（一行高度约等于该值）。
+        /// em 字号：1em = FontSize 设计像素。
         float FontSize = 48.0f;
 
         // 排版参数
         float Kerning = 0.0f;     // 字间距微调
         float LineSpacing = 0.0f; // 行间距微调
+        TextHorizontalAlignment HorizontalAlignment = TextHorizontalAlignment::Left;
+        TextVerticalAlignment VerticalAlignment = TextVerticalAlignment::Top;
 
         UITextComponent() = default;
         UITextComponent(const UITextComponent &) = default;

@@ -60,24 +60,43 @@ namespace Himii
         TransformComponent m_AfterTransform;
     };
 
-    class ModifyUITransformCommand : public IEditorCommand
+    class ModifyRectTransformCommand : public IEditorCommand
     {
     public:
-        ModifyUITransformCommand(const Ref<Scene>& scene, UUID entityIdentifier,
-                                 const UITransformComponent& beforeTransform,
-                                 const UITransformComponent& afterTransform);
+        ModifyRectTransformCommand(const Ref<Scene>& scene, UUID entityIdentifier,
+                                   const RectTransformComponent& beforeTransform,
+                                   const RectTransformComponent& afterTransform);
 
         void Execute() override;
         void Undo() override;
         bool TryMerge(const IEditorCommand& other) override;
 
     private:
-        void ApplyTransform(const UITransformComponent& transform);
+        void ApplyTransform(const RectTransformComponent& transform);
 
         Ref<Scene> m_Scene;
         UUID m_EntityIdentifier;
-        UITransformComponent m_BeforeTransform;
-        UITransformComponent m_AfterTransform;
+        RectTransformComponent m_BeforeTransform;
+        RectTransformComponent m_AfterTransform;
+    };
+
+    class ModifyUITextFontSizeCommand : public IEditorCommand
+    {
+    public:
+        ModifyUITextFontSizeCommand(const Ref<Scene>& scene, UUID entityIdentifier, float beforeFontSize,
+                                    float afterFontSize);
+
+        void Execute() override;
+        void Undo() override;
+        bool TryMerge(const IEditorCommand& other) override;
+
+    private:
+        void ApplyFontSize(float fontSize);
+
+        Ref<Scene> m_Scene;
+        UUID m_EntityIdentifier;
+        float m_BeforeFontSize = 48.0f;
+        float m_AfterFontSize = 48.0f;
     };
 
     class ModifyEntityTagCommand : public IEditorCommand
@@ -108,7 +127,7 @@ namespace Himii
 
     private:
         void ApplyParent(UUID parentIdentifier, const TransformComponent& localTransform,
-                         const UITransformComponent& userInterfaceTransform, bool isUserInterface);
+                         const RectTransformComponent& rectTransform, bool isUserInterface);
 
         Ref<Scene> m_Scene;
         UUID m_ChildIdentifier = 0;
@@ -118,7 +137,7 @@ namespace Himii
         bool m_KeepWorldPosition = true;
         TransformComponent m_LocalTransformBefore{};
         TransformComponent m_LocalTransformAfter{};
-        UITransformComponent m_UserInterfaceTransformBefore{};
-        UITransformComponent m_UserInterfaceTransformAfter{};
+        RectTransformComponent m_RectTransformBefore{};
+        RectTransformComponent m_RectTransformAfter{};
     };
 }

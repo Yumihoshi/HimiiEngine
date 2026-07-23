@@ -10,23 +10,36 @@
 #include "Himii/Scene/Components.h"
 
 #include <glm/gtc/constants.hpp>
+#include <imgui.h>
 
 namespace Himii
 {
-    static void DrawUITransformComponentInspectorUI(ComponentInspectorDrawContext& drawContext)
+    static void DrawRectTransformComponentInspectorUserInterface(
+            ComponentInspectorDrawContext& drawContext)
     {
-        if (!drawContext.entity.HasComponent<UITransformComponent>())
+        if (!drawContext.entity.HasComponent<RectTransformComponent>())
             return;
 
-        auto& component = drawContext.entity.GetComponent<UITransformComponent>();
+        auto& component = drawContext.entity.GetComponent<RectTransformComponent>();
         Ref<Texture2D> icon =
             drawContext.getComponentIcon ? drawContext.getComponentIcon("Rect Transform") : nullptr;
 
         DrawComponentInspectorHeaderUI(
-            drawContext, "UITransformComponent", "Rect Transform", icon,
+            drawContext, "RectTransformComponent", "Rect Transform", icon,
             [&]()
             {
-                UITransformComponent transformBeforeEdit = component;
+                if (drawContext.entity.HasComponent<CanvasComponent>())
+                {
+                    ImGui::TextDisabled("Canvas root is resolved from the Game target size.");
+                    if (drawContext.scene)
+                        drawContext.scene->SyncCanvasReferenceResolutionToTransform(drawContext.entity);
+                    ImGui::Text(
+                            "Resolved Size: %.0f x %.0f",
+                            component.ResolvedSize.x, component.ResolvedSize.y);
+                    return;
+                }
+
+                RectTransformComponent transformBeforeEdit = component;
                 bool transformEditCaptured = false;
 
                 auto beginTransformEdit = [&]()
@@ -54,12 +67,16 @@ namespace Himii
                         return;
                     }
 
-                    UITransformComponent transformAfterEdit = component;
-                    if (transformBeforeEdit.Position != transformAfterEdit.Position
-                        || transformBeforeEdit.Rotation != transformAfterEdit.Rotation
-                        || transformBeforeEdit.Size != transformAfterEdit.Size)
+                    RectTransformComponent transformAfterEdit = component;
+                    if (transformBeforeEdit.AnchorMinimum != transformAfterEdit.AnchorMinimum
+                        || transformBeforeEdit.AnchorMaximum != transformAfterEdit.AnchorMaximum
+                        || transformBeforeEdit.Pivot != transformAfterEdit.Pivot
+                        || transformBeforeEdit.AnchoredPosition != transformAfterEdit.AnchoredPosition
+                        || transformBeforeEdit.RotationRadians
+                                != transformAfterEdit.RotationRadians
+                        || transformBeforeEdit.SizeDelta != transformAfterEdit.SizeDelta)
                     {
-                        drawContext.commandHistory->Execute(std::make_unique<ModifyUITransformCommand>(
+                        drawContext.commandHistory->Execute(std::make_unique<ModifyRectTransformCommand>(
                             drawContext.scene,
                             drawContext.entity.GetUUID(),
                             transformBeforeEdit,
@@ -68,31 +85,65 @@ namespace Himii
                     transformEditCaptured = false;
                 };
 
-                DrawVec3Control("Rect Position", component.Position, 0.0f, beginTransformEdit, endTransformEdit);
+                DrawVec2AxisControl(
+                        "Anchor Minimum", component.AnchorMinimum, 0.5f,
+                        beginTransformEdit, endTransformEdit);
+                component.AnchorMinimum = glm::clamp(
+                        component.AnchorMinimum, glm::vec2(0.0f), glm::vec2(1.0f));
 
-                glm::vec3 rotationDegrees = glm::degrees(component.Rotation);
-                DrawVec3Control("Rotation", rotationDegrees, 0.0f, beginTransformEdit, endTransformEdit);
-                component.Rotation = glm::radians(rotationDegrees);
+                DrawVec2AxisControl(
+                        "Anchor Maximum", component.AnchorMaximum, 0.5f,
+                        beginTransformEdit, endTransformEdit);
+                component.AnchorMaximum = glm::clamp(
+                        component.AnchorMaximum, component.AnchorMinimum, glm::vec2(1.0f));
 
-                glm::vec3 sizeVector = glm::vec3(component.Size, 1.0f);
-                DrawVec3Control("Size", sizeVector, 100.0f, beginTransformEdit, endTransformEdit);
-                component.Size = glm::vec2(sizeVector.x, sizeVector.y);
+                DrawVec2AxisControl(
+                        "Pivot", component.Pivot, 0.5f,
+                        beginTransformEdit, endTransformEdit);
+                component.Pivot = glm::clamp(
+                        component.Pivot, glm::vec2(0.0f), glm::vec2(1.0f));
+
+                DrawVec2AxisControl(
+                        "Anchored Position", component.AnchoredPosition, 0.0f,
+                        beginTransformEdit, endTransformEdit);
+
+                float rotationDegrees = glm::degrees(component.RotationRadians);
+                DrawPropertyRow(
+                        "Rotation",
+                        [&]()
+                        {
+                            ImGui::PushItemWidth(-1.0f);
+                            ImGui::DragFloat(
+                                    "##RotationDegrees", &rotationDegrees,
+                                    0.1f, 0.0f, 0.0f, "%.2f deg");
+                            ImGui::PopItemWidth();
+                            component.RotationRadians = glm::radians(rotationDegrees);
+                            if (ImGui::IsItemActivated())
+                                beginTransformEdit();
+                            if (ImGui::IsItemDeactivatedAfterEdit())
+                                endTransformEdit();
+                        });
+
+                DrawVec2AxisControl(
+                        "Size Delta", component.SizeDelta, 100.0f,
+                        beginTransformEdit, endTransformEdit);
 
                 if (transformEditCaptured)
                     notifyTransformPreview();
             },
-            [&]() { drawContext.entity.RemoveComponent<UITransformComponent>(); });
+            [&]() { drawContext.entity.RemoveComponent<RectTransformComponent>(); });
     }
 
-    struct UITransformComponentInspectorRegistrar
+    struct RectTransformComponentInspectorRegistrar
     {
-        UITransformComponentInspectorRegistrar()
+        RectTransformComponentInspectorRegistrar()
         {
-            ComponentInspectorRegistry::Get().RegisterComponentInspector<UITransformComponent>(
-                "UITransformComponent", "Rect Transform", "Rect Transform", 200,
-                &DrawUITransformComponentInspectorUI);
+            ComponentInspectorRegistry::Get().RegisterComponentInspector<RectTransformComponent>(
+                "RectTransformComponent", "Rect Transform", "Rect Transform", 200,
+                &DrawRectTransformComponentInspectorUserInterface);
         }
     };
 
-    static UITransformComponentInspectorRegistrar s_UITransformComponentInspectorRegistrar;
+    static RectTransformComponentInspectorRegistrar
+            s_RectTransformComponentInspectorRegistrar;
 }

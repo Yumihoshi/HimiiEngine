@@ -7,7 +7,8 @@ namespace Himii
 {
     class OpenGLTexture : public Texture2D {
     public:
-        OpenGLTexture(uint32_t width,uint32_t height);
+        OpenGLTexture(uint32_t width, uint32_t height);
+        explicit OpenGLTexture(const TextureSpecification &specification);
         OpenGLTexture(const std::string &path);
         virtual ~OpenGLTexture();
 
@@ -34,6 +35,9 @@ namespace Himii
             return m_Path;
         }
         virtual void SetData(void *data, uint32_t size) override;
+        virtual void SetDataRegion(
+                uint32_t offsetX, uint32_t offsetY, uint32_t width, uint32_t height, void *data,
+                uint32_t size) override;
         virtual void Bind(uint32_t slot = 0) const override;
         virtual bool IsLoaded() const override
         {
@@ -45,12 +49,17 @@ namespace Himii
         };
 
     private:
+        void CreateStorage(const TextureSpecification &specification);
+
         TextureSpecification m_Specification;
 
         std::string m_Path;
         bool m_IsLoaded = false;
-        uint32_t m_Width, m_Height;
-        uint32_t m_RendererID;
-        GLenum m_InternalFormat, m_DataFormat;
+        uint32_t m_Width = 0;
+        uint32_t m_Height = 0;
+        uint32_t m_RendererID = 0;
+        GLenum m_InternalFormat = GL_RGBA8;
+        GLenum m_DataFormat = GL_RGBA;
+        uint32_t m_BytesPerPixel = 4;
     };
 }

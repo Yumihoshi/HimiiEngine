@@ -148,6 +148,12 @@ namespace Himii
                     auto& text = textEntity.AddComponent<UITextComponent>();
                     text.FontAsset = Font::GetDefault();
                     text.FontSize = 48.0f;
+
+                    auto& userInterfaceTransform = textEntity.GetComponent<RectTransformComponent>();
+                    userInterfaceTransform.AnchoredPosition = glm::vec2(0.0f);
+                    userInterfaceTransform.SizeDelta = glm::vec2(300.0f, 100.0f);
+                    userInterfaceTransform.ResolvedSize = userInterfaceTransform.SizeDelta;
+
                     scene->SetEntityParent(textEntity, canvasEntity, false);
                     return textEntity;
                 };
@@ -248,7 +254,7 @@ namespace Himii
                 DisplayAddComponentEntry<TilemapComponent>("Tilemap");
                 DisplayAddComponentEntry<TilemapCollider2DComponent>("Tilemap Collider 2D");
                 DisplayAddComponentEntry<ParticleEmitterComponent>("Particle Emitter");
-                DisplayAddComponentEntry<UITransformComponent>("Rect Transform");
+                DisplayAddComponentEntry<RectTransformComponent>("Rect Transform");
                 DisplayAddComponentEntry<UIImageComponent>("Image");
 
                 ImGui::EndPopup();
@@ -265,7 +271,7 @@ namespace Himii
         auto &tag = entity.GetComponent<TagComponent>().Tag;
         const std::vector<UUID>& children = m_Context->GetEntityChildren(entity);
         const bool hasChildren = !children.empty();
-        const bool isUserInterfaceEntity = entity.HasComponent<UITransformComponent>();
+        const bool isUserInterfaceEntity = entity.HasComponent<RectTransformComponent>();
         const bool isOrphanUserInterface =
                 isUserInterfaceEntity && !m_Context->IsEntityUnderCanvas(entity);
 
@@ -412,7 +418,7 @@ namespace Himii
             DisplayAddComponentEntry<TilemapCollider2DComponent>("Tilemap Collider 2D");
             DisplayAddComponentEntry<ParticleEmitterComponent>("Particle Emitter");
 
-            DisplayAddComponentEntry<UITransformComponent>("Rect Transform");
+            DisplayAddComponentEntry<RectTransformComponent>("Rect Transform");
             DisplayAddComponentEntry<UIImageComponent>("Image");
             DisplayAddComponentEntry<UITextComponent>("Text");
             if (!m_Context->FindCanvasEntity())

@@ -163,6 +163,24 @@ namespace Himii
                 else
                     createTextEntity(m_Context);
             }
+            if (ImGui::MenuItem("Create UI Button"))
+            {
+                auto createButtonEntity = [](const Ref<Scene>& scene) -> Entity
+                {
+                    Entity canvasEntity = scene->FindCanvasEntity();
+                    if (!canvasEntity)
+                        canvasEntity = scene->CreateCanvasEntity("Canvas");
+
+                    Entity buttonEntity = scene->CreateUIButtonEntity("Button");
+                    scene->SetEntityParent(buttonEntity, canvasEntity, false);
+                    return buttonEntity;
+                };
+
+                if (m_CommandHistory)
+                    m_CommandHistory->Execute(std::make_unique<CreateEntityCommand>(m_Context, createButtonEntity));
+                else
+                    createButtonEntity(m_Context);
+            }
             if (ImGui::MenuItem("Create UI Entity"))
             {
                 if (m_CommandHistory)
@@ -256,6 +274,7 @@ namespace Himii
                 DisplayAddComponentEntry<ParticleEmitterComponent>("Particle Emitter");
                 DisplayAddComponentEntry<RectTransformComponent>("Rect Transform");
                 DisplayAddComponentEntry<UIImageComponent>("Image");
+                DisplayAddComponentEntry<UIButtonComponent>("Button");
 
                 ImGui::EndPopup();
             }
@@ -421,6 +440,7 @@ namespace Himii
             DisplayAddComponentEntry<RectTransformComponent>("Rect Transform");
             DisplayAddComponentEntry<UIImageComponent>("Image");
             DisplayAddComponentEntry<UITextComponent>("Text");
+            DisplayAddComponentEntry<UIButtonComponent>("Button");
             if (!m_Context->FindCanvasEntity())
                 DisplayAddComponentEntry<CanvasComponent>("Canvas");
 

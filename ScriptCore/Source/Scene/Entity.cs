@@ -150,5 +150,11 @@ namespace HimiiEngine
         public virtual void OnCollisionExit2D(Collision2DInfo collision) { }
         public virtual void OnTriggerEnter2D(Collision2DInfo collision) { }
         public virtual void OnTriggerExit2D(Collision2DInfo collision) { }
+
+        public virtual void OnPointerEnter() { }
+        public virtual void OnPointerExit() { }
+        public virtual void OnPointerDown() { }
+        public virtual void OnPointerUp() { }
+        public virtual void OnPointerClick() { }
     }
 }

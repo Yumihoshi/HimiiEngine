@@ -97,7 +97,7 @@
 | [ ] | **Multi-Entity Prefab** | 利用父子层级序列化一组实体为 `.hprefab`；**不做**实例属性覆盖 / 变体 / Prefab 嵌套覆盖 |
 | [x] | **Canvas (Screen Space Overlay)** | 引入 Canvas（或等价 UI 根）；至少支持 Screen Space Overlay |
 | [x] | **Canvas Scaler** | 参考分辨率自适应；无 Scaler 则 Canvas 不算完成 |
-| [ ] | **UIButton（最小）** | 挂在 Canvas 子树下；点击回调（按下/悬停/点击）；不做通用布局系统 |
+| [x] | **UIButton（最小）** | 挂在 Canvas 子树下；点击回调（按下/悬停/点击）；不做通用布局系统 |
 
 ### 轨 2：音频
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |

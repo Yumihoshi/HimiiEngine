@@ -499,6 +499,20 @@ namespace Himii
 
             out << YAML::EndMap; // UITextComponent
         }
+
+        if (entity.HasComponent<UIButtonComponent>())
+        {
+            out << YAML::Key << "UIButtonComponent";
+            out << YAML::BeginMap;
+            auto& button = entity.GetComponent<UIButtonComponent>();
+            out << YAML::Key << "Interactable" << YAML::Value << button.Interactable;
+            out << YAML::Key << "NormalColor" << YAML::Value << button.Colors.NormalColor;
+            out << YAML::Key << "HighlightedColor" << YAML::Value << button.Colors.HighlightedColor;
+            out << YAML::Key << "PressedColor" << YAML::Value << button.Colors.PressedColor;
+            out << YAML::Key << "DisabledColor" << YAML::Value << button.Colors.DisabledColor;
+            out << YAML::EndMap;
+        }
+
         out << YAML::EndMap;
     }
 
@@ -920,6 +934,22 @@ namespace Himii
             }
             if (!textComp.FontAsset)
                 textComp.FontAsset = Font::GetDefault();
+        }
+
+        auto uiButtonComponent = entity["UIButtonComponent"];
+        if (uiButtonComponent)
+        {
+            auto& button = deserializedEntity.AddComponent<UIButtonComponent>();
+            if (uiButtonComponent["Interactable"])
+                button.Interactable = uiButtonComponent["Interactable"].as<bool>();
+            if (uiButtonComponent["NormalColor"])
+                button.Colors.NormalColor = uiButtonComponent["NormalColor"].as<glm::vec4>();
+            if (uiButtonComponent["HighlightedColor"])
+                button.Colors.HighlightedColor = uiButtonComponent["HighlightedColor"].as<glm::vec4>();
+            if (uiButtonComponent["PressedColor"])
+                button.Colors.PressedColor = uiButtonComponent["PressedColor"].as<glm::vec4>();
+            if (uiButtonComponent["DisabledColor"])
+                button.Colors.DisabledColor = uiButtonComponent["DisabledColor"].as<glm::vec4>();
         }
     }
     

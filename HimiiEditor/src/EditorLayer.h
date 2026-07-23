@@ -133,6 +133,7 @@ namespace Himii
         glm::vec2 m_GameViewportBounds[2];
         glm::uvec2 m_GameTargetResolution = {1920, 1080};
         bool m_GameViewHasValidPrimaryCamera = false;
+        bool m_GameUserInterfacePrimaryButtonWasHeld = false;
 
         enum class GameResolutionPreset
         {

@@ -142,6 +142,16 @@ namespace Himii {
         static void OnTriggerEnter2D(Entity entity, Entity other, const Collision2DInterop &collision);
         static void OnTriggerExit2D(Entity entity, Entity other);
 
+        enum class ScriptPointerEventType
+        {
+            Enter = 0,
+            Exit = 1,
+            Down = 2,
+            Up = 3,
+            Click = 4
+        };
+        static void OnPointerEvent(Entity entity, ScriptPointerEventType eventType);
+
         static void* GetEntityScriptInstance(UUID entityID);
 
         static std::string Serialize(void* instanceHandle);

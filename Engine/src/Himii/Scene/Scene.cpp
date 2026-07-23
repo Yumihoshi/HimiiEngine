@@ -28,6 +28,7 @@
 #include <cmath>
 #include <vector>
 #include <algorithm>
+#include <functional>
 
 #include "Entity.h"
 
@@ -230,6 +231,196 @@ namespace Himii
         return canvasEntity;
     }
 
+    Entity Scene::CreateUIButtonEntity(const std::string &name)
+    {
+        Entity buttonEntity = CreateUIEntity(name.empty() ? "Button" : name);
+        auto& userInterfaceTransform = buttonEntity.GetComponent<RectTransformComponent>();
+        userInterfaceTransform.SizeDelta = {160.0f, 40.0f};
+        userInterfaceTransform.ResolvedSize = userInterfaceTransform.SizeDelta;
+
+        auto& image = buttonEntity.AddComponent<UIImageComponent>();
+        image.Color = {1.0f, 1.0f, 1.0f, 1.0f};
+        buttonEntity.AddComponent<UIButtonComponent>();
+        return buttonEntity;
+    }
+
+    void Scene::SetUserInterfacePointerInput(const UserInterfacePointerFrameInput &input)
+    {
+        m_UserInterfacePointerInput = input;
+    }
+
+    void Scene::ClearUserInterfacePointerTransientState()
+    {
+        auto buttonView = m_Registry.view<UIButtonComponent>();
+        for (entt::entity entityHandle : buttonView)
+        {
+            auto& button = buttonView.get<UIButtonComponent>(entityHandle);
+            button.WasClickedThisFrame = false;
+        }
+    }
+
+    bool Scene::IsPointInsideResolvedRect(
+            const ResolvedRectTransform &resolvedRectTransform,
+            const glm::mat4 &designToTargetMatrix,
+            const glm::vec2 &pointerInTargetPixels) const
+    {
+        if (!resolvedRectTransform.Valid)
+            return false;
+
+        const glm::mat4 drawTransform = designToTargetMatrix
+                * resolvedRectTransform.WorldTransform
+                * glm::scale(glm::mat4(1.0f), glm::vec3(resolvedRectTransform.Size, 1.0f));
+        const glm::mat4 inverseDrawTransform = glm::inverse(drawTransform);
+        const glm::vec4 localPoint = inverseDrawTransform
+                * glm::vec4(pointerInTargetPixels.x, pointerInTargetPixels.y, 0.0f, 1.0f);
+        return std::abs(localPoint.x) <= 0.5f && std::abs(localPoint.y) <= 0.5f;
+    }
+
+    Entity Scene::HitTestUserInterfaceButton(
+            float targetWidth, float targetHeight, const glm::vec2 &pointerInTargetPixels) const
+    {
+        Entity canvasEntity = FindCanvasEntity();
+        if (!canvasEntity)
+            return {};
+
+        const glm::mat4 designToTargetMatrix = GetCanvasToScreenMatrix(targetWidth, targetHeight);
+        std::vector<Entity> buttonsInDrawOrder;
+
+        std::function<void(Entity)> collectSubtree;
+        collectSubtree = [&](Entity entity)
+        {
+            if (!entity || !entity.HasComponent<RectTransformComponent>())
+                return;
+
+            if (entity.HasComponent<UIButtonComponent>()
+                && entity.GetComponent<UIButtonComponent>().Interactable)
+            {
+                buttonsInDrawOrder.push_back(entity);
+            }
+
+            for (UUID childIdentifier : GetEntityChildren(entity))
+                collectSubtree(GetEntityByUUID(childIdentifier));
+        };
+
+        for (UUID childIdentifier : GetEntityChildren(canvasEntity))
+            collectSubtree(GetEntityByUUID(childIdentifier));
+
+        for (auto iterator = buttonsInDrawOrder.rbegin(); iterator != buttonsInDrawOrder.rend();
+             ++iterator)
+        {
+            Entity entity = *iterator;
+            const ResolvedRectTransform resolvedRectTransform =
+                    ResolveRectTransform(entity, targetWidth, targetHeight);
+            if (IsPointInsideResolvedRect(
+                        resolvedRectTransform, designToTargetMatrix, pointerInTargetPixels))
+                return entity;
+        }
+
+        return {};
+    }
+
+    void Scene::ProcessUserInterfacePointer()
+    {
+        m_UserInterfacePointerHandled = false;
+        ClearUserInterfacePointerTransientState();
+
+        const float targetWidth = static_cast<float>(m_ViewportWidth);
+        const float targetHeight = static_cast<float>(m_ViewportHeight);
+
+        if (!m_UserInterfacePointerInput.Enabled || targetWidth <= 0.0f || targetHeight <= 0.0f)
+        {
+            if (m_UserInterfaceHoverEntityIdentifier != 0)
+            {
+                Entity previousHover = GetEntityByUUID(m_UserInterfaceHoverEntityIdentifier);
+                if (previousHover && previousHover.HasComponent<UIButtonComponent>())
+                {
+                    previousHover.GetComponent<UIButtonComponent>().IsPointerInside = false;
+                    ScriptEngine::OnPointerEvent(previousHover, ScriptEngine::ScriptPointerEventType::Exit);
+                }
+                m_UserInterfaceHoverEntityIdentifier = 0;
+            }
+            if (m_UserInterfacePressedEntityIdentifier != 0)
+            {
+                Entity previousPressed = GetEntityByUUID(m_UserInterfacePressedEntityIdentifier);
+                if (previousPressed && previousPressed.HasComponent<UIButtonComponent>())
+                {
+                    previousPressed.GetComponent<UIButtonComponent>().IsPressed = false;
+                    ScriptEngine::OnPointerEvent(previousPressed, ScriptEngine::ScriptPointerEventType::Up);
+                }
+                m_UserInterfacePressedEntityIdentifier = 0;
+            }
+            return;
+        }
+
+        Entity hitEntity{};
+        if (m_UserInterfacePointerInput.HasPosition)
+        {
+            hitEntity = HitTestUserInterfaceButton(
+                    targetWidth, targetHeight, m_UserInterfacePointerInput.PositionInTargetPixels);
+        }
+
+        const UUID hitIdentifier = hitEntity ? hitEntity.GetUUID() : UUID(0);
+        if (hitEntity)
+            m_UserInterfacePointerHandled = true;
+
+        // Hover enter/exit
+        if (hitIdentifier != m_UserInterfaceHoverEntityIdentifier)
+        {
+            if (m_UserInterfaceHoverEntityIdentifier != 0)
+            {
+                Entity previousHover = GetEntityByUUID(m_UserInterfaceHoverEntityIdentifier);
+                if (previousHover && previousHover.HasComponent<UIButtonComponent>())
+                {
+                    previousHover.GetComponent<UIButtonComponent>().IsPointerInside = false;
+                    ScriptEngine::OnPointerEvent(previousHover, ScriptEngine::ScriptPointerEventType::Exit);
+                }
+            }
+            m_UserInterfaceHoverEntityIdentifier = hitIdentifier;
+            if (hitEntity && hitEntity.HasComponent<UIButtonComponent>())
+            {
+                hitEntity.GetComponent<UIButtonComponent>().IsPointerInside = true;
+                ScriptEngine::OnPointerEvent(hitEntity, ScriptEngine::ScriptPointerEventType::Enter);
+            }
+        }
+        else if (hitEntity && hitEntity.HasComponent<UIButtonComponent>())
+        {
+            hitEntity.GetComponent<UIButtonComponent>().IsPointerInside = true;
+        }
+
+        // Pressed visual: keep pressed on original target even if pointer leaves.
+        if (m_UserInterfacePressedEntityIdentifier != 0)
+        {
+            Entity pressedEntity = GetEntityByUUID(m_UserInterfacePressedEntityIdentifier);
+            if (pressedEntity && pressedEntity.HasComponent<UIButtonComponent>())
+                pressedEntity.GetComponent<UIButtonComponent>().IsPressed = true;
+        }
+
+        if (m_UserInterfacePointerInput.PrimaryButtonPressedThisFrame && hitEntity
+            && hitEntity.HasComponent<UIButtonComponent>())
+        {
+            m_UserInterfacePressedEntityIdentifier = hitIdentifier;
+            hitEntity.GetComponent<UIButtonComponent>().IsPressed = true;
+            ScriptEngine::OnPointerEvent(hitEntity, ScriptEngine::ScriptPointerEventType::Down);
+        }
+
+        if (m_UserInterfacePointerInput.PrimaryButtonReleasedThisFrame)
+        {
+            Entity pressedEntity = GetEntityByUUID(m_UserInterfacePressedEntityIdentifier);
+            if (pressedEntity && pressedEntity.HasComponent<UIButtonComponent>())
+            {
+                auto& pressedButton = pressedEntity.GetComponent<UIButtonComponent>();
+                pressedButton.IsPressed = false;
+                ScriptEngine::OnPointerEvent(pressedEntity, ScriptEngine::ScriptPointerEventType::Up);
+                if (hitIdentifier == m_UserInterfacePressedEntityIdentifier)
+                {
+                    pressedButton.WasClickedThisFrame = true;
+                    ScriptEngine::OnPointerEvent(pressedEntity, ScriptEngine::ScriptPointerEventType::Click);
+                }
+            }
+            m_UserInterfacePressedEntityIdentifier = 0;
+        }
+    }
+
     void Scene::DestroyEntity(entt::entity entityHandle)
     {
         if (!m_Registry.valid(entityHandle))
@@ -385,6 +576,8 @@ namespace Himii
 
     void Scene::OnUpdateRuntime(Timestep ts, bool drawUserInterfaceContent)
     {
+        ProcessUserInterfacePointer();
+
         {
             auto view = m_Registry.view<ScriptComponent>();
             for (auto e: view)
@@ -757,6 +950,7 @@ namespace Himii
         CopyComponent<CanvasComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<UIImageComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<UITextComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+        CopyComponent<UIButtonComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 
         newScene->RebuildHierarchyCache();
 
@@ -819,6 +1013,14 @@ namespace Himii
             newEntity.AddComponent<UIImageComponent>(entity.GetComponent<UIImageComponent>());
         if (entity.HasComponent<UITextComponent>())
             newEntity.AddComponent<UITextComponent>(entity.GetComponent<UITextComponent>());
+        if (entity.HasComponent<UIButtonComponent>())
+        {
+            UIButtonComponent copiedButton = entity.GetComponent<UIButtonComponent>();
+            copiedButton.IsPointerInside = false;
+            copiedButton.IsPressed = false;
+            copiedButton.WasClickedThisFrame = false;
+            newEntity.AddComponent<UIButtonComponent>(copiedButton);
+        }
 
         return newEntity;
     }
@@ -842,6 +1044,11 @@ namespace Himii
             return {m_EntityMap.at(uuid), this};
 
         return {};
+    }
+
+    Entity Scene::GetEntityByUUID(UUID uuid) const
+    {
+        return const_cast<Scene*>(this)->GetEntityByUUID(uuid);
     }
 
     void Scene::OnViewportResize(uint32_t width, uint32_t height)
@@ -1310,11 +1517,16 @@ namespace Himii
                         * glm::scale(glm::mat4(1.0f),
                                      glm::vec3(resolvedRectTransform.Size, 1.0f));
 
+                glm::vec4 drawColor = image.Color;
+                if (entity.HasComponent<UIButtonComponent>())
+                    drawColor = entity.GetComponent<UIButtonComponent>().EvaluateEffectiveColor(
+                            image.Color);
+
                 if (image.Texture)
                     Renderer2D::DrawQuad(
-                            drawTransform, image.Texture, 1.0f, image.Color, (int)(entt::entity)entity);
+                            drawTransform, image.Texture, 1.0f, drawColor, (int)(entt::entity)entity);
                 else
-                    Renderer2D::DrawQuad(drawTransform, image.Color, (int)(entt::entity)entity);
+                    Renderer2D::DrawQuad(drawTransform, drawColor, (int)(entt::entity)entity);
             }
 
             if (entity.HasComponent<UITextComponent>())
@@ -2088,6 +2300,12 @@ namespace Himii
     {
         if (!component.FontAsset)
             component.FontAsset = Font::GetDefault();
+    }
+    template<>
+    void Scene::OnComponentAdded<UIButtonComponent>(Entity entity, UIButtonComponent &component)
+    {
+        (void)entity;
+        (void)component;
     }
     template<>
     void Scene::OnComponentAdded<CanvasComponent>(Entity entity, CanvasComponent &component)

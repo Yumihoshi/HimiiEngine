@@ -309,5 +309,31 @@ namespace HimiiEngine
                 Console.WriteLine($"[C# Error] OnTriggerExit2DInstance failed: {exception.Message}");
             }
         }
+
+        [UnmanagedCallersOnly]
+        public static void OnPointerEventInstance(IntPtr handlePtr, int eventType)
+        {
+            if (handlePtr == IntPtr.Zero) return;
+
+            try
+            {
+                GCHandle handle = GCHandle.FromIntPtr(handlePtr);
+                if (!handle.IsAllocated || handle.Target is not Entity entity)
+                    return;
+
+                switch (eventType)
+                {
+                    case 0: entity.OnPointerEnter(); break;
+                    case 1: entity.OnPointerExit(); break;
+                    case 2: entity.OnPointerDown(); break;
+                    case 3: entity.OnPointerUp(); break;
+                    case 4: entity.OnPointerClick(); break;
+                }
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine($"[C# Error] OnPointerEventInstance failed: {exception.Message}");
+            }
+        }
     }
 }

@@ -141,6 +141,12 @@ namespace HimiiEngine
         public IntPtr UIText_GetFontSize;
         public IntPtr UIText_SetFontSize;
 
+        public IntPtr UIButton_GetInteractable;
+        public IntPtr UIButton_SetInteractable;
+        public IntPtr UIButton_GetIsPointerInside;
+        public IntPtr UIButton_GetIsPressed;
+        public IntPtr UIButton_GetWasClickedThisFrame;
+
         public IntPtr FontAsset_GetDefaultHandle;
         public IntPtr FontAsset_PreloadCharacters;
         public IntPtr FontAsset_PreloadTextAsync;

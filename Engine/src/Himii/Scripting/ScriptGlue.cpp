@@ -114,6 +114,7 @@ namespace Himii {
         static const uint32_t CircleCollider2DId = Fnv1A32("HimiiEngine.CircleCollider2D");
         static const uint32_t CameraId = Fnv1A32("HimiiEngine.Camera");
         static const uint32_t UITextId = Fnv1A32("HimiiEngine.UIText");
+        static const uint32_t UIButtonId = Fnv1A32("HimiiEngine.UIButton");
 
         if (typeId == TilemapId)
             return entity.HasComponent<TilemapComponent>() ? 1 : 0;
@@ -133,6 +134,8 @@ namespace Himii {
             return entity.HasComponent<CameraComponent>() ? 1 : 0;
         if (typeId == UITextId)
             return entity.HasComponent<UITextComponent>() ? 1 : 0;
+        if (typeId == UIButtonId)
+            return entity.HasComponent<UIButtonComponent>() ? 1 : 0;
 
         // 未注册的组件类型：默认认为不存在
         return 0;
@@ -428,6 +431,61 @@ namespace Himii {
             return;
 
         entity.GetComponent<UITextComponent>().FontSize = fontSize > 0.0f ? fontSize : 1.0f;
+    }
+
+    static uint8_t UIButton_GetInteractable(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<UIButtonComponent>())
+            return 0;
+        return entity.GetComponent<UIButtonComponent>().Interactable ? 1 : 0;
+    }
+
+    static void UIButton_SetInteractable(uint64_t entityID, uint8_t interactable)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<UIButtonComponent>())
+            return;
+        entity.GetComponent<UIButtonComponent>().Interactable = interactable != 0;
+    }
+
+    static uint8_t UIButton_GetIsPointerInside(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<UIButtonComponent>())
+            return 0;
+        return entity.GetComponent<UIButtonComponent>().IsPointerInside ? 1 : 0;
+    }
+
+    static uint8_t UIButton_GetIsPressed(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<UIButtonComponent>())
+            return 0;
+        return entity.GetComponent<UIButtonComponent>().IsPressed ? 1 : 0;
+    }
+
+    static uint8_t UIButton_GetWasClickedThisFrame(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<UIButtonComponent>())
+            return 0;
+        return entity.GetComponent<UIButtonComponent>().WasClickedThisFrame ? 1 : 0;
     }
 
     static Ref<Font> ResolveFontAssetByHandle(uint64_t handle)
@@ -1795,6 +1853,12 @@ namespace Himii {
         data.UIText_SetColor = (void *)&UIText_SetColor;
         data.UIText_GetFontSize = (void *)&UIText_GetFontSize;
         data.UIText_SetFontSize = (void *)&UIText_SetFontSize;
+
+        data.UIButton_GetInteractable = (void *)&UIButton_GetInteractable;
+        data.UIButton_SetInteractable = (void *)&UIButton_SetInteractable;
+        data.UIButton_GetIsPointerInside = (void *)&UIButton_GetIsPointerInside;
+        data.UIButton_GetIsPressed = (void *)&UIButton_GetIsPressed;
+        data.UIButton_GetWasClickedThisFrame = (void *)&UIButton_GetWasClickedThisFrame;
 
         data.FontAsset_GetDefaultHandle = (void *)&FontAsset_GetDefaultHandle;
         data.FontAsset_PreloadCharacters = (void *)&FontAsset_PreloadCharacters;

@@ -69,6 +69,9 @@ namespace HimiiEngine
         internal delegate float UITextGetFontSizeDelegate(ulong entityID);
         internal delegate void UITextSetFontSizeDelegate(ulong entityID, float fontSize);
 
+        internal delegate byte UIButtonGetBoolDelegate(ulong entityID);
+        internal delegate void UIButtonSetInteractableDelegate(ulong entityID, byte interactable);
+
         internal delegate ulong FontAssetGetDefaultHandleDelegate();
         internal delegate void FontAssetPreloadCharactersDelegate(ulong handle, IntPtr text);
         internal delegate void FontAssetPreloadTextAsyncDelegate(ulong handle, IntPtr text);
@@ -174,6 +177,12 @@ namespace HimiiEngine
         internal static UITextSetColorDelegate UIText_SetColor;
         internal static UITextGetFontSizeDelegate UIText_GetFontSize;
         internal static UITextSetFontSizeDelegate UIText_SetFontSize;
+
+        internal static UIButtonGetBoolDelegate UIButton_GetInteractable;
+        internal static UIButtonSetInteractableDelegate UIButton_SetInteractable;
+        internal static UIButtonGetBoolDelegate UIButton_GetIsPointerInside;
+        internal static UIButtonGetBoolDelegate UIButton_GetIsPressed;
+        internal static UIButtonGetBoolDelegate UIButton_GetWasClickedThisFrame;
 
         internal static FontAssetGetDefaultHandleDelegate FontAsset_GetDefaultHandle;
         internal static FontAssetPreloadCharactersDelegate FontAsset_PreloadCharacters;
@@ -324,6 +333,19 @@ namespace HimiiEngine
                 Marshal.GetDelegateForFunctionPointer<UITextGetFontSizeDelegate>(funcs.UIText_GetFontSize);
             UIText_SetFontSize =
                 Marshal.GetDelegateForFunctionPointer<UITextSetFontSizeDelegate>(funcs.UIText_SetFontSize);
+
+            UIButton_GetInteractable =
+                Marshal.GetDelegateForFunctionPointer<UIButtonGetBoolDelegate>(funcs.UIButton_GetInteractable);
+            UIButton_SetInteractable =
+                Marshal.GetDelegateForFunctionPointer<UIButtonSetInteractableDelegate>(
+                    funcs.UIButton_SetInteractable);
+            UIButton_GetIsPointerInside =
+                Marshal.GetDelegateForFunctionPointer<UIButtonGetBoolDelegate>(funcs.UIButton_GetIsPointerInside);
+            UIButton_GetIsPressed =
+                Marshal.GetDelegateForFunctionPointer<UIButtonGetBoolDelegate>(funcs.UIButton_GetIsPressed);
+            UIButton_GetWasClickedThisFrame =
+                Marshal.GetDelegateForFunctionPointer<UIButtonGetBoolDelegate>(
+                    funcs.UIButton_GetWasClickedThisFrame);
 
             FontAsset_GetDefaultHandle =
                 Marshal.GetDelegateForFunctionPointer<FontAssetGetDefaultHandleDelegate>(

@@ -39,6 +39,21 @@ namespace Himii
         Entity CreateUIEntity(const std::string &name);
         Entity CreateUIEntityWithUUID(UUID uuid, const std::string &name);
         Entity CreateCanvasEntity(const std::string &name = "Canvas");
+        Entity CreateUIButtonEntity(const std::string &name = "Button");
+
+        struct UserInterfacePointerFrameInput
+        {
+            /// false = 本帧不处理 UI 指针（编辑态 / 视口未悬停等）。
+            bool Enabled = false;
+            bool HasPosition = false;
+            glm::vec2 PositionInTargetPixels{0.0f};
+            bool PrimaryButtonHeld = false;
+            bool PrimaryButtonPressedThisFrame = false;
+            bool PrimaryButtonReleasedThisFrame = false;
+        };
+
+        void SetUserInterfacePointerInput(const UserInterfacePointerFrameInput &input);
+        bool WasUserInterfacePointerHandled() const { return m_UserInterfacePointerHandled; }
 
         void DestroyEntity(entt::entity e);
         void ClearEntities();
@@ -84,6 +99,7 @@ namespace Himii
 
         Entity FindEntityByName(const std::string &name);
         Entity GetEntityByUUID(UUID uuid);
+        Entity GetEntityByUUID(UUID uuid) const;
 
         Entity GetPrimaryCameraEntity();
 
@@ -190,6 +206,14 @@ namespace Himii
         void PrepareUserInterfaceFonts();
         void RenderUIElements(
                 const glm::mat4& designToTargetMatrix, float targetWidth, float targetHeight);
+        void ProcessUserInterfacePointer();
+        Entity HitTestUserInterfaceButton(
+                float targetWidth, float targetHeight, const glm::vec2 &pointerInTargetPixels) const;
+        bool IsPointInsideResolvedRect(
+                const ResolvedRectTransform &resolvedRectTransform,
+                const glm::mat4 &designToTargetMatrix,
+                const glm::vec2 &pointerInTargetPixels) const;
+        void ClearUserInterfacePointerTransientState();
 
     private:
         entt::registry m_Registry;
@@ -197,6 +221,11 @@ namespace Himii
         std::unordered_map<UUID, entt::entity> m_EntityMap;
         bool m_UseExternalVP{false};
         glm::mat4 m_ExternalVP{1.0f};
+
+        UserInterfacePointerFrameInput m_UserInterfacePointerInput{};
+        bool m_UserInterfacePointerHandled = false;
+        UUID m_UserInterfaceHoverEntityIdentifier = 0;
+        UUID m_UserInterfacePressedEntityIdentifier = 0;
 
         friend class Entity;
         friend class SceneSerializer;

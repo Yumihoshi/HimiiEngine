@@ -142,6 +142,12 @@ namespace Himii
         void *UIText_GetFontSize;
         void *UIText_SetFontSize;
 
+        void *UIButton_GetInteractable;
+        void *UIButton_SetInteractable;
+        void *UIButton_GetIsPointerInside;
+        void *UIButton_GetIsPressed;
+        void *UIButton_GetWasClickedThisFrame;
+
         void *FontAsset_GetDefaultHandle;
         void *FontAsset_PreloadCharacters;
         void *FontAsset_PreloadTextAsync;

@@ -1,5 +1,6 @@
 #include "Engine.h"
 #include "Himii/Core/EntryPoint.h"
+#include "Himii/Core/Input.h"
 #include "Himii/Project/Project.h"
 #include "Himii/Scripting/ScriptEngine.h"
 
@@ -68,6 +69,24 @@ namespace Himii
 
             auto& window = Application::Get().GetWindow();
             m_ActiveScene->OnViewportResize(window.GetWidth(), window.GetHeight());
+
+            Scene::UserInterfacePointerFrameInput userInterfacePointerInput{};
+            userInterfacePointerInput.Enabled = true;
+            userInterfacePointerInput.HasPosition = true;
+            const glm::vec2 mousePosition = Input::GetMousePosition();
+            // 窗口坐标 Y 向下；UI ortho Y 向上。
+            userInterfacePointerInput.PositionInTargetPixels = {
+                    mousePosition.x,
+                    static_cast<float>(window.GetHeight()) - mousePosition.y};
+            const bool primaryButtonHeld = Input::IsMouseButtonPressed(Mouse::ButtonLeft);
+            userInterfacePointerInput.PrimaryButtonHeld = primaryButtonHeld;
+            userInterfacePointerInput.PrimaryButtonPressedThisFrame =
+                    primaryButtonHeld && !m_PrimaryButtonWasHeld;
+            userInterfacePointerInput.PrimaryButtonReleasedThisFrame =
+                    !primaryButtonHeld && m_PrimaryButtonWasHeld;
+            m_PrimaryButtonWasHeld = primaryButtonHeld;
+            m_ActiveScene->SetUserInterfacePointerInput(userInterfacePointerInput);
+
             RenderCommand::SetClearColor({0.1f, 0.12f, 0.16f, 1.0f});
             RenderCommand::Clear();
             m_ActiveScene->OnUpdateRuntime(ts);
@@ -75,6 +94,7 @@ namespace Himii
 
         private:
         Ref<Scene> m_ActiveScene;
+        bool m_PrimaryButtonWasHeld = false;
     };
 
     class Runtime : public Application {

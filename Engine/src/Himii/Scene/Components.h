@@ -332,6 +332,44 @@ namespace Himii
         {
         }
     };
+
+    struct UIButtonColorBlock
+    {
+        glm::vec4 NormalColor{1.0f, 1.0f, 1.0f, 1.0f};
+        glm::vec4 HighlightedColor{0.9f, 0.9f, 0.9f, 1.0f};
+        glm::vec4 PressedColor{0.7f, 0.7f, 0.7f, 1.0f};
+        glm::vec4 DisabledColor{0.5f, 0.5f, 0.5f, 0.5f};
+    };
+
+    struct UIButtonComponent
+    {
+        bool Interactable = true;
+        UIButtonColorBlock Colors;
+
+        // 运行时状态，不序列化。
+        bool IsPointerInside = false;
+        bool IsPressed = false;
+        bool WasClickedThisFrame = false;
+
+        UIButtonComponent() = default;
+        UIButtonComponent(const UIButtonComponent &) = default;
+
+        glm::vec4 EvaluateTintMultiplier() const
+        {
+            if (!Interactable)
+                return Colors.DisabledColor;
+            if (IsPressed)
+                return Colors.PressedColor;
+            if (IsPointerInside)
+                return Colors.HighlightedColor;
+            return Colors.NormalColor;
+        }
+
+        glm::vec4 EvaluateEffectiveColor(const glm::vec4 &imageBaseColor) const
+        {
+            return imageBaseColor * EvaluateTintMultiplier();
+        }
+    };
 #pragma endregion
 
 }

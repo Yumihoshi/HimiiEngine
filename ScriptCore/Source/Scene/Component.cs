@@ -100,6 +100,24 @@ namespace HimiiEngine
         }
     }
 
+    public class UIButton : Component
+    {
+        public bool Interactable
+        {
+            get => InternalCalls.UIButton_GetInteractable?.Invoke(Entity.ID) != 0;
+            set => InternalCalls.UIButton_SetInteractable?.Invoke(Entity.ID, (byte)(value ? 1 : 0));
+        }
+
+        public bool IsPointerInside =>
+            InternalCalls.UIButton_GetIsPointerInside?.Invoke(Entity.ID) != 0;
+
+        public bool IsPressed =>
+            InternalCalls.UIButton_GetIsPressed?.Invoke(Entity.ID) != 0;
+
+        public bool WasClickedThisFrame =>
+            InternalCalls.UIButton_GetWasClickedThisFrame?.Invoke(Entity.ID) != 0;
+    }
+
     public class SpriteRenderer : Component
     {
         public Vector4 Color

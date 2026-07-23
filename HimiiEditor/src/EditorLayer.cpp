@@ -384,12 +384,50 @@ namespace Himii
         RenderCommand::SetClearColor(gameClearColor);
         RenderCommand::Clear();
 
+        Scene::UserInterfacePointerFrameInput userInterfacePointerInput{};
         if (m_SceneState == SceneState::Play)
+        {
+            const bool primaryButtonHeld = Input::IsMouseButtonPressed(Mouse::ButtonLeft);
+            userInterfacePointerInput.Enabled =
+                    m_GameViewportHovered && m_ShowGameUserInterface && m_GameViewHasValidPrimaryCamera;
+            if (userInterfacePointerInput.Enabled)
+            {
+                const glm::vec2 mousePosition = Input::GetMousePosition();
+                const glm::vec2 gameImageSize = m_GameViewportBounds[1] - m_GameViewportBounds[0];
+                if (gameImageSize.x > 0.0f && gameImageSize.y > 0.0f
+                    && m_GameTargetResolution.x > 0 && m_GameTargetResolution.y > 0)
+                {
+                    const float normalizedX =
+                            (mousePosition.x - m_GameViewportBounds[0].x) / gameImageSize.x;
+                    const float normalizedY =
+                            (mousePosition.y - m_GameViewportBounds[0].y) / gameImageSize.y;
+                    if (normalizedX >= 0.0f && normalizedX <= 1.0f
+                        && normalizedY >= 0.0f && normalizedY <= 1.0f)
+                    {
+                        userInterfacePointerInput.HasPosition = true;
+                        userInterfacePointerInput.PositionInTargetPixels = {
+                                normalizedX * static_cast<float>(m_GameTargetResolution.x),
+                                (1.0f - normalizedY) * static_cast<float>(m_GameTargetResolution.y)};
+                    }
+                }
+            }
+            userInterfacePointerInput.PrimaryButtonHeld = primaryButtonHeld;
+            userInterfacePointerInput.PrimaryButtonPressedThisFrame =
+                    primaryButtonHeld && !m_GameUserInterfacePrimaryButtonWasHeld;
+            userInterfacePointerInput.PrimaryButtonReleasedThisFrame =
+                    !primaryButtonHeld && m_GameUserInterfacePrimaryButtonWasHeld;
+            m_GameUserInterfacePrimaryButtonWasHeld = primaryButtonHeld;
+            m_ActiveScene->SetUserInterfacePointerInput(userInterfacePointerInput);
             m_ActiveScene->OnUpdateRuntime(ts, m_ShowGameUserInterface);
+        }
         else if (m_GameViewHasValidPrimaryCamera)
+        {
+            m_GameUserInterfacePrimaryButtonWasHeld = false;
+            m_ActiveScene->SetUserInterfacePointerInput({});
             m_ActiveScene->RenderGameView(
                     m_GameTargetResolution.x, m_GameTargetResolution.y,
                     m_ShowGameUserInterface);
+        }
         m_GameFramebuffer->Unbind();
     }
     void EditorLayer::OnImGuiRender()

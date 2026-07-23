@@ -54,6 +54,7 @@ namespace Himii
     typedef void(CORECLR_DELEGATE_CALLTYPE *OnCollisionExit2DInstanceFn)(void *handle, uint64_t otherEntityID);
     typedef void(CORECLR_DELEGATE_CALLTYPE *OnTriggerEnter2DInstanceFn)(void *handle, Collision2DInterop collision);
     typedef void(CORECLR_DELEGATE_CALLTYPE *OnTriggerExit2DInstanceFn)(void *handle, uint64_t otherEntityID);
+    typedef void(CORECLR_DELEGATE_CALLTYPE *OnPointerEventInstanceFn)(void *handle, int eventType);
 
     typedef const char *(CORECLR_DELEGATE_CALLTYPE *GetFieldsFn)(void *handle);
     typedef int(CORECLR_DELEGATE_CALLTYPE *GetFloatFn)(void *handle, const char *name, float *out);
@@ -88,6 +89,7 @@ namespace Himii
     static OnCollisionExit2DInstanceFn s_OnCollisionExit2D = nullptr;
     static OnTriggerEnter2DInstanceFn s_OnTriggerEnter2D = nullptr;
     static OnTriggerExit2DInstanceFn s_OnTriggerExit2D = nullptr;
+    static OnPointerEventInstanceFn s_OnPointerEvent = nullptr;
 
     // Reflection
     static GetFieldsFn s_GetFields = nullptr;
@@ -285,6 +287,10 @@ namespace Himii
         load_assembly_and_get_function_pointer(filepath.c_str(), STR("HimiiEngine.ScriptManager, ScriptCore"),
                                                STR("OnTriggerExit2DInstance"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
                                                (void **)&s_OnTriggerExit2D);
+
+        load_assembly_and_get_function_pointer(filepath.c_str(), STR("HimiiEngine.ScriptManager, ScriptCore"),
+                                               STR("OnPointerEventInstance"), UNMANAGEDCALLERSONLY_METHOD, nullptr,
+                                               (void **)&s_OnPointerEvent);
 
         // [NEW] Load Reflection Bridge functions
         const char_t *bridge_type = STR("HimiiEngine.ReflectionBridge, ScriptCore");
@@ -884,6 +890,16 @@ namespace Himii
         void *handle = GetEntityScriptInstance(entity.GetUUID());
         if (handle && s_OnTriggerExit2D)
             s_OnTriggerExit2D(handle, other.GetUUID());
+    }
+
+    void ScriptEngine::OnPointerEvent(Entity entity, ScriptPointerEventType eventType)
+    {
+        if (!entity || !entity.HasComponent<ScriptComponent>())
+            return;
+
+        void *handle = GetEntityScriptInstance(entity.GetUUID());
+        if (handle && s_OnPointerEvent)
+            s_OnPointerEvent(handle, static_cast<int>(eventType));
     }
 
     void *ScriptEngine::GetEntityScriptInstance(UUID entityID)

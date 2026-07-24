@@ -11,5 +11,10 @@
 2.  **[架构概览 (Architecture)](Architecture.md)**
     *   [技术总览](Architecture.md) (原文档)
 
-3.  **核心系统 (Core Systems)**
+3.  **[Agent 约束与 Trellis 协作](../AgentConstraints.md)**
+    *   共享规范源（`.trellis/spec/`）
+    *   Cursor / Claude Code / Codex
+    *   为其他 AI IDE 添加约束支持
+
+4.  **核心系统 (Core Systems)**
     *   **[场景序列化](CoreSystems/Serialization.md)** (原文档)

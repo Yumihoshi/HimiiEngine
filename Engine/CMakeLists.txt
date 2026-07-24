@@ -53,6 +53,7 @@ endif()
 set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vender/imgui")
 set(IMGUIZMO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vender/ImGuizmo")
 set(MSDF_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vender/msdf-atlas-gen")
+set(MINIAUDIO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vender/miniaudio")
 
 # 检查 ImGui 目录是否存在
 if (NOT EXISTS "${IMGUI_DIR}")
@@ -109,7 +110,7 @@ if(WIN32 AND BUILD_SHARED_LIBS)
     set_property(TARGET Engine PROPERTY WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
-target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${IMGUI_DIR} ${IMGUI_DIR}/backends ${IMGUIZMO_DIR} ${MSDF_DIR} ${MSDF_DIR}/msdfgen ${MSDF_DIR}/msdf-atlas-gen ${CMAKE_CURRENT_BINARY_DIR}/msdf_build/msdfgen/include)
+target_include_directories(Engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src ${IMGUI_DIR} ${IMGUI_DIR}/backends ${IMGUIZMO_DIR} ${MSDF_DIR} ${MSDF_DIR}/msdfgen ${MSDF_DIR}/msdf-atlas-gen ${CMAKE_CURRENT_BINARY_DIR}/msdf_build/msdfgen/include ${MINIAUDIO_DIR})
 
 target_link_libraries(Engine PUBLIC OpenGL::GL glad::glad spdlog::spdlog glfw yaml-cpp::yaml-cpp Vulkan::Vulkan unofficial::shaderc::shaderc spirv-cross-core spirv-cross-glsl SPIRV-Tools-static box2d::box2d unofficial::nethost::nethost nfd Freetype::Freetype msdf-atlas-gen msdfgen-ext msdfgen-core)
 

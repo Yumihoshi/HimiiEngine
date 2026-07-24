@@ -15,6 +15,7 @@
 #include "Himii/Scripting/ScriptEngine.h"
 #include "Himii/Scripting/ScriptCompiler.h"
 #include "Himii/Core/JobSystem.h"
+#include "Himii/Audio/AudioEngine.h"
 
 namespace Himii
 {
@@ -36,6 +37,7 @@ namespace Himii
         m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
         Renderer::Init();
+        AudioEngine::Init();
         JobSystem::Initialize();
         ScriptEngine::Init();
 
@@ -50,6 +52,7 @@ namespace Himii
         ScriptCompiler::Shutdown();
         ScriptEngine::Shutdown();
         JobSystem::Shutdown();
+        AudioEngine::Shutdown();
         FileSystem::Shutdown();
         s_Instance = nullptr;
     }

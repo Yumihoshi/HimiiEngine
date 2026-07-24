@@ -4,6 +4,8 @@
 #include "Himii/Renderer/Texture.h"
 #include "Himii/Scripting/ScriptEngine.h"
 #include "Himii/Renderer/Font.h"
+#include "Himii/Audio/SoundAsset.h"
+#include "Himii/Audio/AudioEngine.h"
 #include "Himii/Asset/Sprite.h"
 #include "Himii/Scene/SpriteAnimation.h"
 
@@ -371,5 +373,27 @@ namespace Himii
         }
     };
 #pragma endregion
+
+    struct SoundPlayerComponent
+    {
+        AssetHandle SoundHandle = 0;
+        Ref<SoundAsset> Sound;
+        float Volume = 1.0f;
+        bool Mute = false;
+        bool Loop = false;
+        bool PlayOnStart = false;
+
+        // 运行时主轨，不序列化
+        AudioVoiceHandle RuntimeVoiceHandle = AudioEngine::InvalidVoiceHandle;
+        bool RuntimePaused = false;
+
+        SoundPlayerComponent() = default;
+        SoundPlayerComponent(const SoundPlayerComponent&) = default;
+
+        float EvaluateEffectiveVolume() const
+        {
+            return Mute ? 0.0f : Volume;
+        }
+    };
 
 }

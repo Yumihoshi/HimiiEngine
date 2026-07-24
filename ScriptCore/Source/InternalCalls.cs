@@ -72,6 +72,15 @@ namespace HimiiEngine
         internal delegate byte UIButtonGetBoolDelegate(ulong entityID);
         internal delegate void UIButtonSetInteractableDelegate(ulong entityID, byte interactable);
 
+        internal delegate void SoundPlayerVoidDelegate(ulong entityID);
+        internal delegate void SoundPlayerPlayOneShotDelegate(ulong entityID, ulong soundHandle);
+        internal delegate float SoundPlayerGetFloatDelegate(ulong entityID);
+        internal delegate void SoundPlayerSetFloatDelegate(ulong entityID, float value);
+        internal delegate byte SoundPlayerGetBoolDelegate(ulong entityID);
+        internal delegate void SoundPlayerSetBoolDelegate(ulong entityID, byte value);
+        internal delegate ulong SoundPlayerGetHandleDelegate(ulong entityID);
+        internal delegate void SoundPlayerSetHandleDelegate(ulong entityID, ulong soundHandle);
+
         internal delegate ulong FontAssetGetDefaultHandleDelegate();
         internal delegate void FontAssetPreloadCharactersDelegate(ulong handle, IntPtr text);
         internal delegate void FontAssetPreloadTextAsyncDelegate(ulong handle, IntPtr text);
@@ -183,6 +192,22 @@ namespace HimiiEngine
         internal static UIButtonGetBoolDelegate UIButton_GetIsPointerInside;
         internal static UIButtonGetBoolDelegate UIButton_GetIsPressed;
         internal static UIButtonGetBoolDelegate UIButton_GetWasClickedThisFrame;
+
+        internal static SoundPlayerVoidDelegate SoundPlayer_Play;
+        internal static SoundPlayerVoidDelegate SoundPlayer_Stop;
+        internal static SoundPlayerVoidDelegate SoundPlayer_Pause;
+        internal static SoundPlayerVoidDelegate SoundPlayer_Resume;
+        internal static SoundPlayerPlayOneShotDelegate SoundPlayer_PlayOneShot;
+        internal static SoundPlayerGetFloatDelegate SoundPlayer_GetVolume;
+        internal static SoundPlayerSetFloatDelegate SoundPlayer_SetVolume;
+        internal static SoundPlayerGetBoolDelegate SoundPlayer_GetMute;
+        internal static SoundPlayerSetBoolDelegate SoundPlayer_SetMute;
+        internal static SoundPlayerGetBoolDelegate SoundPlayer_GetLoop;
+        internal static SoundPlayerSetBoolDelegate SoundPlayer_SetLoop;
+        internal static SoundPlayerGetBoolDelegate SoundPlayer_GetPlayOnStart;
+        internal static SoundPlayerSetBoolDelegate SoundPlayer_SetPlayOnStart;
+        internal static SoundPlayerGetHandleDelegate SoundPlayer_GetSoundHandle;
+        internal static SoundPlayerSetHandleDelegate SoundPlayer_SetSoundHandle;
 
         internal static FontAssetGetDefaultHandleDelegate FontAsset_GetDefaultHandle;
         internal static FontAssetPreloadCharactersDelegate FontAsset_PreloadCharacters;
@@ -346,6 +371,42 @@ namespace HimiiEngine
             UIButton_GetWasClickedThisFrame =
                 Marshal.GetDelegateForFunctionPointer<UIButtonGetBoolDelegate>(
                     funcs.UIButton_GetWasClickedThisFrame);
+
+            SoundPlayer_Play =
+                Marshal.GetDelegateForFunctionPointer<SoundPlayerVoidDelegate>(funcs.SoundPlayer_Play);
+            SoundPlayer_Stop =
+                Marshal.GetDelegateForFunctionPointer<SoundPlayerVoidDelegate>(funcs.SoundPlayer_Stop);
+            SoundPlayer_Pause =
+                Marshal.GetDelegateForFunctionPointer<SoundPlayerVoidDelegate>(funcs.SoundPlayer_Pause);
+            SoundPlayer_Resume =
+                Marshal.GetDelegateForFunctionPointer<SoundPlayerVoidDelegate>(funcs.SoundPlayer_Resume);
+            SoundPlayer_PlayOneShot =
+                Marshal.GetDelegateForFunctionPointer<SoundPlayerPlayOneShotDelegate>(
+                    funcs.SoundPlayer_PlayOneShot);
+            SoundPlayer_GetVolume =
+                Marshal.GetDelegateForFunctionPointer<SoundPlayerGetFloatDelegate>(funcs.SoundPlayer_GetVolume);
+            SoundPlayer_SetVolume =
+                Marshal.GetDelegateForFunctionPointer<SoundPlayerSetFloatDelegate>(funcs.SoundPlayer_SetVolume);
+            SoundPlayer_GetMute =
+                Marshal.GetDelegateForFunctionPointer<SoundPlayerGetBoolDelegate>(funcs.SoundPlayer_GetMute);
+            SoundPlayer_SetMute =
+                Marshal.GetDelegateForFunctionPointer<SoundPlayerSetBoolDelegate>(funcs.SoundPlayer_SetMute);
+            SoundPlayer_GetLoop =
+                Marshal.GetDelegateForFunctionPointer<SoundPlayerGetBoolDelegate>(funcs.SoundPlayer_GetLoop);
+            SoundPlayer_SetLoop =
+                Marshal.GetDelegateForFunctionPointer<SoundPlayerSetBoolDelegate>(funcs.SoundPlayer_SetLoop);
+            SoundPlayer_GetPlayOnStart =
+                Marshal.GetDelegateForFunctionPointer<SoundPlayerGetBoolDelegate>(
+                    funcs.SoundPlayer_GetPlayOnStart);
+            SoundPlayer_SetPlayOnStart =
+                Marshal.GetDelegateForFunctionPointer<SoundPlayerSetBoolDelegate>(
+                    funcs.SoundPlayer_SetPlayOnStart);
+            SoundPlayer_GetSoundHandle =
+                Marshal.GetDelegateForFunctionPointer<SoundPlayerGetHandleDelegate>(
+                    funcs.SoundPlayer_GetSoundHandle);
+            SoundPlayer_SetSoundHandle =
+                Marshal.GetDelegateForFunctionPointer<SoundPlayerSetHandleDelegate>(
+                    funcs.SoundPlayer_SetSoundHandle);
 
             FontAsset_GetDefaultHandle =
                 Marshal.GetDelegateForFunctionPointer<FontAssetGetDefaultHandleDelegate>(

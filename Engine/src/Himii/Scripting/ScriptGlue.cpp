@@ -17,6 +17,7 @@
 #include "Himii/Core/JobSystem.h"
 #include "Himii/Math/Math.h"
 #include "Himii/Renderer/Font.h"
+#include "Himii/Audio/SoundPlayerUtility.h"
 #include <box2d/box2d.h>
 #include <iostream>
 #include <thread>
@@ -115,6 +116,7 @@ namespace Himii {
         static const uint32_t CameraId = Fnv1A32("HimiiEngine.Camera");
         static const uint32_t UITextId = Fnv1A32("HimiiEngine.UIText");
         static const uint32_t UIButtonId = Fnv1A32("HimiiEngine.UIButton");
+        static const uint32_t SoundPlayerId = Fnv1A32("HimiiEngine.SoundPlayer");
 
         if (typeId == TilemapId)
             return entity.HasComponent<TilemapComponent>() ? 1 : 0;
@@ -136,6 +138,8 @@ namespace Himii {
             return entity.HasComponent<UITextComponent>() ? 1 : 0;
         if (typeId == UIButtonId)
             return entity.HasComponent<UIButtonComponent>() ? 1 : 0;
+        if (typeId == SoundPlayerId)
+            return entity.HasComponent<SoundPlayerComponent>() ? 1 : 0;
 
         // 未注册的组件类型：默认认为不存在
         return 0;
@@ -486,6 +490,177 @@ namespace Himii {
         if (!entity || !entity.HasComponent<UIButtonComponent>())
             return 0;
         return entity.GetComponent<UIButtonComponent>().WasClickedThisFrame ? 1 : 0;
+    }
+
+    static void SoundPlayer_Play(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SoundPlayerComponent>())
+            return;
+        SoundPlayerUtility::Play(entity.GetComponent<SoundPlayerComponent>());
+    }
+
+    static void SoundPlayer_Stop(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SoundPlayerComponent>())
+            return;
+        SoundPlayerUtility::Stop(entity.GetComponent<SoundPlayerComponent>());
+    }
+
+    static void SoundPlayer_Pause(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SoundPlayerComponent>())
+            return;
+        SoundPlayerUtility::Pause(entity.GetComponent<SoundPlayerComponent>());
+    }
+
+    static void SoundPlayer_Resume(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SoundPlayerComponent>())
+            return;
+        SoundPlayerUtility::Resume(entity.GetComponent<SoundPlayerComponent>());
+    }
+
+    static void SoundPlayer_PlayOneShot(uint64_t entityID, uint64_t soundHandle)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SoundPlayerComponent>())
+            return;
+        SoundPlayerUtility::PlayOneShot(entity.GetComponent<SoundPlayerComponent>(), soundHandle);
+    }
+
+    static float SoundPlayer_GetVolume(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0.0f;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SoundPlayerComponent>())
+            return 0.0f;
+        return entity.GetComponent<SoundPlayerComponent>().Volume;
+    }
+
+    static void SoundPlayer_SetVolume(uint64_t entityID, float volume)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SoundPlayerComponent>())
+            return;
+        auto& soundPlayer = entity.GetComponent<SoundPlayerComponent>();
+        soundPlayer.Volume = volume;
+        SoundPlayerUtility::ApplyVolume(soundPlayer);
+    }
+
+    static uint8_t SoundPlayer_GetMute(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SoundPlayerComponent>())
+            return 0;
+        return entity.GetComponent<SoundPlayerComponent>().Mute ? 1 : 0;
+    }
+
+    static void SoundPlayer_SetMute(uint64_t entityID, uint8_t mute)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SoundPlayerComponent>())
+            return;
+        auto& soundPlayer = entity.GetComponent<SoundPlayerComponent>();
+        soundPlayer.Mute = mute != 0;
+        SoundPlayerUtility::ApplyVolume(soundPlayer);
+    }
+
+    static uint8_t SoundPlayer_GetLoop(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SoundPlayerComponent>())
+            return 0;
+        return entity.GetComponent<SoundPlayerComponent>().Loop ? 1 : 0;
+    }
+
+    static void SoundPlayer_SetLoop(uint64_t entityID, uint8_t loop)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SoundPlayerComponent>())
+            return;
+        entity.GetComponent<SoundPlayerComponent>().Loop = loop != 0;
+    }
+
+    static uint8_t SoundPlayer_GetPlayOnStart(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SoundPlayerComponent>())
+            return 0;
+        return entity.GetComponent<SoundPlayerComponent>().PlayOnStart ? 1 : 0;
+    }
+
+    static void SoundPlayer_SetPlayOnStart(uint64_t entityID, uint8_t playOnStart)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SoundPlayerComponent>())
+            return;
+        entity.GetComponent<SoundPlayerComponent>().PlayOnStart = playOnStart != 0;
+    }
+
+    static uint64_t SoundPlayer_GetSoundHandle(uint64_t entityID)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return 0;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SoundPlayerComponent>())
+            return 0;
+        return static_cast<uint64_t>(entity.GetComponent<SoundPlayerComponent>().SoundHandle);
+    }
+
+    static void SoundPlayer_SetSoundHandle(uint64_t entityID, uint64_t soundHandle)
+    {
+        Scene* scene = ScriptEngine::GetSceneContext();
+        if (!scene)
+            return;
+        Entity entity = scene->GetEntityByUUID(entityID);
+        if (!entity || !entity.HasComponent<SoundPlayerComponent>())
+            return;
+        auto& soundPlayer = entity.GetComponent<SoundPlayerComponent>();
+        soundPlayer.SoundHandle = soundHandle;
+        SoundPlayerUtility::ResolveSoundAsset(soundPlayer);
     }
 
     static Ref<Font> ResolveFontAssetByHandle(uint64_t handle)
@@ -1859,6 +2034,22 @@ namespace Himii {
         data.UIButton_GetIsPointerInside = (void *)&UIButton_GetIsPointerInside;
         data.UIButton_GetIsPressed = (void *)&UIButton_GetIsPressed;
         data.UIButton_GetWasClickedThisFrame = (void *)&UIButton_GetWasClickedThisFrame;
+
+        data.SoundPlayer_Play = (void *)&SoundPlayer_Play;
+        data.SoundPlayer_Stop = (void *)&SoundPlayer_Stop;
+        data.SoundPlayer_Pause = (void *)&SoundPlayer_Pause;
+        data.SoundPlayer_Resume = (void *)&SoundPlayer_Resume;
+        data.SoundPlayer_PlayOneShot = (void *)&SoundPlayer_PlayOneShot;
+        data.SoundPlayer_GetVolume = (void *)&SoundPlayer_GetVolume;
+        data.SoundPlayer_SetVolume = (void *)&SoundPlayer_SetVolume;
+        data.SoundPlayer_GetMute = (void *)&SoundPlayer_GetMute;
+        data.SoundPlayer_SetMute = (void *)&SoundPlayer_SetMute;
+        data.SoundPlayer_GetLoop = (void *)&SoundPlayer_GetLoop;
+        data.SoundPlayer_SetLoop = (void *)&SoundPlayer_SetLoop;
+        data.SoundPlayer_GetPlayOnStart = (void *)&SoundPlayer_GetPlayOnStart;
+        data.SoundPlayer_SetPlayOnStart = (void *)&SoundPlayer_SetPlayOnStart;
+        data.SoundPlayer_GetSoundHandle = (void *)&SoundPlayer_GetSoundHandle;
+        data.SoundPlayer_SetSoundHandle = (void *)&SoundPlayer_SetSoundHandle;
 
         data.FontAsset_GetDefaultHandle = (void *)&FontAsset_GetDefaultHandle;
         data.FontAsset_PreloadCharacters = (void *)&FontAsset_PreloadCharacters;

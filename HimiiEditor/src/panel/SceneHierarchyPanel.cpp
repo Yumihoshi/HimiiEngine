@@ -275,6 +275,7 @@ namespace Himii
                 DisplayAddComponentEntry<RectTransformComponent>("Rect Transform");
                 DisplayAddComponentEntry<UIImageComponent>("Image");
                 DisplayAddComponentEntry<UIButtonComponent>("Button");
+                DisplayAddComponentEntry<SoundPlayerComponent>("Sound Player");
 
                 ImGui::EndPopup();
             }
@@ -441,6 +442,7 @@ namespace Himii
             DisplayAddComponentEntry<UIImageComponent>("Image");
             DisplayAddComponentEntry<UITextComponent>("Text");
             DisplayAddComponentEntry<UIButtonComponent>("Button");
+            DisplayAddComponentEntry<SoundPlayerComponent>("Sound Player");
             if (!m_Context->FindCanvasEntity())
                 DisplayAddComponentEntry<CanvasComponent>("Canvas");
 

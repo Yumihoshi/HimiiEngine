@@ -86,7 +86,7 @@
 
 ### 实施顺序
 1. **轨 1 — 场景结构**：实体父子层级 → 多实体 Prefab → Canvas（含 Scaler）→ UIButton  
-2. **轨 2 — 音频**（与轨 1 并行）：`AudioEngine` 抽象 + miniaudio 后端 → 非空间化 `AudioSource` + C# API  
+2. **轨 2 — 音频**（与轨 1 并行）：`AudioEngine` + miniaudio → `SoundAsset` / 非空间化 `SoundPlayer` + C# / 编辑器  
 3. **收束 — 发布**：完整 Build Pipeline（在功能稳定后进行）
 
 ### 轨 1：场景结构与 UI
@@ -102,9 +102,11 @@
 ### 轨 2：音频
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |
 | :--- | :--- | :--- |
-| [ ] | **AudioEngine Abstraction** | 引擎侧音频接口抽象；首期后端为 **miniaudio**；预留更换中间件的可能 |
-| [ ] | **AudioSource（非空间化）** | Play / Stop / Pause、Loop、Volume、Mute、Clip 引用；**不做** 2D 空间衰减 / Listener 定位 |
-| [ ] | **Audio C# API** | ScriptCore 可驱动上述播放控制 |
+| [ ] | **AudioEngine Abstraction** | 引擎侧音频接口抽象；首期后端为 **miniaudio**（解码与设备）；预留更换中间件的可能 |
+| [ ] | **SoundAsset** | 可引用音频资产（WAV / OGG / MP3）；一律解码进内存；`AssetHandle` 体系 |
+| [ ] | **SoundPlayer（非空间化）** | Play / Stop / Pause、Loop、Volume、Mute、PlayOnStart、PlayOneShot；最多 32 voice（超限优先丢弃新 OneShot）；**不做** 空间衰减 / Listener / Mixer |
+| [ ] | **Audio C# API** | ScriptCore `SoundPlayer` 组件可驱动上述播放控制 |
+| [ ] | **Audio Editor** | Inspector（含 Preview）、Content Browser 导入；仅 Play/Runtime 自动出声，Stop 时全部立刻停止 |
 
 ### 收束：发布管线
 | 状态 | 最小执行单元 (Minimum Execution Unit) | 预期内容 |

@@ -118,6 +118,48 @@ namespace HimiiEngine
             InternalCalls.UIButton_GetWasClickedThisFrame?.Invoke(Entity.ID) != 0;
     }
 
+    public class SoundPlayer : Component
+    {
+        public ulong SoundHandle
+        {
+            get => InternalCalls.SoundPlayer_GetSoundHandle?.Invoke(Entity.ID) ?? 0UL;
+            set => InternalCalls.SoundPlayer_SetSoundHandle?.Invoke(Entity.ID, value);
+        }
+
+        public float Volume
+        {
+            get => InternalCalls.SoundPlayer_GetVolume?.Invoke(Entity.ID) ?? 0.0f;
+            set => InternalCalls.SoundPlayer_SetVolume?.Invoke(Entity.ID, value);
+        }
+
+        public bool Mute
+        {
+            get => InternalCalls.SoundPlayer_GetMute?.Invoke(Entity.ID) != 0;
+            set => InternalCalls.SoundPlayer_SetMute?.Invoke(Entity.ID, (byte)(value ? 1 : 0));
+        }
+
+        public bool Loop
+        {
+            get => InternalCalls.SoundPlayer_GetLoop?.Invoke(Entity.ID) != 0;
+            set => InternalCalls.SoundPlayer_SetLoop?.Invoke(Entity.ID, (byte)(value ? 1 : 0));
+        }
+
+        public bool PlayOnStart
+        {
+            get => InternalCalls.SoundPlayer_GetPlayOnStart?.Invoke(Entity.ID) != 0;
+            set => InternalCalls.SoundPlayer_SetPlayOnStart?.Invoke(Entity.ID, (byte)(value ? 1 : 0));
+        }
+
+        public void Play() => InternalCalls.SoundPlayer_Play?.Invoke(Entity.ID);
+        public void Stop() => InternalCalls.SoundPlayer_Stop?.Invoke(Entity.ID);
+        public void Pause() => InternalCalls.SoundPlayer_Pause?.Invoke(Entity.ID);
+        public void Resume() => InternalCalls.SoundPlayer_Resume?.Invoke(Entity.ID);
+
+        /// <summary>播放一次性音效。soundHandle 为 0 时使用组件当前 SoundHandle。</summary>
+        public void PlayOneShot(ulong soundHandle = 0UL) =>
+            InternalCalls.SoundPlayer_PlayOneShot?.Invoke(Entity.ID, soundHandle);
+    }
+
     public class SpriteRenderer : Component
     {
         public Vector4 Color

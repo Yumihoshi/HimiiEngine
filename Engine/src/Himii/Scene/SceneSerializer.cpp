@@ -513,6 +513,19 @@ namespace Himii
             out << YAML::EndMap;
         }
 
+        if (entity.HasComponent<SoundPlayerComponent>())
+        {
+            out << YAML::Key << "SoundPlayerComponent";
+            out << YAML::BeginMap;
+            auto& soundPlayer = entity.GetComponent<SoundPlayerComponent>();
+            out << YAML::Key << "SoundHandle" << YAML::Value << (uint64_t)soundPlayer.SoundHandle;
+            out << YAML::Key << "Volume" << YAML::Value << soundPlayer.Volume;
+            out << YAML::Key << "Mute" << YAML::Value << soundPlayer.Mute;
+            out << YAML::Key << "Loop" << YAML::Value << soundPlayer.Loop;
+            out << YAML::Key << "PlayOnStart" << YAML::Value << soundPlayer.PlayOnStart;
+            out << YAML::EndMap;
+        }
+
         out << YAML::EndMap;
     }
 
@@ -950,6 +963,30 @@ namespace Himii
                 button.Colors.PressedColor = uiButtonComponent["PressedColor"].as<glm::vec4>();
             if (uiButtonComponent["DisabledColor"])
                 button.Colors.DisabledColor = uiButtonComponent["DisabledColor"].as<glm::vec4>();
+        }
+
+        auto soundPlayerComponent = entity["SoundPlayerComponent"];
+        if (soundPlayerComponent)
+        {
+            auto& soundPlayer = deserializedEntity.AddComponent<SoundPlayerComponent>();
+            if (soundPlayerComponent["SoundHandle"])
+                soundPlayer.SoundHandle = soundPlayerComponent["SoundHandle"].as<uint64_t>();
+            if (soundPlayerComponent["Volume"])
+                soundPlayer.Volume = soundPlayerComponent["Volume"].as<float>();
+            if (soundPlayerComponent["Mute"])
+                soundPlayer.Mute = soundPlayerComponent["Mute"].as<bool>();
+            if (soundPlayerComponent["Loop"])
+                soundPlayer.Loop = soundPlayerComponent["Loop"].as<bool>();
+            if (soundPlayerComponent["PlayOnStart"])
+                soundPlayer.PlayOnStart = soundPlayerComponent["PlayOnStart"].as<bool>();
+
+            if (soundPlayer.SoundHandle && Project::GetActive())
+            {
+                auto assetManager = Project::GetActive()->GetAssetManager();
+                if (assetManager && assetManager->IsAssetHandleValid(soundPlayer.SoundHandle))
+                    soundPlayer.Sound = std::dynamic_pointer_cast<SoundAsset>(
+                            assetManager->GetAsset(soundPlayer.SoundHandle));
+            }
         }
     }
     

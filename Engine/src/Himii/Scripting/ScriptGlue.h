@@ -148,6 +148,22 @@ namespace Himii
         void *UIButton_GetIsPressed;
         void *UIButton_GetWasClickedThisFrame;
 
+        void *SoundPlayer_Play;
+        void *SoundPlayer_Stop;
+        void *SoundPlayer_Pause;
+        void *SoundPlayer_Resume;
+        void *SoundPlayer_PlayOneShot;
+        void *SoundPlayer_GetVolume;
+        void *SoundPlayer_SetVolume;
+        void *SoundPlayer_GetMute;
+        void *SoundPlayer_SetMute;
+        void *SoundPlayer_GetLoop;
+        void *SoundPlayer_SetLoop;
+        void *SoundPlayer_GetPlayOnStart;
+        void *SoundPlayer_SetPlayOnStart;
+        void *SoundPlayer_GetSoundHandle;
+        void *SoundPlayer_SetSoundHandle;
+
         void *FontAsset_GetDefaultHandle;
         void *FontAsset_PreloadCharacters;
         void *FontAsset_PreloadTextAsync;

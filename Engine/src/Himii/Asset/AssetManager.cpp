@@ -3,6 +3,7 @@
 #include "Himii/Project/Project.h"
 #include "Himii/Renderer/Texture.h"
 #include "Himii/Renderer/Font.h"
+#include "Himii/Audio/SoundAsset.h"
 #include "Himii/Asset/AssetSerializer.h"
 #include "Himii/Asset/TextureImportSerializer.h"
 #include "Himii/Asset/SpriteSheetUtility.h"
@@ -67,6 +68,11 @@ namespace Himii
                 specification.FilePath = filesystemPath;
                 specification.FaceIndex = 0;
                 asset = CreateRef<Font>(specification);
+                break;
+            }
+            case AssetType::SoundAsset:
+            {
+                asset = CreateRef<SoundAsset>(filesystemPath);
                 break;
             }
             case AssetType::None:
@@ -150,6 +156,8 @@ namespace Himii
             return AssetType::Prefab;
         if (extensionLower == ".ttf" || extensionLower == ".otf" || extensionLower == ".ttc")
             return AssetType::Font;
+        if (extensionLower == ".wav" || extensionLower == ".ogg" || extensionLower == ".mp3")
+            return AssetType::SoundAsset;
 
         return AssetType::None;
     }

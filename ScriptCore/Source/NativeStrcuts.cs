@@ -147,6 +147,22 @@ namespace HimiiEngine
         public IntPtr UIButton_GetIsPressed;
         public IntPtr UIButton_GetWasClickedThisFrame;
 
+        public IntPtr SoundPlayer_Play;
+        public IntPtr SoundPlayer_Stop;
+        public IntPtr SoundPlayer_Pause;
+        public IntPtr SoundPlayer_Resume;
+        public IntPtr SoundPlayer_PlayOneShot;
+        public IntPtr SoundPlayer_GetVolume;
+        public IntPtr SoundPlayer_SetVolume;
+        public IntPtr SoundPlayer_GetMute;
+        public IntPtr SoundPlayer_SetMute;
+        public IntPtr SoundPlayer_GetLoop;
+        public IntPtr SoundPlayer_SetLoop;
+        public IntPtr SoundPlayer_GetPlayOnStart;
+        public IntPtr SoundPlayer_SetPlayOnStart;
+        public IntPtr SoundPlayer_GetSoundHandle;
+        public IntPtr SoundPlayer_SetSoundHandle;
+
         public IntPtr FontAsset_GetDefaultHandle;
         public IntPtr FontAsset_PreloadCharacters;
         public IntPtr FontAsset_PreloadTextAsync;

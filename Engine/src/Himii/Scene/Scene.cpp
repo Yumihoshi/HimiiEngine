@@ -18,6 +18,8 @@
 #include "Himii/Scene/ParticleEmitterAsset.h"
 #include "Himii/Renderer/Texture.h"
 #include "Himii/Renderer/Font.h"
+#include "Himii/Audio/AudioEngine.h"
+#include "Himii/Audio/SoundPlayerUtility.h"
 #include "Himii/Particle/ParticleSystem.h"
 #include "Himii/Scripting/ScriptEngine.h"
 #include "ScriptableEntity.h"
@@ -492,6 +494,18 @@ namespace Himii
                 ScriptEngine::OnCreateEntity(entity); // <--- 新增这行调用
             }
         }
+
+        {
+            auto soundView = m_Registry.view<SoundPlayerComponent>();
+            for (auto entityHandle : soundView)
+            {
+                auto& soundPlayer = soundView.get<SoundPlayerComponent>(entityHandle);
+                soundPlayer.RuntimeVoiceHandle = AudioEngine::InvalidVoiceHandle;
+                soundPlayer.RuntimePaused = false;
+                if (soundPlayer.PlayOnStart)
+                    SoundPlayerUtility::Play(soundPlayer);
+            }
+        }
     }
 
     void Scene::OnSimulationStart()
@@ -506,6 +520,7 @@ namespace Himii
 
     void Scene::OnRuntimeStop()
     {
+        SoundPlayerUtility::StopAllPlayersInScene(this);
         OnPhysics2DStop();
         ScriptEngine::OnRuntimeStop();
     }
@@ -951,6 +966,7 @@ namespace Himii
         CopyComponent<UIImageComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<UITextComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
         CopyComponent<UIButtonComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
+        CopyComponent<SoundPlayerComponent>(dstSceneRegistry, srcSceneRegistry, enttMap);
 
         newScene->RebuildHierarchyCache();
 
@@ -1020,6 +1036,13 @@ namespace Himii
             copiedButton.IsPressed = false;
             copiedButton.WasClickedThisFrame = false;
             newEntity.AddComponent<UIButtonComponent>(copiedButton);
+        }
+        if (entity.HasComponent<SoundPlayerComponent>())
+        {
+            SoundPlayerComponent copiedSoundPlayer = entity.GetComponent<SoundPlayerComponent>();
+            copiedSoundPlayer.RuntimeVoiceHandle = AudioEngine::InvalidVoiceHandle;
+            copiedSoundPlayer.RuntimePaused = false;
+            newEntity.AddComponent<SoundPlayerComponent>(copiedSoundPlayer);
         }
 
         return newEntity;
@@ -2306,6 +2329,14 @@ namespace Himii
     {
         (void)entity;
         (void)component;
+    }
+    template<>
+    void Scene::OnComponentAdded<SoundPlayerComponent>(Entity entity, SoundPlayerComponent &component)
+    {
+        (void)entity;
+        component.RuntimeVoiceHandle = AudioEngine::InvalidVoiceHandle;
+        component.RuntimePaused = false;
+        SoundPlayerUtility::ResolveSoundAsset(component);
     }
     template<>
     void Scene::OnComponentAdded<CanvasComponent>(Entity entity, CanvasComponent &component)

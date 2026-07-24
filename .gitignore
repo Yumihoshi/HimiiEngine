@@ -55,17 +55,12 @@ bin/
 # VS Code
 .vscode/
 
-# Cursor：忽略本机 IDE 状态；Trellis 托管的 Agent 集成文件需提交
-.cursor/*
-!.cursor/agents/
-!.cursor/agents/**
-!.cursor/commands/
-!.cursor/commands/**
-!.cursor/hooks/
-!.cursor/hooks/**
-!.cursor/hooks.json
-!.cursor/skills/
-!.cursor/skills/**
+# Cursor / 其他 AI IDE：Trellis 平台适配均为本机生成物，不入库
+.cursor/
+.claude/
+.codex/
+.agents/
+AGENTS.md
 
 # Qt Creator
 *.pro.user

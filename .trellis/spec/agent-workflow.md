@@ -58,4 +58,4 @@
 ## 规范源真相
 
 - 团队共享约束以 `.trellis/spec/` 为准。
-- 根目录 `AGENTS.md` 若存在，仅为 Trellis/Codex 生成的入口前言，**不要**在其中堆叠业务规范；业务规范写回 `.trellis/spec/`。
+- `.cursor/`、`.claude/`、`.codex/`、`.agents/`、根目录 `AGENTS.md` 均为**本机生成物，不入库**；若本地存在 `AGENTS.md`，仅为 Trellis/Codex 入口前言，**不要**在其中堆叠业务规范。

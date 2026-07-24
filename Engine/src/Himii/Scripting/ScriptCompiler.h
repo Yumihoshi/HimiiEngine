@@ -15,7 +15,7 @@ namespace Himii
         static void Update();
 
         static bool IsCompiling();
-        static const std::string& GetLastLog();
+        static std::string GetLastLog();
         static int GetLastExitCode();
 
         /// 等待进行中的编译结束并终止 dotnet 子进程（编辑器退出时调用）。

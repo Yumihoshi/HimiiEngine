@@ -56,7 +56,7 @@ namespace Himii
 
             std::string argsLabel = std::string("Arguments##") + idSuffix;
             ImGui::InputText(argsLabel.c_str(), args, sizeof(args));
-            ImGui::TextDisabled("Placeholders: {ProjectDir} {Solution} {File} {ProjectName}");
+            ImGui::TextDisabled("Placeholders: {ProjectDir} {Solution} {File} {ProjectName} {Line}");
 
             config.CustomExecutable = exePath;
             config.CustomArguments = args;

@@ -72,6 +72,9 @@ namespace Himii
         void CompileAndReloadScripts();
         void RequestScriptCompile();
         void StartScenePlay();
+        bool IsScriptAssemblyUpToDate() const;
+        void MarkScriptsDirtyFromWatcher();
+        void SetupScriptFileWatchers();
 
         //UI panel
         void UI_Toolbar();
@@ -185,7 +188,9 @@ namespace Himii
         bool m_ShowProjectSettings = false;
 
         FileWatcher m_ScriptFileWatcher;
+        FileWatcher m_ScriptProjectFileWatcher;
         bool m_ScriptsDirty = false;
+        bool m_NeedsScriptRebuild = false;
         bool m_PendingPlayAfterCompile = false;
         bool m_ShowScriptReloadNotice = false;
         bool m_WasScriptCompiling = false;

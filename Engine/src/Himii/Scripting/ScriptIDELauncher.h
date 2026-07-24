@@ -21,7 +21,8 @@ namespace Himii
                                                   const std::filesystem::path& projectDir,
                                                   const std::string& projectName,
                                                   const std::filesystem::path& solutionPath,
-                                                  const std::filesystem::path& filePath);
+                                                  const std::filesystem::path& filePath,
+                                                  int line = 0);
         static bool LaunchProcess(const std::string& executable, const std::string& arguments);
         static bool LaunchVisualStudio(const std::filesystem::path& solutionPath, const std::filesystem::path& filePath,
                                        int line);
@@ -33,7 +34,8 @@ namespace Himii
                                  const std::filesystem::path& projectDir,
                                  const std::string& projectName,
                                  const std::filesystem::path& solutionPath,
-                                 const std::filesystem::path& filePath);
+                                 const std::filesystem::path& filePath,
+                                 int line = 0);
         static std::filesystem::path FindDevenvExecutable();
         static std::filesystem::path FindVSCodeExecutable();
         static std::filesystem::path FindRiderExecutable();

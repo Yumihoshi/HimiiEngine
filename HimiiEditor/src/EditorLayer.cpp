@@ -174,7 +174,7 @@ namespace Himii
                         static_cast<GLFWwindow *>(Application::Get().GetWindow().GetNativeWindow()))
                     EditorExternalFileDrop::Install(window);
 
-                m_ContentBrowserPanel.SetOnScriptChanged([this]() { RequestScriptCompile(); });
+                m_ContentBrowserPanel.SetOnScriptChanged([this]() { MarkScriptsDirtyFromWatcher(); });
                 m_StartupProgress = 0.75f;
                 m_StartupLoadingStep = EditorStartupLoadingStep::ProjectData;
                 break;
@@ -228,14 +228,28 @@ namespace Himii
         ScriptCompiler::Update();
 
         if (Project::GetActive())
+        {
             m_ScriptFileWatcher.Update(ts.GetSeconds());
+            m_ScriptProjectFileWatcher.Update(ts.GetSeconds());
+        }
 
         if (wasCompiling && !ScriptCompiler::IsCompiling())
         {
             if (ScriptCompiler::GetLastExitCode() == 0)
             {
-                m_ScriptsDirty = false;
                 m_ScriptFileWatcher.ClearPendingChange();
+                m_ScriptProjectFileWatcher.ClearPendingChange();
+
+                if (m_NeedsScriptRebuild)
+                {
+                    m_NeedsScriptRebuild = false;
+                    m_ScriptsDirty = true;
+                    RequestScriptCompile();
+                }
+                else
+                {
+                    m_ScriptsDirty = false;
+                }
             }
 
             if (m_NotifyReloadAfterCompile)
@@ -1475,11 +1489,27 @@ namespace Himii
             // 假设 csproj 就在项目根目录
             m_CSharpProjectPath = projectDir / "GameAssembly.csproj";
 
-            auto scriptsDir = Project::GetAssetDirectory() / "scripts";
-            m_ScriptFileWatcher.Watch(scriptsDir, [this]() { m_ScriptsDirty = true; RequestScriptCompile(); });
+            SetupScriptFileWatchers();
             m_ScriptsDirty = false;
+            m_NeedsScriptRebuild = false;
 
-            CompileAndReloadScripts();
+            if (IsScriptAssemblyUpToDate())
+            {
+                const auto assemblyPath = ScriptEngine::GetGameAssemblyDllPath();
+                if (ScriptEngine::LoadAppAssembly(assemblyPath))
+                {
+                    HIMII_CORE_INFO("Skipped script compile: GameAssembly.dll is up to date.");
+                }
+                else
+                {
+                    HIMII_CORE_WARNING("Failed to load existing GameAssembly.dll, compiling instead.");
+                    CompileAndReloadScripts();
+                }
+            }
+            else
+            {
+                CompileAndReloadScripts();
+            }
 
             // 重置 ContentBrowser 面板
             m_ContentBrowserPanel.Refresh();
@@ -2080,10 +2110,12 @@ namespace Himii
 
     void EditorLayer::OnScenePlay()
     {
-        if (m_ScriptsDirty || ScriptCompiler::IsCompiling())
+        if (m_ScriptsDirty || ScriptCompiler::IsCompiling() || m_NeedsScriptRebuild)
         {
             m_PendingPlayAfterCompile = true;
-            RequestScriptCompile();
+            // 已在编译中则只等待本轮结束，不要额外排队一轮
+            if (!ScriptCompiler::IsCompiling())
+                RequestScriptCompile();
             return;
         }
 
@@ -2168,18 +2200,92 @@ namespace Himii
         }
     }
 
+    void EditorLayer::SetupScriptFileWatchers()
+    {
+        auto scriptsDirectory = Project::GetAssetDirectory() / "scripts";
+        m_ScriptFileWatcher.Watch(scriptsDirectory, [this]() { MarkScriptsDirtyFromWatcher(); });
+
+        if (!m_CSharpProjectPath.empty() && std::filesystem::exists(m_CSharpProjectPath))
+        {
+            m_ScriptProjectFileWatcher.WatchFile(m_CSharpProjectPath, [this]() { MarkScriptsDirtyFromWatcher(); });
+        }
+        else
+        {
+            m_ScriptProjectFileWatcher.Clear();
+        }
+    }
+
+    void EditorLayer::MarkScriptsDirtyFromWatcher()
+    {
+        m_ScriptsDirty = true;
+        RequestScriptCompile();
+    }
+
+    bool EditorLayer::IsScriptAssemblyUpToDate() const
+    {
+        if (!Project::GetActive() || m_CSharpProjectPath.empty())
+            return false;
+
+        const auto assemblyPath = ScriptEngine::GetGameAssemblyDllPath();
+        if (assemblyPath.empty() || !std::filesystem::exists(assemblyPath))
+            return false;
+
+        std::error_code errorCode;
+        const auto assemblyWriteTime = std::filesystem::last_write_time(assemblyPath, errorCode);
+        if (errorCode)
+            return false;
+
+        auto isNewerThanAssembly = [&](const std::filesystem::path& path) -> bool
+        {
+            if (!std::filesystem::exists(path))
+                return false;
+            std::error_code localErrorCode;
+            const auto writeTime = std::filesystem::last_write_time(path, localErrorCode);
+            if (localErrorCode)
+                return true;
+            return writeTime > assemblyWriteTime;
+        };
+
+        if (isNewerThanAssembly(m_CSharpProjectPath))
+            return false;
+
+        const auto scriptsDirectory = Project::GetAssetDirectory() / "scripts";
+        if (!std::filesystem::exists(scriptsDirectory))
+            return true;
+
+        for (const auto& entry : std::filesystem::recursive_directory_iterator(scriptsDirectory))
+        {
+            if (!entry.is_regular_file())
+                continue;
+            if (entry.path().extension() != ".cs")
+                continue;
+            if (isNewerThanAssembly(entry.path()))
+                return false;
+        }
+
+        return true;
+    }
+
     void EditorLayer::RequestScriptCompile()
     {
         if (!Project::GetActive() || m_CSharpProjectPath.empty())
             return;
 
-        if (ScriptCompiler::IsCompiling())
+        // Play / Simulate 中只标记 dirty，不强制 Stop、不自动编译
+        if (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate)
+        {
+            m_ScriptsDirty = true;
             return;
+        }
 
-        const bool wasPlaying = (m_SceneState == SceneState::Play || m_SceneState == SceneState::Simulate);
-        if (wasPlaying)
-            OnSceneStop();
+        if (ScriptCompiler::IsCompiling())
+        {
+            m_NeedsScriptRebuild = true;
+            m_ScriptsDirty = true;
+            return;
+        }
 
+        m_ScriptsDirty = true;
         ScriptEngine::RequestCompileAndReload(m_CSharpProjectPath);
     }
 
@@ -2190,12 +2296,18 @@ namespace Himii
             OnSceneStop();
 
         m_NotifyReloadAfterCompile = wasPlaying;
+        m_NeedsScriptRebuild = false;
+        m_ScriptsDirty = true;
 
         if (Project::GetActive())
             Project::SyncScriptCoreToProjectDirectory(Project::GetProjectDirectory());
 
         if (!ScriptEngine::RequestCompileAndReload(m_CSharpProjectPath))
+        {
+            // 已在编译中：排队，结束后再编一轮
+            m_NeedsScriptRebuild = true;
             m_NotifyReloadAfterCompile = false;
+        }
     }
 
     void EditorLayer::UI_Toolbar()

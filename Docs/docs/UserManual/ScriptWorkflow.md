@@ -21,11 +21,14 @@
 
 ## 编译
 
-- 保存 `.cs` 后，编辑器 **文件监视** 可触发 **异步 `dotnet build`**（debounce）。
-- 点击 **Play** 前若脚本有改动，会先编译再进入 Play；编译进行中若已在 Play，会先 Stop。
+- 打开项目时：若 `GameAssembly.dll` 比全部 `assets/scripts/**/*.cs` 与根目录 `GameAssembly.csproj` 都新，则**跳过编译**，直接加载已有 DLL；否则异步 `dotnet build`。
+- 保存 `.cs` 或 `GameAssembly.csproj` 后，文件监视会触发异步编译（debounce）。编译进行中再次保存会**排队**，结束后再编一轮。
+- **Play / Simulate 中**不会自动编译，也不会强制 Stop；仅标记脚本为 dirty。再次点击 **Play**（或菜单 **Compile and Reload**）时才会编译。
+- 点击 **Play** 前若脚本有改动或正在编译，会先编译成功再进入 Play。
 - 编译日志在 **Window → Script Console**：
   - 成功 / 失败状态
-  - 点击 `path\file.cs(line,col): error` 行，在配置的 IDE 中打开对应位置
+  - **红色 error** 行可点击，在配置的 IDE 中打开对应位置（Visual Studio：打开项目 `.sln` 后再打开文件，不使用 `/edit`）
+  - **黄色 warning** 仅高亮显示，不可点击跳转
 
 > **【配图占位】** `images/script-console-compile.png` — Script Console 编译输出
 
@@ -63,6 +66,7 @@ Play 模式下，单帧脚本与物理顺序为：
 ### 全局默认（Edit → Preferences）
 
 - 选择 **Visual Studio**、**VS Code**、**Rider** 或 **Custom**（自定义可执行文件与参数模板）。
+  - Custom 占位符：`{ProjectDir}` `{Solution}` `{File}` `{ProjectName}` `{Line}`
 - 保存到引擎数据目录下的 `editor_settings.yaml`。
 
 ### 项目覆盖（File → Project Settings）

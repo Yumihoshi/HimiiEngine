@@ -13,6 +13,7 @@ namespace Himii
         using ChangeCallback = std::function<void()>;
 
         void Watch(const std::filesystem::path& directory, ChangeCallback onChanged, float debounceSeconds = 0.5f);
+        void WatchFile(const std::filesystem::path& filePath, ChangeCallback onChanged, float debounceSeconds = 0.5f);
         void Clear();
         void Update(float deltaSeconds);
 
@@ -22,7 +23,8 @@ namespace Himii
     private:
         void ScanDirectory();
 
-        std::filesystem::path m_Directory;
+        std::filesystem::path m_WatchPath;
+        bool m_WatchSingleFile = false;
         ChangeCallback m_Callback;
         float m_DebounceSeconds = 0.5f;
         float m_DebounceTimer = 0.0f;

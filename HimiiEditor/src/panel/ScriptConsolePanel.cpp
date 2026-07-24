@@ -9,31 +9,43 @@
 
 namespace Himii
 {
-    static bool TryParseCompilerLocation(const std::string& line, std::filesystem::path& outPath, int& outLine)
+    enum class CompilerDiagnosticKind
     {
-        const size_t messagePosition = [&]() -> size_t
+        None = 0,
+        Error,
+        Warning
+    };
+
+    static CompilerDiagnosticKind TryParseCompilerLocation(
+            const std::string& line, std::filesystem::path& outPath, int& outLine)
+    {
+        const size_t errorPosition = line.find(": error");
+        const size_t warningPosition = line.find(": warning");
+
+        size_t messagePosition = std::string::npos;
+        CompilerDiagnosticKind kind = CompilerDiagnosticKind::None;
+        if (errorPosition != std::string::npos
+            && (warningPosition == std::string::npos || errorPosition < warningPosition))
         {
-            const size_t errorPosition = line.find(": error");
-            if (errorPosition != std::string::npos)
-                return errorPosition;
-
-            const size_t warningPosition = line.find(": warning");
-            if (warningPosition != std::string::npos)
-                return warningPosition;
-
-            return std::string::npos;
-        }();
+            messagePosition = errorPosition;
+            kind = CompilerDiagnosticKind::Error;
+        }
+        else if (warningPosition != std::string::npos)
+        {
+            messagePosition = warningPosition;
+            kind = CompilerDiagnosticKind::Warning;
+        }
 
         if (messagePosition == std::string::npos)
-            return false;
+            return CompilerDiagnosticKind::None;
 
         const size_t closeParenthesis = line.rfind(')', messagePosition);
         if (closeParenthesis == std::string::npos)
-            return false;
+            return CompilerDiagnosticKind::None;
 
         const size_t openParenthesis = line.rfind('(', closeParenthesis);
         if (openParenthesis == std::string::npos || openParenthesis >= closeParenthesis)
-            return false;
+            return CompilerDiagnosticKind::None;
 
         std::string lineNumberText = line.substr(openParenthesis + 1, closeParenthesis - openParenthesis - 1);
         const size_t commaPosition = lineNumberText.find(',');
@@ -41,7 +53,7 @@ namespace Himii
             lineNumberText = lineNumberText.substr(0, commaPosition);
 
         if (lineNumberText.empty())
-            return false;
+            return CompilerDiagnosticKind::None;
 
         try
         {
@@ -49,7 +61,7 @@ namespace Himii
         }
         catch (...)
         {
-            return false;
+            return CompilerDiagnosticKind::None;
         }
 
         outPath = line.substr(0, openParenthesis);
@@ -58,10 +70,10 @@ namespace Himii
             pathText.erase(pathText.begin());
 
         if (pathText.empty())
-            return false;
+            return CompilerDiagnosticKind::None;
 
         outPath = pathText;
-        return true;
+        return kind;
     }
 
     void ScriptConsolePanel::OnImGuiRender(bool* pOpen)
@@ -81,9 +93,9 @@ namespace Himii
             ImGui::TextColored(ImVec4(1.0f, 0.3f, 0.3f, 1.0f), "Last build: Failed (code %d)", ScriptCompiler::GetLastExitCode());
 
         ImGui::Separator();
-        ImGui::TextDisabled("Click an error line to open in IDE");
+        ImGui::TextDisabled("Click an error line to open in IDE (warnings are not clickable)");
 
-        const std::string& log = ScriptCompiler::GetLastLog();
+        const std::string log = ScriptCompiler::GetLastLog();
         if (log.empty())
         {
             ImGui::TextDisabled("No build output yet.");
@@ -99,32 +111,42 @@ namespace Himii
             {
                 std::filesystem::path filePath;
                 int fileLine = 0;
-                const bool isLocation = TryParseCompilerLocation(line, filePath, fileLine);
+                const CompilerDiagnosticKind diagnosticKind =
+                        TryParseCompilerLocation(line, filePath, fileLine);
+                const bool isError = diagnosticKind == CompilerDiagnosticKind::Error;
+                const bool isWarning = diagnosticKind == CompilerDiagnosticKind::Warning;
 
-                if (isLocation)
+                if (isError)
                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.45f, 0.45f, 1.0f));
+                else if (isWarning)
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.85f, 0.25f, 1.0f));
 
                 ImGui::PushID(lineIndex++);
-                if (ImGui::Selectable(line.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick))
+                if (isError)
                 {
-                    if (isLocation && Project::GetActive())
+                    if (ImGui::Selectable(line.c_str(), false, ImGuiSelectableFlags_AllowDoubleClick))
                     {
-                        std::filesystem::path absolutePath = filePath;
-                        if (!absolutePath.is_absolute())
+                        if (Project::GetActive())
                         {
-                            absolutePath = Project::GetProjectDirectory() / filePath;
-                        }
+                            std::filesystem::path absolutePath = filePath;
+                            if (!absolutePath.is_absolute())
+                                absolutePath = Project::GetProjectDirectory() / filePath;
 
-                        ScriptIDELauncher::OpenScript(
-                            Project::GetProjectDirectory(),
-                            Project::GetConfig().Name,
-                            absolutePath,
-                            fileLine);
+                            ScriptIDELauncher::OpenScript(
+                                Project::GetProjectDirectory(),
+                                Project::GetConfig().Name,
+                                absolutePath,
+                                fileLine);
+                        }
                     }
+                }
+                else
+                {
+                    ImGui::TextUnformatted(line.c_str());
                 }
                 ImGui::PopID();
 
-                if (isLocation)
+                if (isError || isWarning)
                     ImGui::PopStyleColor();
             }
 

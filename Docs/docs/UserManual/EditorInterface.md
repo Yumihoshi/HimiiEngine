@@ -59,7 +59,7 @@ HimiiEditor 采用 DockSpace 停靠布局，提供场景编辑、资源管理与
 **脚本编译**输出，显示 `dotnet build` 的结果。
 
 - 编译中 / 成功 / 失败状态提示。
-- 点击带 `文件.cs(行,列): error` 格式的行，可在配置的 IDE 中打开对应脚本（见 [脚本工作流](ScriptWorkflow.md)）。
+- 点击带 `文件.cs(行,列): error` 格式的**红色**行，可在配置的 IDE 中打开对应脚本（见 [脚本工作流](ScriptWorkflow.md)）；warning 为黄色且不可跳转。
 
 > **【配图占位】** `images/console-panels.png` — Console 与 Script Console 面板
 

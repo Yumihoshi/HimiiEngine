@@ -265,7 +265,7 @@ namespace Himii
         return s_IsCompiling.load();
     }
 
-    const std::string& ScriptCompiler::GetLastLog()
+    std::string ScriptCompiler::GetLastLog()
     {
         std::lock_guard<std::mutex> lock(s_LogMutex);
         return s_LastLog;
